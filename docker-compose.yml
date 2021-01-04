@@ -1,0 +1,82 @@
+version: '3'
+
+networks:
+  backend:
+    driver: bridge
+
+# 定义服务nginx,php,mysql,redis
+services:
+  nginx:
+    # 依赖php服务，意味着在启动nginx之前先启动php
+    depends_on:
+      - php-fpm
+    # nginx镜像的路径
+    image: registry.cn-shenzhen.aliyuncs.com/yxyong/nginx
+    volumes:
+      - ./:/var/www:cached
+      - ./var/logs/nginx:/var/log/nginx
+      - ./var/conf/nginx/sites:/etc/nginx/sites-available
+      - ./var/conf/nginx/ssl:/etc/nginx/ssl
+    # nginx意外退出时自动重启
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    # 映射80和443端口
+    ports:
+      - "80:80"
+      - "443:443"
+    # 容器名称
+    container_name: nginx-slim
+    networks:
+      - backend
+
+  php-fpm:
+    depends_on:
+      - mysql
+      - redis
+    image: registry.cn-shenzhen.aliyuncs.com/yxyong/php
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    volumes:
+      - ./:/var/www:cached
+    container_name: php-fpm-slim
+    networks:
+      - backend
+
+  mysql:
+    image: registry.cn-shenzhen.aliyuncs.com/yxyong/mysql
+    volumes:
+      - ./var/data/mysql:/var/lib/mysql
+    restart: always
+    # 设置MYSQL_ROOT_PASSWORD环境变量，这里是设置mysql的root密码。这里为root。
+    environment:
+      MYSQL_ROOT_PASSWORD: wanphp#1122
+      TZ: PRC
+    #ports:
+    #  - "13306:3306"
+    container_name: mysql-slim
+    networks:
+      - backend
+
+  redis:
+    image: registry.cn-shenzhen.aliyuncs.com/yxyong/redis
+    volumes:
+      - ./var/data/redis:/data
+    restart: always
+    #ports:
+    #  - "16379:6379"
+    container_name: redis-slim
+    networks:
+      - backend
+
+  composer:
+    image: composer:latest
+    command: ["composer", "update" ]
+    container_name: composer-slim
+    volumes:
+      - ./:/app
