@@ -28,8 +28,8 @@ class OAuthServerMiddleware implements MiddlewareInterface
   public function __construct(ContainerInterface $container, Redis $redis)
   {
     $settings = $container->get('settings');
-    $redis->select($settings['authRedis']);//选择库
     $this->redis = $redis;
+    $this->redis->select($settings['authRedis']);//选择库
   }
 
   public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

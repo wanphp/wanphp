@@ -53,7 +53,7 @@ abstract class Author2Api extends Api
     $clientRepository = new ClientRepository($database);
     $scopeRepository = new ScopeRepository();
     $this->redis->select($settings['authRedis']);//选择库
-    $accessTokenRepository = new AccessTokenRepository($redis);
+    $accessTokenRepository = new AccessTokenRepository($this->redis);
 
     // 私钥与加密密钥
     $privateKey = new CryptKey($settings['privateKey'], $settings['privateKeyPass'] ?: null); // 如果私钥文件有密码
