@@ -63,6 +63,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     // 使用刷新令牌创建新的访问令牌时调用此方法
     // 参数为原访问令牌的唯一标识符
     // 可将其在持久化存储中过期
+    $this->redis->delete($tokenId);
   }
 
   public function isAccessTokenRevoked($tokenId)

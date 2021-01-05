@@ -11,13 +11,13 @@ return function (ContainerBuilder $containerBuilder) {
       'displayErrorDetails' => true, // 显示错误详细信息，在生产中应设置为false
       'logger' => [
         'name' => 'slim-app',
-        'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
+        'path' => isset($_ENV['docker']) ? 'php://stdout' : realpath('../') . '/var/logs/app.log',
         'level' => Logger::DEBUG,
       ],
-      'privateKey' => '/var/www/var/conf/key/private.key',
+      'privateKey' => realpath('../') . '/var/conf/key/private.key',
       'privateKeyPass' => 'wanphp@1122',
       'encryptionKey' => 'def000000488eaf61f323560adace212f12047a7ad5863f8905da1fb28ed290122f07256bf1d512bebf75c9177fdd06b369a7ce63684122b08e9a5884a6010f1ddaafcde',
-      'uploadFilePath' => '/var/www/var/uploadfiles',
+      'uploadFilePath' => realpath('../') . '/var/uploadfiles',
       'authRedis' => 2
     ],
     'database' => [
