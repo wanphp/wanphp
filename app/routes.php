@@ -46,7 +46,10 @@ return function (App $app) {
       $app->getContainer()->get(\App\Repositories\Mysql\Router\PersistenceRepository::class),
       $app->getContainer()->get(\App\Repositories\Mysql\Admin\AdminRepository::class)
     ));
-  })->addMiddleware(new \App\Application\Middleware\OAuthServerMiddleware($app->getContainer()->get(\App\Infrastructure\Database\Redis::class)));
+  })->addMiddleware(new \App\Application\Middleware\OAuthServerMiddleware(
+    $app->getContainer(),
+    $app->getContainer()->get(\App\Infrastructure\Database\Redis::class))
+  );
 
 
   $app->group('/auth', function (Group $group) {
