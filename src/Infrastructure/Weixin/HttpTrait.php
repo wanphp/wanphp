@@ -37,7 +37,21 @@ trait HttpTrait
             return $json;
           }
         } else {
-          return ['content_type' => $resp->getHeaderLine('Content-Type'), 'body' => $resp->getBody()->getContents()];
+          $result = $this->fromXml($resp->getBody()->getContents());
+
+          if ($result) {
+            // 请求失败
+            if (isset($result['return_code']) && $result['return_code'] === 'FAIL') {
+              throw new \Exception('FAIL - ' . $result['return_msg'], 400);
+            }
+
+            if (isset($result['result_code']) && $result['result_code'] === 'FAIL') {
+              throw new \Exception($result['err_code'] . ' - ' . $result['err_code_des'], 400);
+            }
+            return $result;
+          } else {
+            return ['content_type' => $resp->getHeaderLine('Content-Type'), 'body' => $resp->getBody()->getContents()];
+          }
         }
       } else {
         throw new \Exception($resp->getReasonPhrase(), $resp->getStatusCode());
@@ -52,5 +66,41 @@ trait HttpTrait
     } catch (GuzzleException $e) {
       throw new \Exception($e->getMessage(), $e->getCode());
     }
+  }
+
+  public function getClientIP()
+  {
+    return $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'];
+  }
+
+  /**
+   * @param $datas
+   * @return string
+   */
+  public function toXml($datas)
+  {
+    $xml = "<xml>";
+    foreach ($datas as $key => $val) {
+      if (is_numeric($val)) {
+        $xml .= "<" . $key . ">" . $val . "</" . $key . ">";
+      } else {
+        $xml .= "<" . $key . "><![CDATA[" . preg_replace("/[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]/", '', $val) . "]]></" . $key . ">";
+      }
+    }
+    $xml .= "</xml>";
+    return $xml;
+  }
+
+  /**
+   * 将xml转为array
+   * @param $xml
+   * @return mixed
+   */
+  public function fromXml($xml)
+  {
+    if (!$xml) return [];
+    // 禁止引用外部xml实体
+    libxml_disable_entity_loader(true);
+    return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
   }
 }

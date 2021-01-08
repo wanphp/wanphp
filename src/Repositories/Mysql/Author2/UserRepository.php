@@ -55,7 +55,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     }
 
     if ($admin['status']) {
-      $this->update(['lastlogintime' => time(), 'lastloginip' => $_SERVER['REMOTE_ADDR']], ['id' => $admin['id']]);
+      $this->update(['lastlogintime' => time(), 'lastloginip' => $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR']], ['id' => $admin['id']]);
       $user = new UserEntity();
       $user->setIdentifier('admin_' . $admin['id']);
       return $user;
