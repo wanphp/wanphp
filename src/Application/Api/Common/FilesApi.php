@@ -143,7 +143,10 @@ class FilesApi extends Api
 
         //文件已上传过
         $file = $this->files->get('id,url', ['md5' => $data['md5']]);
+        $uri = $this->request->getUri();
+        $host = $uri->getScheme() . '://' . $uri->getHost();
         if (isset($file['id'])) {
+          $file['url'] = $host . $file['url'];
           return $this->respondWithData($file);
         }
 
@@ -234,23 +237,24 @@ class FilesApi extends Api
           }
         }
         $id = $this->files->insert($data);
-        return $this->respondWithData(['id' => $id, 'type' => $data['type'], 'url' => $data['url']], 201);
+
+        return $this->respondWithData(['id' => $id, 'type' => $data['type'], 'url' => $host . $data['url']], 201);
         break;
       case 'PATCH':
         $data = $this->request->getParsedBody();
         $id = (int)$this->args['id'];
         if ($id > 0) {
           $num = $this->files->update($data, ['id' => $id]);
-          return $this->respondWithData(['up_num'=>$num],201);
+          return $this->respondWithData(['up_num' => $num], 201);
         } else {
-          return $this->respondWithError('缺少ID',422);
+          return $this->respondWithError('缺少ID', 422);
         }
         break;
       case 'DELETE':
         $id = (int)($this->args['id'] ?? 0);
         if ($id > 0) {
           $num = $this->files->delete(['id' => $id]);
-          return $this->respondWithData(['del_num'=>$num],204);
+          return $this->respondWithData(['del_num' => $num], 204);
         } else {
           return $this->respondWithError('缺少ID');
         }
