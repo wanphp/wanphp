@@ -6,24 +6,27 @@
  * Time: 15:48
  */
 
-namespace App\Application\Api\Manage;
+namespace App\Application\Api\Manage\Users;
 
 
 use App\Application\Api\Api;
 use App\Domain\DomainException\DomainException;
 use App\Domain\Weixin\UserInterface;
-use App\Domain\Weixin\UserRoleInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class UserApi
+ * @title 用户管理
+ * @route /api/manage/users
+ * @package App\Application\Api\Manage\Users
+ */
 class UserApi extends Api
 {
   private $user;
-  private $userRole;
 
-  public function __construct(UserInterface $user, UserRoleInterface $userRole)
+  public function __construct(UserInterface $user)
   {
     $this->user = $user;
-    $this->userRole = $userRole;
   }
 
   /**
@@ -99,7 +102,7 @@ class UserApi extends Api
    *   operationId="ListUsers",
    *   security={{"bearerAuth":{}}},
    *  @OA\Parameter(
-   *    name="pageSize",
+   *    name="size",
    *    in="query",
    *    description="每页返回数量",
    *    @OA\Schema(format="int64",type="integer",default=10)
@@ -126,7 +129,7 @@ class UserApi extends Api
    *       @OA\Schema(
    *         @OA\Property(property="res",example={
   "id": "",
-  "user": "用户",
+  "headimgurl": "用户头像","nickname":"用户昵称",
   "role": "用色",
   "name": "Name",
   "tel": "Tel"
@@ -150,38 +153,32 @@ class UserApi extends Api
       case 'GET':
         $id = $this->args['id'] ?? 0;
         if ($id > 0) {
-          $user = $this->user->get('*', ['id' => $id]);
+          $user = $this->user->get('id,nickname,headimgurl,name,tel,email,status,role_id', ['id' => $id]);
           return $this->respondWithData($user);
         }
 
-        $userRoles = $this->userRole->select('id,name', ['ORDER' => ['display_order' => 'ASC']]);
-        $roles = array_column($userRoles, 'name', 'id');
-
         $where = [];
-        if (!empty($_GET['keyword'])) {
-          $keyword = trim($_GET['keyword']);
+        $params = $this->request->getQueryParams();
+        if (!empty($params['keyword'])) {
+          $keyword = trim($params['keyword']);
           $where['OR'] = [
             'name[~]' => $keyword,
             'nickname[~]' => $keyword,
             'tel[~]' => $keyword
           ];
         }
-        $where['ORDER'] = ["id" => "DESC"];
-        $users = $this->user->select('id,nickname,headimgurl,name,tel,role_id', $where);
-
-        //格式化数据
-        $datas = [];
-        foreach ($users as $user) {
-          $datas[] = [
-            'id' => $user['id'],
-            'user' => '<img src="' . $user['headimgurl'] . '" class="img-thumbnail" style="padding:0;" width="30"/>&nbsp;' . $user['nickname'],
-            'role' => $roles[$user['role_id']] ?? '客户',
-            'name' => $user['name'],
-            'tel' => $user['tel']
-          ];
+        if (isset($params['page'])) {
+          $cur_page = $params['page'] > 0 ? $params['page'] : 1;
+          $pageSize = isset($params['size']) && $params['size'] > 0 ? $params['size'] : 10;
+          $where['LIMIT'] = [($cur_page - 1) * $pageSize, $pageSize];
+          if ($cur_page == 1) $total = $this->user->count('id', $where);
+        } else {
+          $where['LIMIT'] = 10;
         }
 
-        return $this->respondWithData(['users' => $datas, 'role' => $roles]);
+        $where['ORDER'] = ["id" => "DESC"];
+        $users = $this->user->select('id,nickname,headimgurl,name,tel,email,status,role_id', $where);
+        return $this->respondWithData(['users' => $users, 'total' => $total ?? null]);
         break;
       default:
         return $this->respondWithError('禁止访问', 403);

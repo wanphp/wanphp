@@ -30,7 +30,7 @@ class RouterApi extends Api
    * @return Response
    * @throws DomainException
    * @OA\Patch(
-   *  path="/api/router/{ID}",
+   *  path="/api/manage/router/{ID}",
    *  tags={"System"},
    *  summary="修改路由",
    *  operationId="editRouter",
@@ -69,7 +69,7 @@ class RouterApi extends Api
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Get(
-   *  path="/api/router",
+   *  path="/api/manage/router",
    *  tags={"System"},
    *  summary="系统路由",
    *  operationId="router",
@@ -88,6 +88,7 @@ class RouterApi extends Api
         break;
       case 'GET':
         $navigate = $this->navigate->select('*', ['ORDER' => ['display_order' => 'ASC']]);
+        $menus = [];
         foreach ($navigate as $item) {
           $menus[$item['id']] = $item;
         }
@@ -95,8 +96,8 @@ class RouterApi extends Api
         foreach ($routes as $action) {
           if ($action['nav_id'] > 0) $menus[$action['nav_id']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
         }
-
-        return $this->respondWithData(['menus' => $menus ?? [], 'actions' => $routes ?? []]);
+        $menus = array_merge($menus);
+        return $this->respondWithData(['menus' => $menus, 'routes' => $routes ?? []]);
         break;
       default:
         return $this->respondWithError('禁止访问', 403);

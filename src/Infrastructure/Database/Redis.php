@@ -30,7 +30,8 @@ class Redis
    */
   public function select(int $db): void
   {
-    $this->redis->select($db);
+    $this->db = $db;
+    $this->redis->select($this->db);
   }
 
   /**

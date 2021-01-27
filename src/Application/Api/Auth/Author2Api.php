@@ -43,14 +43,14 @@ abstract class Author2Api extends Api
    * @param Redis $redis
    * @throws \Exception
    */
-  public function __construct(ContainerInterface $container, Database $database, Redis $redis)
+  public function __construct(ContainerInterface $container)
   {
-    $this->database = $database;
-    $this->redis = $redis;
+    $this->database = $container->get(Database::class);;
+    $this->redis = new Redis($container->get('redis'));
     $settings = $container->get('settings');
 
     // 初始化存储库
-    $clientRepository = new ClientRepository($database);
+    $clientRepository = new ClientRepository($this->database);
     $scopeRepository = new ScopeRepository();
     $this->redis->select($settings['authRedis']);//选择库
     $accessTokenRepository = new AccessTokenRepository($this->redis);
@@ -123,7 +123,7 @@ abstract class Author2Api extends Api
       $refreshTokenRepository
     );
 
-    $grant->setRefreshTokenTTL(new \DateInterval('P1M')); // refresh tokens will expire after 1 month
+    $grant->setRefreshTokenTTL(new \DateInterval('PT2H')); //两个小时过期 refresh tokens will expire after 1 month P1M
 
     $this->server->enableGrantType(
       $grant,

@@ -15,7 +15,7 @@ use App\Entities\Weixin\UserEntity;
 use App\Domain\Weixin\UserInterface;
 use App\Repositories\Mysql\BaseRepository;
 
-class userRepository extends BaseRepository implements UserInterface
+class UserRepository extends BaseRepository implements UserInterface
 {
   public function __construct(Database $database)
   {

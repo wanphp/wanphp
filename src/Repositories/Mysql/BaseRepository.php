@@ -90,6 +90,14 @@ abstract class BaseRepository implements Repository
   /**
    * {@inheritdoc}
    */
+  public function count(string $columns = '*', array $where = null): int
+  {
+    return $this->db->count($this->tableName, $columns, $where);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function delete(array $where): int
   {
     $counts = $this->db->delete($this->tableName, $where)->rowCount();

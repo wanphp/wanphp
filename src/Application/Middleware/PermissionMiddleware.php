@@ -31,23 +31,8 @@ class PermissionMiddleware implements Middleware
   public function process(Request $request, RequestHandler $handler): Response
   {
     $client_id = $request->getAttribute('oauth_client_id');
-    $user_id = $request->getAttribute('oauth_user_id');//可能是admin_id,或uid
+    $role_id = $request->getAttribute('oauth_admin_role_id');
 
-    try {
-      if (is_numeric($user_id)) {
-        $admin = $this->admin->get('id,role_id', ['uid' => $user_id]);
-        $request->withAttribute('oauth_admin_id', $admin['uid']);
-      } else {
-        $user_id = ltrim($user_id, 'admin_');
-        $admin = $this->admin->get('uid,role_id', ['id' => $user_id]);
-        $request->withAttribute('oauth_admin_id', $user_id);
-        $request->withAttribute('oauth_user_id', $admin['uid']);
-      }
-    } catch (\App\Domain\DomainException\MedooException $e) {
-      return (new OAuthServerException($e->getMessage(), 400, 'BadRequest'))->generateHttpResponse(new \Slim\Psr7\Response());
-    }
-
-    $role_id = $admin['role_id'] ?? 0;
     if ($client_id == 'sysmanage' && $role_id) {//已登录，验证权限
       $this->persistence->setPermission($role_id);
       $routeContext = RouteContext::fromRequest($request);
@@ -55,10 +40,10 @@ class PermissionMiddleware implements Middleware
       if ($this->persistence->hasRestricted($routeContext->getRoute()->getCallable())) {
         return (new OAuthServerException('未获得授权！', 401, 'Unauthorized'))->generateHttpResponse(new \Slim\Psr7\Response());
       }
-      $request = $request->withAttribute('sidebar', $this->persistence->getSidebar());
+      //$request = $request->withAttribute('sidebar', $this->persistence->getSidebar());
       return $handler->handle($request);
     } else {
-      return (new OAuthServerException('未知用户请求！', 400, 'BadRequest'))->generateHttpResponse(new \Slim\Psr7\Response());
+      return (new OAuthServerException('用户未获得授权！', 401, 'BadRequest'))->generateHttpResponse(new \Slim\Psr7\Response());
     }
   }
 

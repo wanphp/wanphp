@@ -16,7 +16,7 @@ namespace App\Application\Api;
  * )
  * @OA\Server(
  *   description="OpenApi host",
- *   url="https://www.wanphp.com"
+ *   url="https://users.ztnews.net"
  * )
  */
 

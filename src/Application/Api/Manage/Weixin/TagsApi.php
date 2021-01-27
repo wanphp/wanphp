@@ -14,6 +14,12 @@ use App\Infrastructure\Database\Redis;
 use App\Infrastructure\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class TagsApi
+ * @title 用户标签
+ * @route /api/manage/weixin/tag
+ * @package App\Application\Api\Manage\Weixin
+ */
 class TagsApi extends Api
 {
   private $weChatBase;
@@ -138,7 +144,7 @@ class TagsApi extends Api
         $userTags = $this->weChatBase->getTags();
         return $this->respondWithData([
           'tags' => $userTags['tags'] ?? [],
-          'total' => $_SESSION['wxuser_total'],
+          'total' => $user_total,
         ]);
         break;
       default:

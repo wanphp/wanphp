@@ -54,7 +54,7 @@ class AdminEntity implements \JsonSerializable
    */
   private $name;
   /**
-   * @DBType({"type":"varchar(20) NOT NULL DEFAULT ''"})
+   * @DBType({"key": "UNI","type":"varchar(20) NULL DEFAULT NULL"})
    * @OA\Property(description="电话")
    * @var string
    */

@@ -6,21 +6,30 @@
  * Time: 15:08
  */
 
-namespace App\Application\Api\Manage;
+namespace App\Application\Api\Manage\Admin;
 
 
 use App\Application\Api\Api;
 use App\Domain\Admin\RoleInterface;
+use App\Domain\Common\RouterInterface;
 use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class RoleApi
+ * @title 管理员角色
+ * @route /api/manage/admin/role
+ * @package App\Application\Api\Manage
+ */
 class RoleApi extends Api
 {
   private $role;
+  private $router;
 
-  public function __construct(RoleInterface $role)
+  public function __construct(RoleInterface $role, RouterInterface $router)
   {
     $this->role = $role;
+    $this->router = $router;
   }
 
   /**
@@ -142,7 +151,6 @@ class RoleApi extends Api
     switch ($this->request->getMethod()) {
       case  'POST';
         $data = $this->request->getParsedBody();
-        $data['client_secret'] = md5(uniqid(rand(), true));
         $id = $this->role->insert($data);
         return $this->respondWithData(['id' => $id], 201);
         break;
@@ -156,7 +164,9 @@ class RoleApi extends Api
         return $this->respondWithData(['del_num' => $delnum], 204);
         break;
       case 'GET';
-        return $this->respondWithData($this->role->select('*'));
+        $router = $this->router->select('id,name', ['ORDER' => ['display_order' => 'ASC']]);
+        $roles = $this->role->select('*');
+        return $this->respondWithData(['roles' => $roles, 'router' => $router]);
         break;
       default:
         return $this->respondWithError('禁止访问', 403);

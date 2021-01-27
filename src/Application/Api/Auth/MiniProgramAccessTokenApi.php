@@ -10,8 +10,6 @@ namespace App\Application\Api\Auth;
 
 
 use App\Domain\Weixin\MiniProgramInterface;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Database\Redis;
 use App\Domain\DomainException\DomainException;
 use App\Infrastructure\Weixin\MiniProgram;
 use League\OAuth2\Server\Exception\OAuthServerException;
@@ -24,9 +22,9 @@ class MiniProgramAccessTokenApi extends Author2Api
   private $miniProgram;
   private $miniProgramUser;
 
-  public function __construct(MiniProgramInterface $miniProgramUser, MiniProgram $miniProgram, ContainerInterface $container, Database $database, Redis $redis)
+  public function __construct(MiniProgramInterface $miniProgramUser, MiniProgram $miniProgram, ContainerInterface $container)
   {
-    parent::__construct($container, $database, $redis);
+    parent::__construct($container);
     $this->miniProgram = $miniProgram;
     $this->miniProgramUser = $miniProgramUser;
   }

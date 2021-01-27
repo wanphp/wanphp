@@ -33,23 +33,21 @@ return function (App $app) {
     //系统管理
     $group->group('/manage', function (Group $g) {
       $g->get('/syncrouter', \App\Application\Api\Common\SyncRouterApi::class);
-      $g->map(['GET', 'PATCH'], '/router', \App\Application\Api\Common\RouterApi::class);
-      $g->map(['PUT', 'POST', 'DELETE'], '/navigate[/{id:[0-9]+}]', \App\Application\Api\Common\NavigateApi::class);
+      $g->map(['GET', 'PATCH'], '/router[/{id:[0-9]+}]', \App\Application\Api\Common\RouterApi::class);
+      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/navigate[/{id:[0-9]+}]', \App\Application\Api\Common\NavigateApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/clients[/{id:[0-9]+}]', \App\Application\Api\Manage\ClientsApi::class);
-      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin[/{id:[0-9]+}]', \App\Application\Api\Manage\AdminApi::class);
-      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin/role[/{id:[0-9]+}]', \App\Application\Api\Manage\RoleApi::class);
-      $g->map(['GET', 'PATCH', 'POST'], '/users[/{id:[0-9]+}]', \App\Application\Api\Manage\UserApi::class);
-      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/user/role[/{id:[0-9]+}]', \App\Application\Api\Manage\UserRoleApi::class);
+      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\AdminApi::class);
+      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin/role[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\RoleApi::class);
+      $g->map(['GET', 'PATCH', 'POST'], '/users[/{id:[0-9]+}]', \App\Application\Api\Manage\Users\UserApi::class);
+      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/user/role[/{id:[0-9]+}]', \App\Application\Api\Manage\Users\UserRoleApi::class);
+      $g->get('/admin/binduser/{uid:[0-9]+}',\App\Application\Api\Manage\Admin\BindUserApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/weixin/tag[/{id:[0-9]+}]', \App\Application\Api\Manage\Weixin\TagsApi::class);
       $g->map(['GET', 'POST', 'DELETE'], '/weixin/tplmsg[/{tplid}]', \App\Application\Api\Manage\Weixin\TemplateMessageApi::class);
     })->addMiddleware(new PermissionMiddleware(
       $app->getContainer()->get(\App\Repositories\Mysql\Router\PersistenceRepository::class),
       $app->getContainer()->get(\App\Repositories\Mysql\Admin\AdminRepository::class)
     ));
-  })->addMiddleware(new \App\Application\Middleware\OAuthServerMiddleware(
-    $app->getContainer(),
-    $app->getContainer()->get(\App\Infrastructure\Database\Redis::class))
-  );
+  })->addMiddleware(new \App\Application\Middleware\OAuthServerMiddleware($app->getContainer()));
 
 
   $app->group('/auth', function (Group $group) {

@@ -49,6 +49,13 @@ interface BaseInterface
   public function get(string $columns = '*', array $where = null);
 
   /**
+   * @param string $columns
+   * @param array|null $where
+   * @return int
+   */
+  public function count(string $columns = '*', array $where = null):int;
+
+  /**
    * 自定义删除
    * @param array $where
    * @return int 删除数量

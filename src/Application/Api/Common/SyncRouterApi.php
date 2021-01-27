@@ -27,7 +27,7 @@ class SyncRouterApi extends Api
    * @return Response
    * @throws DomainException
    * @OA\Get(
-   *  path="/api/syncrouter",
+   *  path="/api/manage/syncrouter",
    *  tags={"System"},
    *  summary="同步路由",
    *  operationId="SyncNavigate",
@@ -45,7 +45,7 @@ class SyncRouterApi extends Api
         $routes = array_column($routes, 'callable', 'id');
         //现有操作
         $current_actions = [];
-        $files = glob(__DIR__ . '/../Manage/*.php');
+        $files = array_merge(glob(__DIR__ . '/../Manage/*.php'), glob(__DIR__ . '/../Manage/*/*.php'));
         $stack = [];
 
         //系统控制器
@@ -55,7 +55,7 @@ class SyncRouterApi extends Api
             strpos($file, '/Home/') ||
             strpos($file, '/Common/')) continue;
           if (is_file($file)) {
-            $action = str_replace(['var/www/src', '../', '.php', '/'], ['App', '', '', '\\'], $file);
+            $action = str_replace([realpath('../') . '/src', '.php', '/'], ['App', '', '\\'], $file);
             $rc = new \ReflectionClass($action); //建立实体类的反射类
 
             $docblock = $rc->getDocComment();
@@ -89,7 +89,12 @@ class SyncRouterApi extends Api
           $this->router->insert($stack);
         }
 
-        return $this->respondWithData('已更新');
+        $routes = $this->router->select('id,nav_id,name,route', ['ORDER' => ['display_order' => 'ASC']]);
+        foreach ($routes as $action) {
+          if ($action['nav_id'] > 0) $menus[$action['nav_id']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
+        }
+
+        return $this->respondWithData(['routes' => $routes ?? []]);
         break;
       default:
         return $this->respondWithError('禁止访问', 403);

@@ -9,6 +9,7 @@
 namespace App\Application\Middleware;
 
 
+use App\Domain\Admin\AdminInterface;
 use App\Infrastructure\Database\Redis;
 use App\Repositories\Mysql\Author2\AccessTokenRepository;
 use Exception;
@@ -24,12 +25,14 @@ use Slim\Psr7\Response;
 class OAuthServerMiddleware implements MiddlewareInterface
 {
   private $redis;
+  private $admin;
 
-  public function __construct(ContainerInterface $container, Redis $redis)
+  public function __construct(ContainerInterface $container)
   {
     $settings = $container->get('settings');
-    $this->redis = $redis;
+    $this->redis = new Redis($container->get('redis'));
     $this->redis->select($settings['authRedis']);//选择库
+    $this->admin = $container->get(AdminInterface::class);
   }
 
   public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -47,6 +50,26 @@ class OAuthServerMiddleware implements MiddlewareInterface
     );
     try {
       $request = $server->validateAuthenticatedRequest($request);
+      $client_id = $request->getAttribute('oauth_client_id');
+      $user_id = $request->getAttribute('oauth_user_id');
+      //系统管理
+      if ($client_id == 'sysmanage'){
+        try {
+          if (is_numeric($user_id)) { //微信扫码登录
+            $admin = $this->admin->get('id,role_id', ['uid' => $user_id]);
+            $request = $request->withAttribute('oauth_admin_id', $admin['uid']);
+          } else { //账号密码登录
+            $user_id = ltrim($user_id, 'admin_');
+            $admin = $this->admin->get('uid,role_id', ['id' => $user_id]);
+            $request = $request->withAttribute('oauth_user_id', $admin['uid']);
+            $request = $request->withAttribute('oauth_admin_id', $user_id);
+          }
+          $request = $request->withAttribute('oauth_admin_role_id', $admin['role_id']);
+        } catch (\App\Domain\DomainException\MedooException $e) {
+          return (new OAuthServerException($e->getMessage(), 400, 'BadRequest'))->generateHttpResponse(new \Slim\Psr7\Response());
+        }
+      }
+
       return $handler->handle($request);
     } catch (OAuthServerException $exception) {
       return $exception->generateHttpResponse(new Response());

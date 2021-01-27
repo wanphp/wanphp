@@ -13,8 +13,6 @@ use App\Domain\DomainException\DomainException;
 use App\Domain\Weixin\PublicInterface;
 use App\Domain\Weixin\UserInterface;
 use App\Entities\Author2\UserEntity;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Database\Redis;
 use App\Infrastructure\Weixin\WeChatBase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -26,9 +24,9 @@ class AuthorizeApi extends Author2Api
   private $user;
   private $publicUser;//用户关注公众号信息
 
-  public function __construct(UserInterface $user, PublicInterface $publicUser, WeChatBase $weChatBase, ContainerInterface $container, Database $database, Redis $redis)
+  public function __construct(UserInterface $user, PublicInterface $publicUser, WeChatBase $weChatBase, ContainerInterface $container)
   {
-    parent::__construct($container, $database, $redis);
+    parent::__construct($container);
     $this->weChatBase = $weChatBase;
     $this->user = $user;
     $this->publicUser = $publicUser;

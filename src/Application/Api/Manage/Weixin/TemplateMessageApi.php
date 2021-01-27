@@ -14,6 +14,12 @@ use App\Domain\Weixin\MsgTemplateInterface;
 use App\Infrastructure\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class TemplateMessageApi
+ * @title 消息模板
+ * @route /api/manage/weixin/tplmsg
+ * @package App\Application\Api\Manage\Weixin
+ */
 class TemplateMessageApi extends Api
 {
   private $weChatBase;
@@ -123,6 +129,7 @@ class TemplateMessageApi extends Api
 
         if (count($templates) > 0) foreach ($templates as $template) {
           $template['status'] = 1;
+          $template['content'] = nl2br($template['content']);
           $list[] = $template;
         }
 

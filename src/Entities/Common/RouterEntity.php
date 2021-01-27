@@ -43,7 +43,7 @@ class RouterEntity implements JsonSerializable
    */
   private $name;
   /**
-   * @DBType({"key": "UNI","type":"varchar(20) NOT NULL DEFAULT ''"})
+   * @DBType({"key": "UNI","type":"varchar(30) NOT NULL DEFAULT ''"})
    * @OA\Property(description="路由")
    * @var string
    */

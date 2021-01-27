@@ -30,8 +30,8 @@ class InitSysApi extends Api
    * @return Response
    * @throws DomainException
    * @OA\Post(
-   *  path="/api/initSys",
-   *  tags={"System"},
+   *  path="/auth/initSys",
+   *  tags={"Auth"},
    *  summary="初始化系统",
    *  operationId="initSys",
    *  @OA\RequestBody(

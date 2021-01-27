@@ -9,19 +9,16 @@
 namespace App\Application\Api\Auth;
 
 
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Database\Redis;
 use App\Domain\DomainException\DomainException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
-use Slim\Exception\HttpNotFoundException;
 use Slim\Psr7\Stream;
 
 class RefreshAccessTokenApi extends Author2Api
 {
-  public function __construct(ContainerInterface $container,Database $database, Redis $redis)
+  public function __construct(ContainerInterface $container)
   {
-    parent::__construct($container,$database, $redis);
+    parent::__construct($container);
   }
 
   /**

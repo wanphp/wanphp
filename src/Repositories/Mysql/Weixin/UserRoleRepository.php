@@ -14,7 +14,7 @@ use App\Domain\Weixin\UserRoleInterface;
 use App\Entities\Weixin\UserRoleEntity;
 use App\Repositories\Mysql\BaseRepository;
 
-class userRoleRepository extends BaseRepository implements UserRoleInterface
+class UserRoleRepository extends BaseRepository implements UserRoleInterface
 {
   public function __construct(Database $database)
   {

@@ -14,6 +14,12 @@ use App\Domain\Common\ClientsInterface;
 use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class ClientsApi
+ * @title 客户端管理
+ * @route /api/manage/clients
+ * @package App\Application\Api\Manage
+ */
 class ClientsApi extends Api
 {
   private $clients;
@@ -143,8 +149,8 @@ class ClientsApi extends Api
       case  'POST';
         $data = $this->request->getParsedBody();
         $data['client_secret'] = md5(uniqid(rand(), true));
-        $id = $this->clients->insert($data);
-        return $this->respondWithData(['id' => $id], 201);
+        $data['id'] = $this->clients->insert($data);
+        return $this->respondWithData($data, 201);
         break;
       case  'PUT';
         $data = $this->request->getParsedBody();

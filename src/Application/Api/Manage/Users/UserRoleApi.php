@@ -3,46 +3,52 @@
  * Created by PhpStorm.
  * User: 火子 QQ：284503866.
  * Date: 2020/12/28
- * Time: 14:58
+ * Time: 16:25
  */
 
-namespace App\Application\Api\Manage;
+namespace App\Application\Api\Manage\Users;
 
 
 use App\Application\Api\Api;
-use App\Domain\Admin\AdminInterface;
 use App\Domain\DomainException\DomainException;
+use App\Domain\Weixin\UserRoleInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
-class AdminApi extends Api
+/**
+ * Class UserRoleApi
+ * @title 用户角色
+ * @route /api/manage/user/role
+ * @package App\Application\Api\Manage\Users
+ */
+class UserRoleApi extends Api
 {
-  private $admin;
+  private $userRole;
 
-  public function __construct(AdminInterface $admin)
+  public function __construct(UserRoleInterface $userRole)
   {
-    $this->admin = $admin;
+    $this->userRole = $userRole;
   }
 
   /**
    * @return Response
    * @throws DomainException
    * @OA\Post(
-   *  path="/api/manage/admin",
-   *  tags={"Admin"},
-   *  summary="添加管理员",
-   *  operationId="addAdmin",
+   *  path="/api/manage/user/role",
+   *  tags={"UserRole"},
+   *  summary="添加用户角色",
+   *  operationId="addUserRole",
    *  security={{"bearerAuth":{}}},
    *   @OA\RequestBody(
-   *     description="管理员数据",
+   *     description="用户角色数据",
    *     required=true,
    *     @OA\MediaType(
    *       mediaType="application/json",
-   *       @OA\Schema(ref="#/components/schemas/AdminEntity")
+   *       @OA\Schema(ref="#/components/schemas/UserRoleEntity")
    *     )
    *   ),
    *  @OA\Response(
    *    response="201",
-   *    description="请求成功",
+   *    description="添加成功",
    *    @OA\JsonContent(
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
@@ -55,15 +61,15 @@ class AdminApi extends Api
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Put(
-   *  path="/api/manage/admin/{ID}",
-   *  tags={"Admin"},
-   *  summary="修改管理员",
-   *  operationId="editAdmin",
+   *  path="/api/manage/user/role/{ID}",
+   *  tags={"UserRole"},
+   *  summary="修改用户角色",
+   *  operationId="editUserRole",
    *  security={{"bearerAuth":{}}},
    *   @OA\Parameter(
    *     name="ID",
    *     in="path",
-   *     description="管理员ID",
+   *     description="用户角色ID",
    *     required=true,
    *     @OA\Schema(format="int64",type="integer")
    *   ),
@@ -72,7 +78,7 @@ class AdminApi extends Api
    *     required=true,
    *     @OA\MediaType(
    *       mediaType="application/json",
-   *       @OA\Schema(ref="#/components/schemas/AdminEntity")
+   *       @OA\Schema(ref="#/components/schemas/UserRoleEntity")
    *     )
    *   ),
    *  @OA\Response(
@@ -90,15 +96,15 @@ class AdminApi extends Api
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Delete(
-   *  path="/api/manage/admin/{ID}",
-   *  tags={"Admin"},
-   *  summary="删除管理员",
-   *  operationId="delAdmin",
+   *  path="/api/manage/user/role/{ID}",
+   *  tags={"UserRole"},
+   *  summary="删除用户角色",
+   *  operationId="delUserRole",
    *  security={{"bearerAuth":{}}},
    *  @OA\Parameter(
    *    name="ID",
    *    in="path",
-   *    description="管理员ID",
+   *    description="用户角色ID",
    *    required=true,
    *    @OA\Schema(format="int64",type="integer")
    *  ),
@@ -117,10 +123,10 @@ class AdminApi extends Api
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Get(
-   *  path="/api/manage/admin",
-   *  tags={"Admin"},
-   *  summary="管理员",
-   *  operationId="listAdmin",
+   *  path="/api/manage/user/role",
+   *  tags={"UserRole"},
+   *  summary="用户角色",
+   *  operationId="listUserRole",
    *  security={{"bearerAuth":{}}},
    *  @OA\Response(
    *    response="200",
@@ -129,7 +135,7 @@ class AdminApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="res",type="array",@OA\Items(ref="#/components/schemas/AdminEntity"))
+   *         @OA\Property(property="res",type="array",@OA\Items(ref="#/components/schemas/UserRoleEntity"))
    *       )
    *      }
    *    )
@@ -142,21 +148,20 @@ class AdminApi extends Api
     switch ($this->request->getMethod()) {
       case  'POST';
         $data = $this->request->getParsedBody();
-        $data['client_secret'] = md5(uniqid(rand(), true));
-        $id = $this->admin->insert($data);
-        return $this->respondWithData(['id' => $id], 201);
+        $data['id'] = $this->userRole->insert($data);
+        return $this->respondWithData($data, 201);
         break;
       case  'PUT';
         $data = $this->request->getParsedBody();
-        $num = $this->admin->update($data, ['id' => $this->args['id']]);
+        $num = $this->userRole->update($data, ['id' => $this->args['id']]);
         return $this->respondWithData(['up_num' => $num], 201);
         break;
       case  'DELETE';
-        $delnum = $this->admin->delete(['id' => $this->args['id']]);
+        $delnum = $this->userRole->delete(['id' => $this->args['id']]);
         return $this->respondWithData(['del_num' => $delnum], 204);
         break;
       case 'GET';
-        return $this->respondWithData($this->admin->select('*'));
+        return $this->respondWithData($this->userRole->select('*'));
         break;
       default:
         return $this->respondWithError('禁止访问', 403);

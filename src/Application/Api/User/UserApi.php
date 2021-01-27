@@ -102,8 +102,8 @@ class UserApi extends Api
         return $this->respondWithData(['up_num' => $num], 201);
         break;
       case 'GET':
-        //id,openid,nickname,headimgurl,sex,role_id,
-        $user = $this->user->get('name,tel,address,integral,cash_back,money', ['id' => $uid]);
+        //id,openid,sex,role_id,cash_back,money,
+        $user = $this->user->get('nickname,headimgurl,name,tel,address,integral', ['id' => $uid]);
         if ($user) return $this->respondWithData($user);
         else return $this->respondWithError('用户不存在');
         break;

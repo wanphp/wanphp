@@ -10,17 +10,15 @@ namespace App\Application\Api\Auth;
 
 
 use App\Domain\DomainException\DomainException;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Database\Redis;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
 
 class AccessTokenApi extends Author2Api
 {
-  public function __construct(ContainerInterface $container, Database $database, Redis $redis)
+  public function __construct(ContainerInterface $container)
   {
-    parent::__construct($container, $database, $redis);
+    parent::__construct($container);
   }
 
   /**

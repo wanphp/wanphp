@@ -12,22 +12,25 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Common\NavigateInterface;
 use App\Domain\DomainException\DomainException;
+use App\Repositories\Mysql\Router\PersistenceRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class NavigateApi extends Api
 {
   private $navigate;
+  private $persistence;
 
-  public function __construct(NavigateInterface $navigate)
+  public function __construct(NavigateInterface $navigate, PersistenceRepository $persistence)
   {
     $this->navigate = $navigate;
+    $this->persistence = $persistence;
   }
 
   /**
    * @return Response
    * @throws DomainException
    * @OA\Post(
-   *  path="/api/navigate",
+   *  path="/api/manage/navigate",
    *  tags={"System"},
    *  summary="添加导航",
    *  operationId="addNavigate",
@@ -55,7 +58,7 @@ class NavigateApi extends Api
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Put(
-   *  path="/api/navigate/{ID}",
+   *  path="/api/manage/navigate/{ID}",
    *  tags={"System"},
    *  summary="修改导航",
    *  operationId="editNavigate",
@@ -90,7 +93,7 @@ class NavigateApi extends Api
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Delete(
-   *  path="/api/navigate/{ID}",
+   *  path="/api/manage/navigate/{ID}",
    *  tags={"System"},
    *  summary="删除导航",
    *  operationId="delNavigate",
@@ -116,6 +119,15 @@ class NavigateApi extends Api
    *  ),
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
+   * @OA\Get(
+   *  path="/api/manage/navigate",
+   *  tags={"System"},
+   *  summary="获取导航菜单",
+   *  operationId="router",
+   *  security={{"bearerAuth":{}}},
+   *  @OA\Response(response="200",description="请求成功",@OA\JsonContent(ref="#/components/schemas/Success")),
+   *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
+   * )
    */
   protected function action(): Response
   {
@@ -135,7 +147,7 @@ class NavigateApi extends Api
         return $this->respondWithData(['del_num' => $delnum], 204);
         break;
       default:
-        return $this->respondWithError('禁止访问', 403);
+        return $this->respondWithData(array_merge($this->persistence->getSidebar()));
     }
   }
 }
