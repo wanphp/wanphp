@@ -529,37 +529,6 @@ class WeChatBase
   }
 
   /**
-   * @param $datas
-   * @return string
-   */
-  public function toXml($datas)
-  {
-    $xml = "<xml>";
-    foreach ($datas as $key => $val) {
-      if (is_numeric($val)) {
-        $xml .= "<" . $key . ">" . $val . "</" . $key . ">";
-      } else {
-        $xml .= "<" . $key . "><![CDATA[" . preg_replace("/[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]/", '', $val) . "]]></" . $key . ">";
-      }
-    }
-    $xml .= "</xml>";
-    return $xml;
-  }
-
-  /**
-   * 将xml转为array
-   * @param $xml
-   * @return mixed
-   */
-  public function fromXml($xml)
-  {
-    if (!$xml) return [];
-    // 禁止引用外部xml实体
-    libxml_disable_entity_loader(true);
-    return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
-  }
-
-  /**
    * 设置回复消息
    * Examle: $obj->text('hello')->reply();
    * @param string $text

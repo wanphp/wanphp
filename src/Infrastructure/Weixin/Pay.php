@@ -11,11 +11,10 @@ namespace App\Infrastructure\Weixin;
 
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Exception\RequestException;
 
 class Pay
 {
+  use HttpTrait;
   private $appid;//绑定支付的APPID
   private $mchid;//商户号
   private $appSecret;//商户支付密钥
@@ -54,7 +53,7 @@ class Pay
     $data['mch_id'] = $this->mchid;
     if (!isset($data['mch_billno'])) $data['mch_billno'] = $this->mchid . date('YmdHis') . rand(1000, 9999);
     $data['wxappid'] = $this->appid;
-    $data['client_ip'] = $_SERVER['REMOTE_ADDR'];
+    $data['client_ip'] = $this->getClientIP();
     $data['sign'] = $this->makeSign($data);
     $xmldata = $this->toXml($data);
     return $this->httpPost($apiUrl, $xmldata, true);
@@ -187,7 +186,7 @@ class Pay
       'notify_url' => $this->notifyUrl,  // 异步通知地址"{$protocol}{$_SERVER['HTTP_HOST']}/paynotice.php"
       'openid' => $openid,
       'out_trade_no' => $order_no,
-      'spbill_create_ip' => $_SERVER['REMOTE_ADDR'],
+      'spbill_create_ip' => $this->getClientIP(),
       'total_fee' => $total_fee * 100, // 价格:单位分
       'trade_type' => 'JSAPI',
     ];
@@ -351,40 +350,8 @@ class Pay
   }
 
   /**
-   * 输出xml字符
-   **/
-  public function toXml($values)
-  {
-
-    $xml = "<xml>";
-    foreach ($values as $key => $val) {
-      if (is_numeric($val)) {
-        $xml .= "<" . $key . ">" . $val . "</" . $key . ">";
-      } else {
-        $xml .= "<" . $key . "><![CDATA[" . $val . "]]></" . $key . ">";
-      }
-    }
-    $xml .= "</xml>";
-    return $xml;
-  }
-
-  /**
-   * 将xml转为array
-   * @param string $xml
-   */
-  public function fromXml($xml)
-  {
-    if (!$xml) return [];
-    //将XML转为array
-    //禁止引用外部xml实体
-    libxml_disable_entity_loader(true);
-    $values = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
-    return $values;
-  }
-
-  /**
    * @param string $url
-   * @param string$xmlstr
+   * @param string $xmlstr
    * @param bool $cert
    * @return array|mixed
    * @throws \Exception
@@ -392,42 +359,14 @@ class Pay
   private function httpPost(string $url, string $xmlstr, $cert = false)
   {
     $client = new Client(['base_uri' => 'https://api.mch.weixin.qq.com/pay/']);
-    try {
-      $options = [
-        'body' => $xmlstr,
-        'headers' => ['Accept' => 'text/xml']
-      ];
-      if ($cert == true) {
-        $options['cert'] = $this->sslCertPath;
-        $options['ssl_key'] = $this->sslKeyPath;
-      }
-      $resp = $client->request('POST', $url, $options);
-
-      if ($resp->getStatusCode() == 200) {
-        $result = $this->fromXml($resp->getBody()->getContents());
-
-        // 请求失败
-        if ($result['return_code'] === 'FAIL') {
-          throw new \Exception('FAIL - ' . $result['return_msg'], 400);
-        }
-
-        if ($result['result_code'] === 'FAIL') {
-          throw new \Exception($result['err_code'] . ' - ' . $result['err_code_des'], 400);
-        }
-
-        return $result;
-      } else {
-        throw new \Exception($resp->getReasonPhrase(), $resp->getStatusCode());
-      }
-    } catch (RequestException $e) {
-      $message = $e->getMessage();
-      if ($e->hasResponse()) {
-        $message .= "\n" . $e->getResponse()->getStatusCode() . ' ' . $e->getResponse()->getReasonPhrase();
-        $message .= "\n" . $e->getResponse()->getBody();
-      }
-      throw new \Exception($message);
-    } catch (GuzzleException $e) {
-      throw new \Exception($e->getMessage(), $e->getCode());
+    $options = [
+      'body' => $xmlstr,
+      'headers' => ['Accept' => 'text/xml']
+    ];
+    if ($cert == true) {
+      $options['cert'] = $this->sslCertPath;
+      $options['ssl_key'] = $this->sslKeyPath;
     }
+    return $this->request($client, 'POST', $url, $options);
   }
 }
