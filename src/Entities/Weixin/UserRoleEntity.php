@@ -41,5 +41,5 @@ class UserRoleEntity implements \JsonSerializable
    * @OA\Property(description="显示排序")
    * @var int
    */
-  private $display_order;
+  private $sortOrder;
 }

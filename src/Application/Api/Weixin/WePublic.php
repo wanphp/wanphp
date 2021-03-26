@@ -14,29 +14,35 @@ use App\Domain\Weixin\PublicInterface;
 use App\Domain\Weixin\UserInterface;
 use App\Infrastructure\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
 
 class WePublic extends Api
 {
   private $weChatBase;
   private $user;
   private $public;
+  private $logger;
 
-  public function __construct(WeChatBase $weChatBase, UserInterface $user, PublicInterface $public)
+  public function __construct(WeChatBase $weChatBase, UserInterface $user, PublicInterface $public, LoggerInterface $logger)
   {
     $this->weChatBase = $weChatBase;
     $this->user = $user;
     $this->public = $public;
+    $this->logger = $logger;
   }
 
   protected function action(): Response
   {
+    $this->logger->info($this->weChatBase->valid() . 'weixin');
     if ($this->weChatBase->valid() === true) {
       $openid = $this->weChatBase->getRev()->getRevFrom();//获取每个微信用户的openid
       $time = $this->weChatBase->getRev()->getRevCtime();//获取消息发送时间
       $msgid = $this->weChatBase->getRev()->getRevID();//获取消息ID
       $type = $this->weChatBase->getRev()->getRevType();//获取消息类型
+      $this->logger->info($type);
       $text = $this->weChatBase->getRev()->getRevContent();//获取消息内容
       $eventarr = $this->weChatBase->getRev()->getRevEvent();//获取接收事件推送
+      $this->logger->info($type, $eventarr);
       $event = $eventarr['event'] ?? '';//获得事件类型
       $eventkey = $eventarr['key'] ?? '';//获取Key值
       //不是事件消息，更新最后操作时间
@@ -59,6 +65,7 @@ class WePublic extends Api
           if ($event == 'subscribe') {//关注
             //保存用户信息
             $userinfo = $this->weChatBase->getUserInfo($openid);
+            $this->logger->info('subscribe', $userinfo);
             if (!is_array($userinfo)) $userinfo = [];
             if (isset($userinfo['groupid'])) unset($userinfo['groupid']);
             if (is_array($userinfo['tagid_list'])) $userinfo['tagid_list'] = join(',', $userinfo['tagid_list']);
@@ -74,6 +81,7 @@ class WePublic extends Api
               //更新公众号信息
               $this->public->update([
                 'subscribe' => 1,
+                'tagid_list[JSON]' => $userinfo['tagid_list'],
                 'subscribe_time' => $userinfo['subscribe_time'],
                 'unsubscribe_time' => 0,
                 'subscribe_scene' => $userinfo['subscribe_scene'],
@@ -111,6 +119,7 @@ class WePublic extends Api
                 'openid' => $openid,
                 'parent_id' => $userinfo['qr_scene'],
                 'subscribe' => 1,
+                'tagid_list[JSON]' => $userinfo['tagid_list'],
                 'subscribe_time' => $userinfo['subscribe_time'],
                 'subscribe_scene' => $userinfo['subscribe_scene'],
                 'lastop_time' => $time

@@ -112,7 +112,7 @@ class AdminApi extends Api
    *    @OA\Schema(format="int64",type="integer")
    *  ),
    *  @OA\Response(
-   *    response="204",
+   *    response="200",
    *    description="删除成功",
    *    @OA\JsonContent(
    *      allOf={
@@ -168,7 +168,7 @@ class AdminApi extends Api
         break;
       case  'DELETE';
         $delnum = $this->admin->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 204);
+        return $this->respondWithData(['del_num' => $delnum], 200);
         break;
       case 'GET';
         $role_id = $this->request->getAttribute('oauth_admin_role_id');

@@ -126,7 +126,7 @@ class Pay
    * @param $values
    * @return string
    */
-  private function makeSign($values)
+  public function makeSign($values)
   {
     //签名步骤一：按字典序排序参数
     ksort($values);
@@ -168,7 +168,7 @@ class Pay
    * @return array|bool
    * @throws \Exception
    */
-  public function unifiedorder($order_no, $openid, $total_fee, $body = '')
+  public function unifiedorder($order_no, $openid, $total_fee, $body = '', $attach = '', $trade_type = 'JSAPI', $scene_info = '')
   {
     // 当前时间
     $time = time();
@@ -179,23 +179,30 @@ class Pay
     $body = empty($body) ? $order_no : $body;
     $params = [
       'appid' => $this->appid,
-      'attach' => 'wp',
+      'attach' => $attach,
       'body' => $body,
       'mch_id' => $this->mchid,
       'nonce_str' => $nonceStr,
       'notify_url' => $this->notifyUrl,  // 异步通知地址"{$protocol}{$_SERVER['HTTP_HOST']}/paynotice.php"
-      'openid' => $openid,
       'out_trade_no' => $order_no,
       'spbill_create_ip' => $this->getClientIP(),
-      'total_fee' => $total_fee * 100, // 价格:单位分
-      'trade_type' => 'JSAPI',
+      'total_fee' => $total_fee, // 价格:单位分
+      'trade_type' => $trade_type // JSAPI -JSAPI支付,NATIVE -Native支付,APP -APP支付
     ];
+    if ($trade_type == 'JSAPI') $params['openid'] = $openid;
+    if ($trade_type == 'MWEB') { //H5支付
+      $params['scene_info'] = $scene_info; //'{"h5_info": {"type":"Wap","wap_url": "https://pay.qq.com","wap_name": "腾讯充值"}}';
+    }
 
     // 生成签名
     $params['sign'] = $this->makeSign($params);
     $result = $this->httpPost('unifiedorder', $this->toXml($params));
-    // 生成 nonce_str 供前端使用
-    return $this->makePaySign($nonceStr, $result['prepay_id'], $time);
+    if ($trade_type == 'JSAPI') {
+      // 生成 nonce_str 供前端使用
+      return $this->makePaySign($nonceStr, $result['prepay_id'], $time);
+    } else {
+      return $result;
+    }
   }
 
   /**

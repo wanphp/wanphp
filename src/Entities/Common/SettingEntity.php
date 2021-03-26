@@ -52,5 +52,5 @@ class SettingEntity implements \JsonSerializable
    * @OA\Property(description="显示排序")
    * @var integer
    */
-  private $display_order;
+  private $sortOrder;
 }

@@ -112,7 +112,7 @@ class RoleApi extends Api
    *    @OA\Schema(format="int64",type="integer")
    *  ),
    *  @OA\Response(
-   *    response="204",
+   *    response="200",
    *    description="删除成功",
    *    @OA\JsonContent(
    *      allOf={
@@ -161,10 +161,10 @@ class RoleApi extends Api
         break;
       case  'DELETE';
         $delnum = $this->role->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 204);
+        return $this->respondWithData(['del_num' => $delnum], 200);
         break;
       case 'GET';
-        $router = $this->router->select('id,name', ['ORDER' => ['display_order' => 'ASC']]);
+        $router = $this->router->select('id,name', ['ORDER' => ['sortOrder' => 'ASC']]);
         $roles = $this->role->select('*');
         return $this->respondWithData(['roles' => $roles, 'router' => $router]);
         break;

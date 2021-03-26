@@ -27,11 +27,11 @@ class PersistenceRepository
     $this->redis = $redis;
   }
 
-  public function setPermission(int $role_id)
+  public function setPermission($role_id)
   {
     $authority = $this->redis->get('authority_' . $role_id);
     if (!$authority) {
-      $routers = $this->db->select(RouterInterface::TABLENAME, ['id', 'nav_id', 'name', 'route', 'callable'], ['ORDER' => ['display_order' => 'ASC']]);
+      $routers = $this->db->select(RouterInterface::TABLENAME, ['id', 'navId', 'name', 'route', 'callable'], ['ORDER' => ['sortOrder' => 'ASC']]);
       if ($routers) {
         //角色限制权限
         if ($role_id > 0) {
@@ -42,7 +42,7 @@ class PersistenceRepository
               if (in_array($action['id'], $restricted)) {
                 $this->restricted[] = $action['callable'];
               } else {
-                $this->permission[$action['nav_id']][] = ['route' => $action['route'], 'name' => $action['name']];
+                $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
               }
             }
           } else {//未找到角色
@@ -56,7 +56,7 @@ class PersistenceRepository
         }
         if ($role_id < 0) {//超级管理员不限制权限
           foreach ($routers as $action) {
-            $this->permission[$action['nav_id']][] = ['route' => $action['route'], 'name' => $action['name']];
+            $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
           }
           $this->restricted = [];
         }
@@ -74,11 +74,11 @@ class PersistenceRepository
     $sidebar = [];
     $navigate = $this->redis->get('navigate');
     if (!$navigate) {
-      $navigate = $this->db->select(NavigateInterface::TABLENAME, ['id', 'icon', 'name'], ['ORDER' => ['display_order' => 'ASC']]);
+      $navigate = $this->db->select(NavigateInterface::TABLENAME, ['id', 'icon', 'name'], ['ORDER' => ['sortOrder' => 'ASC']]);
       $this->redis->set('navigate', $navigate);
     }
     if ($navigate) foreach ($navigate as $item) {
-      $sidebar[$item['id']] = ['icon' => $item['icon'], 'name' => $item['name'], 'sublist' => $this->permission[$item['id']] ?? []];
+      $sidebar[$item['id']] = ['icon' => $item['icon'], 'name' => $item['name'], 'children' => $this->permission[$item['id']] ?? []];
     }
     return $sidebar;
   }

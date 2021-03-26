@@ -35,7 +35,7 @@ class RouterEntity implements JsonSerializable
    * @OA\Property(description="所在导航菜单")
    * @var integer
    */
-  private $nav_id;
+  private $navId;
   /**
    * @DBType({"key": "","type":"varchar(20) NOT NULL DEFAULT ''"})
    * @OA\Property(description="名称")
@@ -43,7 +43,7 @@ class RouterEntity implements JsonSerializable
    */
   private $name;
   /**
-   * @DBType({"key": "UNI","type":"varchar(30) NOT NULL DEFAULT ''"})
+   * @DBType({"key": "UNI","type":"varchar(50) NOT NULL DEFAULT ''"})
    * @OA\Property(description="路由")
    * @var string
    */
@@ -59,5 +59,5 @@ class RouterEntity implements JsonSerializable
    * @OA\Property(description="排序")
    * @var integer
    */
-  private $display_order;
+  private $sortOrder;
 }

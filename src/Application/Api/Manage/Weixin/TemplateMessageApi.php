@@ -63,7 +63,7 @@ class TemplateMessageApi extends Api
    *    required=true,
    *    @OA\Schema(format="int64",type="string")
    *  ),
-   *  @OA\Response(response="204",description="删除成功",@OA\JsonContent(ref="#/components/schemas/Success")),
+   *  @OA\Response(response="200",description="删除成功",@OA\JsonContent(ref="#/components/schemas/Success")),
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Get(
@@ -81,7 +81,7 @@ class TemplateMessageApi extends Api
     switch ($this->request->getMethod()) {
       case 'POST':
         $data = $this->request->getParsedBody();
-        $result = $this->weChatBase->addTemplateMessage($data['tplid']);
+        $result = $this->weChatBase->addTemplateMessage($data['tmpid']);
         if ($result && $result['errcode'] == 0) {
           $data = array(
             'template_id_short' => $data['tmpid'],
@@ -100,7 +100,7 @@ class TemplateMessageApi extends Api
           $result = $this->weChatBase->delTemplateMessage($template_id);
           if ($result && $result['errcode'] == 0) {
             $this->msgTemplate->delete(['template_id' => $template_id]);
-            return $this->respondWithData($result, 204);
+            return $this->respondWithData($result, 200);
           } else {
             return $this->respondWithError($result['errmsg']);
           }
@@ -119,6 +119,8 @@ class TemplateMessageApi extends Api
         foreach ($list as &$item) {
           if (isset($templates[$item['template_id']])) {
             $item = array_merge($item, $templates[$item['template_id']]);
+            $item['content'] = nl2br($item['content']);
+            $item['example'] = nl2br($item['example']);
             unset($templates[$item['template_id']]);
           } else {
             $this->msgTemplate->update(['status' => 0], ['id' => $item['id']]);
@@ -130,6 +132,7 @@ class TemplateMessageApi extends Api
         if (count($templates) > 0) foreach ($templates as $template) {
           $template['status'] = 1;
           $template['content'] = nl2br($template['content']);
+          $template['example'] = nl2br($template['example']);
           $list[] = $template;
         }
 

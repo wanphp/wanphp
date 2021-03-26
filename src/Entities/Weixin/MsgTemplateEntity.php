@@ -43,16 +43,4 @@ class MsgTemplateEntity implements JsonSerializable
    * @OA\Property(description="是否可用")
    */
   private $status;
-
-  /**
-   * 初始化
-   * @param array $array
-   */
-  public function __construct(array $array)
-  {
-    foreach (array_intersect_key($array, $this->jsonSerialize()) as $key => $value) {
-      $this->{$key} = $value;
-    }
-  }
-
 }

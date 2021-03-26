@@ -27,9 +27,9 @@ trait HttpTrait
   {
     try {
       $resp = $client->request($method, $uri, $options);
-
+      $body = $resp->getBody()->getContents();
       if ($resp->getStatusCode() == 200) {
-        $json = json_decode($resp->getBody()->getContents(), true);
+        $json = json_decode($body, true);
         if (json_last_error() === JSON_ERROR_NONE) {
           if (isset($json['errcode']) && $json['errcode'] != 0) {
             throw new \Exception($json['errcode'] . ' - ' . $json['errmsg'], 400);
@@ -37,7 +37,7 @@ trait HttpTrait
             return $json;
           }
         } else {
-          $result = $this->fromXml($resp->getBody()->getContents());
+          $result = $this->fromXml($body);
 
           if ($result) {
             // 请求失败
@@ -50,7 +50,7 @@ trait HttpTrait
             }
             return $result;
           } else {
-            return ['content_type' => $resp->getHeaderLine('Content-Type'), 'body' => $resp->getBody()->getContents()];
+            return ['content_type' => $resp->getHeaderLine('Content-Type'), 'body' => $body];
           }
         }
       } else {
@@ -100,7 +100,7 @@ trait HttpTrait
   {
     if (!$xml) return [];
     // 禁止引用外部xml实体
-    libxml_disable_entity_loader(true);
+    if (\PHP_VERSION_ID < 80000) libxml_disable_entity_loader(true);
     return json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
   }
 }

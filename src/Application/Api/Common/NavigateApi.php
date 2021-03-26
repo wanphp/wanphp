@@ -106,7 +106,7 @@ class NavigateApi extends Api
    *    @OA\Schema(format="int64",type="integer")
    *  ),
    *  @OA\Response(
-   *    response="204",
+   *    response="200",
    *    description="请求成功",
    *    @OA\JsonContent(
    *      allOf={
@@ -144,7 +144,7 @@ class NavigateApi extends Api
         break;
       case 'DELETE':
         $delnum = $this - $this->navigate->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 204);
+        return $this->respondWithData(['del_num' => $delnum], 200);
         break;
       default:
         return $this->respondWithData(array_merge($this->persistence->getSidebar()));

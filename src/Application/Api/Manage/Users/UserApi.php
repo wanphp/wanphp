@@ -10,8 +10,9 @@ namespace App\Application\Api\Manage\Users;
 
 
 use App\Application\Api\Api;
-use App\Domain\DomainException\DomainException;
+use App\Domain\Weixin\PublicInterface;
 use App\Domain\Weixin\UserInterface;
+use App\Infrastructure\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -23,15 +24,19 @@ use Psr\Http\Message\ResponseInterface as Response;
 class UserApi extends Api
 {
   private $user;
+  private $public;
+  private $weChatBase;
 
-  public function __construct(UserInterface $user)
+  public function __construct(UserInterface $user, PublicInterface $public, WeChatBase $weChatBase)
   {
     $this->user = $user;
+    $this->public = $public;
+    $this->weChatBase = $weChatBase;
   }
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Patch(
    *  path="/api/manage/users/{ID}",
    *  tags={"User"},
@@ -153,7 +158,7 @@ class UserApi extends Api
       case 'GET':
         $id = $this->args['id'] ?? 0;
         if ($id > 0) {
-          $user = $this->user->get('id,nickname,headimgurl,name,tel,email,status,role_id', ['id' => $id]);
+          $user = $this->user->get('id,nickname,headimgurl,name,tel,role_id', ['id' => $id]);
           return $this->respondWithData($user);
         }
 
@@ -171,14 +176,29 @@ class UserApi extends Api
           $cur_page = $params['page'] > 0 ? $params['page'] : 1;
           $pageSize = isset($params['size']) && $params['size'] > 0 ? $params['size'] : 10;
           $where['LIMIT'] = [($cur_page - 1) * $pageSize, $pageSize];
-          if ($cur_page == 1) $total = $this->user->count('id', $where);
+          if ($cur_page == 1) {
+            $total = $this->user->count('id', $where);
+            $userTags = $this->weChatBase->getTags();
+            $tags = array_column($userTags['tags'], 'name', 'id');
+          }
         } else {
           $where['LIMIT'] = 10;
         }
 
         $where['ORDER'] = ["id" => "DESC"];
-        $users = $this->user->select('id,nickname,headimgurl,name,tel,email,status,role_id', $where);
-        return $this->respondWithData(['users' => $users, 'total' => $total ?? null]);
+
+        $users = $this->user->select('id,nickname,headimgurl,name,tel,role_id', $where);
+        $users_id = array_column($users, 'id');
+        // 公众号关注信息
+        if ($users_id) {
+          $public_user = $this->public->select('id,openid,tagid_list[JSON],subscribe', ['id' => $users_id]);
+          if ($public_user) foreach ($public_user as $item) $public_users_info[$item['id']] = $item;
+
+          foreach ($users as &$user) {
+            if (isset($public_users_info[$user['id']])) $user = array_merge($user, $public_users_info[$user['id']]);
+          }
+        }
+        return $this->respondWithData(['users' => $users, 'total' => $total ?? null, 'tags' => $tags ?? null]);
         break;
       default:
         return $this->respondWithError('禁止访问', 403);

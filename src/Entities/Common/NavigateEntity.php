@@ -47,5 +47,5 @@ class NavigateEntity implements \JsonSerializable
    * @OA\Property(description="排序")
    * @var integer
    */
-  private $display_order;
+  private $sortOrder;
 }

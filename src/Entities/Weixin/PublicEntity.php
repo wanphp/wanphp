@@ -37,6 +37,12 @@ use EntityTrait;
    */
   private $openid;
   /**
+   * @DBType({"key":"MUL","type":"varchar(50) NOT NULL DEFAULT ''"})
+   * @var string
+   * @OA\Property(description="粉丝标签")
+   */
+  private $tagid_list;
+  /**
    * @DBType({"type":"int NOT NULL DEFAULT '0'"})
    * @var integer
    * @OA\Property(description="推荐用户ID")

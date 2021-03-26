@@ -27,16 +27,18 @@ class Database extends Medoo
       $stack = [];
 
       //源表结构
-      $query = $this->exec("DESC `{$tableName}`");
       $source = ['fields' => [], 'pri' => []];
-
-      while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
-        $source['fields'][] = $row['Field'];
-        if ($row['Key'] == 'PRI') $source['pri'][] = $row['Field'];
-        if ($row['Key'] == 'UNI') $source['uni'][] = $row['Field'];
-        if ($row['Key'] == 'MUL') $source['mul'][] = $row['Field'];
+      try {
+        $query = $this->exec("DESC `{$tableName}`");
+        while ($row = $query->fetch(\PDO::FETCH_ASSOC)) {
+          $source['fields'][] = $row['Field'];
+          if ($row['Key'] == 'PRI') $source['pri'][] = $row['Field'];
+          if ($row['Key'] == 'UNI') $source['uni'][] = $row['Field'];
+          if ($row['Key'] == 'MUL') $source['mul'][] = $row['Field'];
+        }
+        //print_r($source);
+      } catch (\Exception $e) {
       }
-      //print_r($source);
       $pri = [];//主键字段
       $uni = [];//唯一索引
       $mul = [];//普通索引

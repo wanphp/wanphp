@@ -33,9 +33,6 @@ class MiniProgramUserRepository extends BaseRepository implements UserRepository
   }
 
   /**
-   * @return UserEntityInterface
-   */
-  /**
    * @param string $username
    * @param string $password
    * @param string $grantType
@@ -69,20 +66,20 @@ class MiniProgramUserRepository extends BaseRepository implements UserRepository
         $data = $username;
         $data['unionid'] = $res['unionid'] ?? '';
       }
-      if (isset($res['unionid'])) $user = $this->get('id', ['unionid' => $res['unionid']]);
-      if (!isset($user['id'])) $user = $this->miniProgramUser->get('id', ['openid' => $res['openid']]);
-      if (!isset($user['id'])) {//添加用户
-        if (is_array($data)) $user['id'] = $this->insert($data);
+      if (isset($res['unionid'])) $user_id = $this->get('id', ['unionid' => $res['unionid']]);
+      if (!isset($user_id)) $user_id = $this->miniProgramUser->get('id', ['openid' => $res['openid']]);
+      if (!isset($user_id)) {//添加用户
+        if (is_array($data)) $user_id = $this->insert($data);
         //关联小程序数据
-        $xcxdata = ['id' => $user['id'], 'openid' => $res['openid']];
+        $xcxdata = ['id' => $user_id, 'openid' => $res['openid']];
         if (isset($data['parent_id'])) $xcxdata['parent_id'] = $data['parent_id'];
         $this->miniProgramUser->insert($xcxdata);
       } else {//更新用户
-        if (is_array($data)) $this->update($data, ['id' => $user['id']]);
+        if (is_array($data)) $this->update($data, ['id' => $user_id]);
       }
-      if ($user['id'] > 0) {
+      if ($user_id > 0) {
         $userEntity = new UserEntity();
-        $userEntity->setIdentifier($user['id']);
+        $userEntity->setIdentifier($user_id);
         return $userEntity;
       } else {
         return null;

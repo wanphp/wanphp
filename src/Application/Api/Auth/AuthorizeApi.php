@@ -99,53 +99,52 @@ class AuthorizeApi extends Author2Api
       } elseif (isset($queryParams['code'])) {//微信公众号认证回调
         $accessToken = $this->weChatBase->getOauthAccessToken();
         if ($accessToken) {
-          //检查数据库是否存在用户数据
-          $user = $this->publicUser->get('id', ['openid' => $accessToken['openid']]);
-          if (!isset($user['id'])) {
-            $weuser = $this->weChatBase->getUserInfo($accessToken['openid']);
-            //尚未关注公众号
-            if ($weuser['subscribe'] == 0) {
-              if ($accessToken['scope'] == 'snsapi_base') {
-                $uri = $this->request->getUri();
-                $backurl = $uri->getScheme() . '://' . $uri->getHost() . $uri->getPath();
-                $url = $this->weChatBase->getOauthRedirect($backurl, $response_type);
-                // 跳转到微信，获取用户信息,需用户授权
-                return $this->response->withHeader('Location', $url)->withStatus(301);
-              } else {//需要用户授权
-                $weuser = $this->weChatBase->getOauthUserinfo($accessToken['access_token'], $accessToken['openid']);
-              }
+          $weuser = $this->weChatBase->getUserInfo($accessToken['openid']);
+          //尚未关注公众号
+          if ($weuser['subscribe'] == 0) {
+            if ($accessToken['scope'] == 'snsapi_base') {
+              $uri = $this->request->getUri();
+              $backurl = $uri->getScheme() . '://' . $uri->getHost() . $uri->getPath();
+              $url = $this->weChatBase->getOauthRedirect($backurl, $response_type);
+              // 跳转到微信，获取用户信息,需用户授权
+              return $this->response->withHeader('Location', $url)->withStatus(301);
+            } else {//需要用户授权
+              $weuser = $this->weChatBase->getOauthUserinfo($accessToken['access_token'], $accessToken['openid']);
             }
-            if (!isset($weuser['openid'])) {
-              //用户基本数据
-              $data = [
-                'unionid' => $weuser['unionid'] ?? null,
-                'nickname' => $weuser['nickname'],
-                'headimgurl' => $weuser['headimgurl'],
-                'sex' => $weuser['sex']
-              ];
-              //公众号数据
-              $pubdata = ['openid' => $weuser['openid']];
-              //用户已关注公众号
-              if (isset($weuser['subscribe'])) {
-                $pubdata['subscribe'] = $weuser['subscribe'];
-                $pubdata['subscribe_time'] = $weuser['subscribe_time'];
-                $pubdata['subscribe_scene'] = $weuser['subscribe_scene'];
-              }
+          }
+          if (isset($weuser['openid'])) {
+            //检查数据库是否存在用户数据
+            $user_id = $this->publicUser->get('id', ['openid' => $accessToken['openid']]);
+            if (!$user_id && isset($weuser['unionid'])) $user_id = $this->user->get('id', ['unionid' => $weuser['unionid']]);
+            //用户基本数据
+            $data = [
+              'unionid' => $weuser['unionid'] ?? null,
+              'nickname' => $weuser['nickname'],
+              'headimgurl' => $weuser['headimgurl'],
+              'sex' => $weuser['sex']
+            ];
+            //公众号数据
+            $pubdata = ['openid' => $weuser['openid']];
+            //用户已关注公众号
+            if (isset($weuser['subscribe'])) {
+              $pubdata['subscribe'] = $weuser['subscribe'];
+              $pubdata['tagid_list[JSON]'] = $weuser['tagid_list'];
+              $pubdata['subscribe_time'] = $weuser['subscribe_time'];
+              $pubdata['subscribe_scene'] = $weuser['subscribe_scene'];
+            }
 
-              if (isset($weuser['unionid'])) $user = $this->user->get('id', ['unionid' => $weuser['unionid']]);
-              if (!isset($user['id'])) {
-                //添加用户
-                $user['id'] = $this->user->insert($data);
-                //关联公众号数据
-                $pubdata['id'] = $user['id'];
-                if (isset($weuser['subscribe'])) $pubdata['parent_id'] = intval($weuser['qr_scene']);
-                $this->publicUser->insert($pubdata);
-              } else {
-                //更新用户
-                $this->user->update($data, ['id' => $user['id']]);
-                //关联公众号数据
-                if (isset($weuser['subscribe'])) $this->publicUser->update($pubdata, ['id' => $user['id']]);
-              }
+            if (!$user_id) {
+              //添加用户
+              $user_id = $this->user->insert($data);
+              //关联公众号数据
+              $pubdata['id'] = $user_id;
+              if (isset($weuser['subscribe'])) $pubdata['parent_id'] = intval($weuser['qr_scene']);
+              $this->publicUser->insert($pubdata);
+            } else {
+              //更新用户
+              $this->user->update($data, ['id' => $user_id]);
+              //关联公众号数据
+              if (isset($weuser['subscribe'])) $this->publicUser->update($pubdata, ['id' => $user_id]);
             }
           }
         }
@@ -153,14 +152,16 @@ class AuthorizeApi extends Author2Api
         //用户自定义登录方式
         switch ($this->request->getMethod()) {
           case  'POST';
-
+            // $user_id = 1;
             break;
           case 'GET';
             // 验证 HTTP 请求，并返回 authRequest 对象
             $authRequest = $this->server->validateAuthorizationRequest($this->request);
             // 此时应将 authRequest 对象序列化后存在当前会话(session)中
             $_SESSION['authRequest'] = serialize($authRequest);
-            return $this->respondWithData('自定义登录方式');
+            $this->response->getBody()->write('<form method="post"><button>登录</button></form>');
+
+            return $this->response->withHeader('Content-Type', 'text/html')->withStatus(200);
             break;
         }
       }
@@ -168,9 +169,9 @@ class AuthorizeApi extends Author2Api
       // 在会话(session)中取出 authRequest 对象
       $authRequest = unserialize($_SESSION['authRequest']);
       // 设置用户实体(userEntity)
-      if ($user['id'] > 0) {
+      if (isset($user_id) && $user_id > 0) {
         $userEntity = new UserEntity();
-        $userEntity->setIdentifier($user['id']);
+        $userEntity->setIdentifier($user_id);
         $authRequest->setUser($userEntity);
 
         // 设置权限范围

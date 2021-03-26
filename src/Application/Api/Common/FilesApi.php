@@ -146,15 +146,15 @@ class FilesApi extends Api
         $uri = $this->request->getUri();
         $host = $uri->getScheme() . '://' . $uri->getHost();
         if (isset($file['id'])) {
-          $file['url'] = $host . $file['url'];
+          $file['host'] = $host;
           return $this->respondWithData($file);
         }
 
-        if (!in_array($data['extension'], array('jpg', 'jpeg', 'gif', 'png', 'mp4'))) {
+        if (!in_array($data['extension'], array('jpg', 'jpeg', 'gif', 'png', 'mp4', 'txt'))) {
           return $this->respondWithError('文件类型错误！');
         }
 
-        if (!in_array($data['type'], array('image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'video/mp4'))) {
+        if (!in_array($data['type'], array('image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'video/mp4', 'text/plain'))) {
           return $this->respondWithError('文件类型错误！');
         }
 
@@ -238,7 +238,7 @@ class FilesApi extends Api
         }
         $id = $this->files->insert($data);
 
-        return $this->respondWithData(['id' => $id, 'type' => $data['type'], 'url' => $host . $data['url']], 201);
+        return $this->respondWithData(['id' => $id, 'type' => $data['type'], 'host' => $host, 'url' => $data['url']], 201);
         break;
       case 'PATCH':
         $data = $this->request->getParsedBody();
@@ -253,8 +253,10 @@ class FilesApi extends Api
       case 'DELETE':
         $id = (int)($this->args['id'] ?? 0);
         if ($id > 0) {
+          $filepath = $this->files->get('url', ['id' => $id]);
           $num = $this->files->delete(['id' => $id]);
-          return $this->respondWithData(['del_num' => $num], 204);
+          if ($num) unlink($this->filepath . $filepath); //删除文件
+          return $this->respondWithData(['del_num' => $num], 200);
         } else {
           return $this->respondWithError('缺少ID');
         }
@@ -287,13 +289,15 @@ class FilesApi extends Api
    * @return string
    * @throws \Exception
    */
-  private function moveUploadedFile(string $directory, UploadedFileInterface $uploadedFile)
+  private function moveUploadedFile(string $directory, UploadedFileInterface $uploadedFile, $filename = '')
   {
     $extension = strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION));
 
-    // see http://php.net/manual/en/function.random-bytes.php
-    $basename = bin2hex(random_bytes(8));
-    $filename = sprintf('%s.%0.8s', $basename, $extension);
+    if ($filename == '') {
+      // see http://php.net/manual/en/function.random-bytes.php
+      $basename = bin2hex(random_bytes(8));
+      $filename = sprintf('%s.%0.8s', $basename, $extension);
+    }
 
     $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
 

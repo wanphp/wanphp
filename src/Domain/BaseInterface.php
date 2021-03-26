@@ -53,7 +53,14 @@ interface BaseInterface
    * @param array|null $where
    * @return int
    */
-  public function count(string $columns = '*', array $where = null):int;
+  public function count(string $columns = '*', array $where = null): int;
+
+  /**
+   * @param string $column
+   * @param array|null $where
+   * @return float
+   */
+  public function sum(string $column, array $where = null): float;
 
   /**
    * 自定义删除

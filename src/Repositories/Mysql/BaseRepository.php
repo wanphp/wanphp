@@ -17,6 +17,8 @@ abstract class BaseRepository implements Repository
   protected $db;
   protected $tableName;
   private $entityClass;
+  private $errCode = null;
+  private $errMessage = '';
 
   public function __construct(Database $database, $tableName, $entityClass)
   {
@@ -43,15 +45,36 @@ abstract class BaseRepository implements Repository
 
     if (!isset($datas[0])) $datas = [$datas];
     foreach ($datas as &$data) {
+      $fields = [];
+      foreach ($data as $key => $value) {
+        if ($pos = strpos($key, '[')) {
+          $field = substr($key, 0, $pos);
+          $data[$field] = $value;
+          unset($data[$key]);
+          $fields[$field] = $key;
+        }
+      }
+
       $data = array_filter((new $this->entityClass($data))->jsonSerialize(), function ($value, $key) use ($required) {
         if (in_array($key, $required) && ($value == '' || is_null($value))) {
           throw new MedooException($key . ' - 不能为空');
         }
         return !is_null($value);
       }, ARRAY_FILTER_USE_BOTH);
+      foreach ($fields as $key => $field) {
+        if(isset($data[$key])){
+          $data[$field] = $data[$key];
+          unset($data[$key]);
+        }
+      }
     }
 
-    $this->db->insert($this->tableName, $datas);
+    try {
+      $this->db->insert($this->tableName, $datas);
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
     return $this->returnResult($this->db->id() ?? 0);
   }
 
@@ -60,11 +83,31 @@ abstract class BaseRepository implements Repository
    */
   public function update(array $data, array $where): int
   {
+    $fields = [];
+    foreach ($data as $key => $value) {
+      if ($pos = strpos($key, '[')) {
+        $field = substr($key, 0, $pos);
+        $data[$field] = $value;
+        $fields[$field] = $key;
+        unset($data[$key]);
+      }
+    }
     $data = array_filter((new $this->entityClass($data))->jsonSerialize(), function ($value) {
       return !is_null($value);
     });
-    $counts = $this->db->update($this->tableName, $data, $where)->rowCount();
-    return $this->returnResult($counts);
+    foreach ($fields as $key => $field) {
+      if(isset($data[$key])){
+        $data[$field] = $data[$key];
+        unset($data[$key]);
+      }
+    }
+    try {
+      $counts = $this->db->update($this->tableName, $data, $where)->rowCount();
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
+    return $this->returnResult($counts ?? 0);
   }
 
   /**
@@ -73,8 +116,13 @@ abstract class BaseRepository implements Repository
   public function select(string $columns = '*', array $where = null): array
   {
     if ($columns != '*') $columns = explode(',', $columns);
-    $datas = $this->db->select($this->tableName, $columns, $where);
-    return $this->returnResult($datas);
+    try {
+      $datas = $this->db->select($this->tableName, $columns, $where);
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
+    return $this->returnResult($datas ?? []);
   }
 
   /**
@@ -83,8 +131,13 @@ abstract class BaseRepository implements Repository
   public function get(string $columns = '*', array $where = null)
   {
     if ($columns != '*' && strpos($columns, ',') > 0) $columns = explode(',', $columns);
-    $data = $this->db->get($this->tableName, $columns, $where);
-    return $this->returnResult($data);
+    try {
+      $data = $this->db->get($this->tableName, $columns, $where);
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
+    return $this->returnResult($data ?? []);
   }
 
   /**
@@ -92,7 +145,27 @@ abstract class BaseRepository implements Repository
    */
   public function count(string $columns = '*', array $where = null): int
   {
-    return $this->db->count($this->tableName, $columns, $where);
+    try {
+      $count = $this->db->count($this->tableName, $columns, $where);
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
+    return $count ?? 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function sum(string $column, array $where = null): float
+  {
+    try {
+      $total = $this->db->sum($this->tableName, $column, $where);
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
+    return $total ?? 0.00;
   }
 
   /**
@@ -100,8 +173,13 @@ abstract class BaseRepository implements Repository
    */
   public function delete(array $where): int
   {
-    $counts = $this->db->delete($this->tableName, $where)->rowCount();
-    return $this->returnResult($counts);
+    try {
+      $counts = $this->db->delete($this->tableName, $where)->rowCount();
+    } catch (\Exception $e) {
+      $this->errCode = $e->getCode();
+      $this->errMessage = $e->getMessage();
+    }
+    return $this->returnResult($counts ?? 0);
   }
 
   /**
@@ -120,10 +198,16 @@ abstract class BaseRepository implements Repository
    */
   private function returnResult($result)
   {
-    $error = $this->db->error();
+    $error = $this->db->error(); //PHP8 取不到
     if (in_array($error[1], [1146, 1054, 1062])) {//数据表不存在，或字段不存在，主键冲突,创建或更新表
       $this->db->initTable($this->tableName, $this->entityClass);
+    } elseif ($this->errCode) {
+      if (in_array($this->errCode, ['42S02', '42S22'])) {
+        $this->db->initTable($this->tableName, $this->entityClass);
+      }
+      throw new MedooException($this->errCode . ':' . $this->errMessage, $this->errCode);
     }
+
     if (is_null($error[1])) return $result;
     else throw new MedooException($error[1] . ' - ' . $this->tableName . ' ' . $error[2], $error[1]);
   }

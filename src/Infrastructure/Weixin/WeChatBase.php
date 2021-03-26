@@ -919,6 +919,17 @@ class WeChatBase
   }
 
   /**
+   * 批量获取用户基本信息
+   * @param array $openid
+   * @return bool|\Psr\Http\Message\StreamInterface
+   * @throws \Exception
+   */
+  public function getUserListInfo(array $openid)
+  {
+    return $this->httpPost('https://api.weixin.qq.com/cgi-bin/user/info/batchget?{ACCESS_TOKEN}', ['user_list' => $openid]);
+  }
+
+  /**
    * 获取公众号已创建的标签
    * @return bool|\Psr\Http\Message\StreamInterface
    * @throws \Exception
@@ -989,7 +1000,7 @@ class WeChatBase
   }
 
   /**
-   * 批量为用户取消标签
+   * 获取用户身上的标签列表
    * @param $openid
    * @return bool|\Psr\Http\Message\StreamInterface
    * @throws \Exception
@@ -1166,17 +1177,20 @@ class WeChatBase
 
   /**
    * 微信JS-SDK
+   * @param string $url
    * @return array|null
    * @throws \Exception
    */
-  public function getSignPackage()
+  public function getSignPackage($url = '')
   {
     $jsapiTicket = $this->getJsApiTicket();
     if ($jsapiTicket) {
       // 注意 URL 一定要动态获取，不能 hardcode.
-      $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-      $url = $_SERVER['REQUEST_URI'];
-      $url = "{$protocol}{$_SERVER['HTTP_HOST']}{$url}";
+      if ($url == '') {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $url = $_SERVER['REQUEST_URI'];
+        $url = "{$protocol}{$_SERVER['HTTP_HOST']}{$url}";
+      }
 
       $timestamp = time();
       $nonceStr = $this->createNonceStr();
@@ -1265,6 +1279,6 @@ class WeChatBase
       $url = str_replace('{ACCESS_TOKEN}', 'access_token=' . $this->access_token, $url);
     }
 
-    return $this->request(new Client(), 'POST', $url, ['json' => $data, 'headers' => ['Accept' => 'application/json']]);
+    return $this->request(new Client(), 'POST', $url, ['body' => json_encode($data, JSON_UNESCAPED_UNICODE), 'headers' => ['Accept' => 'application/json']]);
   }
 }

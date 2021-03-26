@@ -89,9 +89,9 @@ class SyncRouterApi extends Api
           $this->router->insert($stack);
         }
 
-        $routes = $this->router->select('id,nav_id,name,route', ['ORDER' => ['display_order' => 'ASC']]);
+        $routes = $this->router->select('id,navId,name,route', ['ORDER' => ['sortOrder' => 'ASC']]);
         foreach ($routes as $action) {
-          if ($action['nav_id'] > 0) $menus[$action['nav_id']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
+          if ($action['navId'] > 0) $menus[$action['navId']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
         }
 
         return $this->respondWithData(['routes' => $routes ?? []]);

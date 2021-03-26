@@ -88,7 +88,7 @@ class TagsApi extends Api
    *    required=true,
    *    @OA\Schema(format="int64",type="integer")
    *  ),
-   *  @OA\Response(response="204",description="删除成功",@OA\JsonContent(ref="#/components/schemas/Success")),
+   *  @OA\Response(response="200",description="删除成功",@OA\JsonContent(ref="#/components/schemas/Success")),
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
    * )
    * @OA\Get(
@@ -127,7 +127,7 @@ class TagsApi extends Api
         $id = $this->args['id'] ?? 0;
         if ($id > 0) {
           $result = $this->weChatBase->deleteTag($id);
-          return $this->respondWithData($result, 204);
+          return $this->respondWithData($result, 200);
         } else {
           return $this->respondWithError('缺少ID');
         }

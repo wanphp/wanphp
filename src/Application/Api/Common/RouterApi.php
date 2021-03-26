@@ -49,8 +49,8 @@ class RouterApi extends Api
    *       mediaType="application/json",
    *       @OA\Schema(
    *         title="Route",
-   *         @OA\Property(property="nav_id",type="integer",description="所在导航菜单"),
-   *         @OA\Property(property="display_order",type="integer",description="排序")
+   *         @OA\Property(property="navId",type="integer",description="所在导航菜单"),
+   *         @OA\Property(property="sortOrder",type="integer",description="排序")
    *       )
    *     )
    *   ),
@@ -87,14 +87,14 @@ class RouterApi extends Api
         return $this->respondWithData(['up_num' => $num], 201);
         break;
       case 'GET':
-        $navigate = $this->navigate->select('*', ['ORDER' => ['display_order' => 'ASC']]);
+        $navigate = $this->navigate->select('*', ['ORDER' => ['sortOrder' => 'ASC']]);
         $menus = [];
         foreach ($navigate as $item) {
           $menus[$item['id']] = $item;
         }
-        $routes = $this->router->select('id,nav_id,name,route', ['ORDER' => ['display_order' => 'ASC']]);
+        $routes = $this->router->select('id,navId,name,route', ['ORDER' => ['navId' => 'ASC', 'sortOrder' => 'ASC']]);
         foreach ($routes as $action) {
-          if ($action['nav_id'] > 0) $menus[$action['nav_id']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
+          if ($action['navId'] > 0) $menus[$action['navId']]['children'][] = $action;
         }
         $menus = array_merge($menus);
         return $this->respondWithData(['menus' => $menus, 'routes' => $routes ?? []]);
