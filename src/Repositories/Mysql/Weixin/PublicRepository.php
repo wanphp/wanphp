@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Weixin;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Weixin\PublicInterface;
 use App\Entities\Weixin\PublicEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class PublicRepository extends BaseRepository implements PublicInterface

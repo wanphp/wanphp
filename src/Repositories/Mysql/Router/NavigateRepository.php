@@ -9,8 +9,7 @@
 namespace App\Repositories\Mysql\Router;
 
 
-use App\Infrastructure\Database\Database;
-use App\Domain\DomainException\NotFoundException;
+use Wanphp\Libray\Mysql\Database;
 use App\Entities\Common\NavigateEntity;
 use App\Domain\Common\NavigateInterface;
 use App\Repositories\Mysql\BaseRepository;
@@ -21,15 +20,20 @@ class NavigateRepository extends BaseRepository implements NavigateInterface
   {
     parent::__construct($database, self::TABLENAME, NavigateEntity::class);
   }
-
-  public function findNavigateOfId(int $id): NavigateEntity
+  /**
+   * {@inheritDoc}
+   */
+  public function findNavigateOfId($id): NavigateEntity
   {
     $navigate = $this->get('*', ['id' => $id]);
-    if (empty($navigate)) throw new NotFoundException('找不到导航菜单！');
+    if (empty($navigate)) throw new \Exception('找不到导航菜单！');
     return new NavigateEntity($navigate);
   }
 
-  public function delNavigate(int $id): int
+  /**
+   * {@inheritDoc}
+   */
+  public function delNavigate($id): int
   {
     return $this->delete(['id' => $id]);
   }

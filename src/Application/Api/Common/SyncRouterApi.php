@@ -11,7 +11,6 @@ namespace App\Application\Api\Common;
 
 use App\Application\Api\Api;
 use App\Domain\Common\RouterInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class SyncRouterApi extends Api
@@ -25,7 +24,7 @@ class SyncRouterApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Get(
    *  path="/api/manage/syncrouter",
    *  tags={"System"},

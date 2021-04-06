@@ -9,7 +9,7 @@
 namespace App\Repositories\Mysql\Weixin;
 
 
-use App\Infrastructure\Database\Database;
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Weixin\UserRoleInterface;
 use App\Entities\Weixin\UserRoleEntity;
 use App\Repositories\Mysql\BaseRepository;

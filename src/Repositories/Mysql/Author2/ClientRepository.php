@@ -9,8 +9,8 @@
 namespace App\Repositories\Mysql\Author2;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\ClientsInterface;
-use App\Infrastructure\Database\Database;
 use App\Entities\Author2\ClientEntity;
 use App\Entities\Common\ClientsEntity;
 use App\Repositories\Mysql\BaseRepository;
@@ -29,7 +29,7 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
    * @param string $clientIdentifier 客户端ID
    * @param string $clientIdentifier
    * @return ClientEntity|ClientEntityInterface|null
-   * @throws \App\Domain\DomainException\MedooException
+   * @throws \Exception
    */
   public function getClientEntity($clientIdentifier)
   {
@@ -43,7 +43,7 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
    * @param string|null $clientSecret 客户端密钥
    * @param string|null $grantType 授权类型
    * @return bool
-   * @throws \App\Domain\DomainException\MedooException
+   * @throws \Exception
    */
   public function validateClient($clientIdentifier, $clientSecret, $grantType)
   {

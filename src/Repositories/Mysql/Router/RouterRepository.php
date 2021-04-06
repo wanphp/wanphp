@@ -9,8 +9,7 @@
 namespace App\Repositories\Mysql\Router;
 
 
-use App\Infrastructure\Database\Database;
-use App\Domain\DomainException\NotFoundException;
+use Wanphp\Libray\Mysql\Database;
 use App\Entities\Common\RouterEntity;
 use App\Domain\Common\RouterInterface;
 use App\Repositories\Mysql\BaseRepository;
@@ -22,10 +21,13 @@ class RouterRepository extends BaseRepository implements RouterInterface
     parent::__construct($database, self::TABLENAME, RouterEntity::class);
   }
 
-  public function findActionOfId(int $id): RouterEntity
+  /**
+   * {@inheritDoc}
+   */
+  public function findActionOfId($id): RouterEntity
   {
     $action = $this->get('*', ['id' => $id]);
-    if (empty($role)) throw new NotFoundException('找不到路由！');
+    if (empty($role)) throw new \Exception('找不到路由！');
     return new RouterEntity($action);
   }
 

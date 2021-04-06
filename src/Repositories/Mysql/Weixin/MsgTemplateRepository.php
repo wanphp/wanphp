@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Weixin;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Weixin\MsgTemplateInterface;
 use App\Entities\Weixin\MsgTemplateEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class MsgTemplateRepository extends BaseRepository implements MsgTemplateInterface
@@ -22,9 +22,7 @@ class MsgTemplateRepository extends BaseRepository implements MsgTemplateInterfa
   }
 
   /**
-   * @param int $id
-   * @return string
-   * @throws \App\Domain\DomainException\MedooException
+   * {@inheritDoc}
    */
   public function getTemplateId($id): string
   {

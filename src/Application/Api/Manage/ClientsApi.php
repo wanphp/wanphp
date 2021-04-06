@@ -11,7 +11,6 @@ namespace App\Application\Api\Manage;
 
 use App\Application\Api\Api;
 use App\Domain\Common\ClientsInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -31,7 +30,7 @@ class ClientsApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Post(
    *  path="/api/manage/clients",
    *  tags={"Clients"},

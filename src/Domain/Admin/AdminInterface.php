@@ -10,8 +10,6 @@ namespace App\Domain\Admin;
 
 
 use App\Domain\BaseInterface;
-use App\Domain\DomainException\MedooException;
-use App\Domain\DomainException\NotFoundException;
 use App\Entities\Admin\AdminEntity;
 
 interface AdminInterface extends BaseInterface
@@ -20,15 +18,14 @@ interface AdminInterface extends BaseInterface
   /**
    * @param int $id
    * @return AdminEntity
-   * @throws NotFoundException
-   * @throws MedooException
+   * @throws \Exception
    */
   public function findAdminOfId(int $id): AdminEntity;
 
   /**
    * @param int $id
    * @return int
-   * @throws MedooException
+   * @throws \Exception
    */
   public function delAdmin(int $id): int;
 

@@ -9,16 +9,16 @@
 namespace App\Repositories\Mysql\Author2;
 
 
-use App\Infrastructure\Database\Redis;
 use App\Entities\Author2\AuthCodeEntity;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
+use Predis\ClientInterface;
 
 class AuthCodeRepository implements AuthCodeRepositoryInterface
 {
   private $redis;
 
-  public function __construct(Redis $redis)
+  public function __construct(ClientInterface $redis)
   {
     $this->redis = $redis;
   }
@@ -44,7 +44,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     // $authCodeEntity->getScopes(); // 获得权限范围
     // $authCodeEntity->getClient()->getIdentifier(); // 获得客户端标识符
     $expires_in = $authCodeEntity->getExpiryDateTime()->getTimestamp() - time();
-    $this->redis->set($authCodeEntity->getIdentifier(), [$authCodeEntity->getExpiryDateTime()->getTimestamp(), $expires_in], $expires_in);
+    $this->redis->setex($authCodeEntity->getIdentifier(), $expires_in, $authCodeEntity->getExpiryDateTime()->format('Y-m-d H:i:s'));
   }
 
   public function revokeAuthCode($codeId)
@@ -52,7 +52,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     // 当使用授权码获取访问令牌时调用此方法
     // 可以在此时将授权码从持久化数据库中删除
     // 参数为授权码唯一标识符
-    $this->redis->delete($codeId);
+    $this->redis->del($codeId);
   }
 
   public function isAuthCodeRevoked($codeId)

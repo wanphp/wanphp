@@ -9,7 +9,6 @@
 namespace App\Application\Api\Auth;
 
 
-use App\Domain\DomainException\DomainException;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -24,7 +23,6 @@ class PasswordAccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws DomainException
    * @throws \Exception
    * @OA\Post(
    *   path="/auth/passwordAccessToken",

@@ -9,17 +9,17 @@
 namespace App\Repositories\Mysql\Author2;
 
 
-use App\Infrastructure\Database\Redis;
 use App\Entities\Author2\AccessTokenEntity;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
+use Predis\ClientInterface;
 
 class AccessTokenRepository implements AccessTokenRepositoryInterface
 {
   private $redis;
 
-  public function __construct(Redis $redis)
+  public function __construct(ClientInterface $redis)
   {
     $this->redis = $redis;
   }
@@ -55,7 +55,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     // $accessTokenEntity->getScopes(); // 获得权限范围
     // $accessTokenEntity->getClient()->getIdentifier(); // 获得客户端标识符
     $expires_in = $accessTokenEntity->getExpiryDateTime()->getTimestamp() - time();
-    $this->redis->set($accessTokenEntity->getIdentifier(), [$accessTokenEntity->getExpiryDateTime()->getTimestamp(), $expires_in],$expires_in);
+    $this->redis->setex($accessTokenEntity->getIdentifier(), $expires_in, $accessTokenEntity->getExpiryDateTime()->format('Y-m-d H:i:s'));
   }
 
   public function revokeAccessToken($tokenId)
@@ -63,7 +63,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     // 使用刷新令牌创建新的访问令牌时调用此方法
     // 参数为原访问令牌的唯一标识符
     // 可将其在持久化存储中过期
-    $this->redis->delete($tokenId);
+    $this->redis->del($tokenId);
   }
 
   public function isAccessTokenRevoked($tokenId)

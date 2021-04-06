@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Weixin;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Weixin\MiniProgramInterface;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Weixin\MiniProgram;
+use Wanphp\Libray\Weixin\MiniProgram;
 use App\Repositories\Mysql\BaseRepository;
 
 class MiniProgramRepository extends BaseRepository implements MiniProgramInterface

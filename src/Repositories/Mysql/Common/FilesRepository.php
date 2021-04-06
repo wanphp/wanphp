@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Common;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\FilesInterface;
 use App\Entities\Common\FilesEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class FilesRepository extends BaseRepository implements FilesInterface

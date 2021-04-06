@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Common;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\CategoryInterface;
 use App\Entities\Common\CategoryEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class CategoryRepository extends BaseRepository implements CategoryInterface

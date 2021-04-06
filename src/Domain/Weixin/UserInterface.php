@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace App\Domain\Weixin;
 
 use App\Domain\BaseInterface;
-use App\Domain\DomainException\MedooException;
-use App\Domain\DomainException\NotFoundException;
 use App\Entities\Weixin\UserEntity;
 
 interface UserInterface extends BaseInterface
@@ -14,15 +12,14 @@ interface UserInterface extends BaseInterface
 
   /**
    * @return array
-   * @throws MedooException
+   * @throws \Exception
    */
   public function findAll(): array;
 
   /**
    * @param int $id
    * @return UserEntity
-   * @throws NotFoundException
-   * @throws MedooException
+   * @throws \Exception
    */
   public function findUserOfId(int $id): UserEntity;
 }

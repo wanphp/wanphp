@@ -10,8 +10,6 @@ namespace App\Domain\Common;
 
 
 use App\Domain\BaseInterface;
-use App\Domain\DomainException\MedooException;
-use App\Domain\DomainException\NotFoundException;
 use App\Entities\Common\NavigateEntity;
 
 interface NavigateInterface extends BaseInterface
@@ -21,15 +19,14 @@ interface NavigateInterface extends BaseInterface
   /**
    * @param int $id
    * @return NavigateEntity
-   * @throws NotFoundException
-   * @throws MedooException
+   * @throws \Exception
    */
   public function findNavigateOfId(int $id): NavigateEntity;
 
   /**
    * @param int $id
    * @return int
-   * @throws MedooException
+   * @throws \Exception
    */
   public function delNavigate(int $id): int;
 }

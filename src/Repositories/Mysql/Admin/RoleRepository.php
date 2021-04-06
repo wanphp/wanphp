@@ -9,10 +9,9 @@
 namespace App\Repositories\Mysql\Admin;
 
 
-use App\Infrastructure\Database\Database;
+use Wanphp\Libray\Mysql\Database;
 use App\Entities\Admin\RoleEntity;
 use App\Domain\Admin\RoleInterface;
-use App\Domain\DomainException\NotFoundException;
 use App\Repositories\Mysql\BaseRepository;
 
 class RoleRepository extends BaseRepository implements RoleInterface
@@ -22,14 +21,20 @@ class RoleRepository extends BaseRepository implements RoleInterface
     parent::__construct($database, self::TABLENAME, RoleEntity::class);
   }
 
-  public function findRoleOfId(int $id): RoleEntity
+  /**
+   * {@inheritDoc}
+   */
+  public function findRoleOfId($id): RoleEntity
   {
     $role = $this->get('*', ['id' => $id]);
-    if (empty($role)) throw new NotFoundException('找不到角色！');
+    if (empty($role)) throw new \Exception('找不到角色！');
     return new RoleEntity($role);
   }
 
-  public function delRole(int $id): bool
+  /**
+   * {@inheritDoc}
+   */
+  public function delRole($id): bool
   {
     return $this->delete(['id' => $id]);
   }

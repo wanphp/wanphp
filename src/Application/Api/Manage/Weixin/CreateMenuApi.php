@@ -11,7 +11,7 @@ namespace App\Application\Api\Manage\Weixin;
 
 use App\Application\Api\Api;
 use App\Domain\Weixin\CustomMenuInterface;
-use App\Infrastructure\Weixin\WeChatBase;
+use Wanphp\Libray\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class CreateMenuApi extends Api

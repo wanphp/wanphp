@@ -10,8 +10,8 @@ namespace App\Application\Api\Weixin;
 
 
 use App\Application\Api\Api;
-use App\Infrastructure\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
+use Wanphp\Libray\Weixin\WeChatBase;
 
 class ShareApi extends Api
 {

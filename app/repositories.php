@@ -16,5 +16,6 @@ return function (ContainerBuilder $containerBuilder) {
     \App\Domain\Weixin\UserRoleInterface::class => \DI\autowire(\App\Repositories\Mysql\Weixin\UserRoleRepository::class),
     \App\Domain\Common\ClientsInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\ClientsRepository::class),
     \App\Domain\Weixin\MsgTemplateInterface::class => \DI\autowire(\App\Repositories\Mysql\Weixin\MsgTemplateRepository::class),
+    \App\Domain\Weixin\PublicInterface::class => \DI\autowire(\App\Repositories\Mysql\Weixin\PublicRepository::class)
   ]);
 };

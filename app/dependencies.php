@@ -7,12 +7,12 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use App\Infrastructure\Database\Redis;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Weixin\MiniProgram;
-use App\Infrastructure\Weixin\Pay;
-use App\Infrastructure\Weixin\WeChatPay;
-use App\Infrastructure\Weixin\WeChatBase;
+use Predis\ClientInterface;
+use Wanphp\Libray\Mysql\Database;
+use Wanphp\Libray\Weixin\MiniProgram;
+use Wanphp\Libray\Weixin\Pay;
+use Wanphp\Libray\Weixin\WeChatPay;
+use Wanphp\Libray\Weixin\WeChatBase;
 
 return function (ContainerBuilder $containerBuilder) {
   $containerBuilder->addDefinitions([
@@ -29,6 +29,10 @@ return function (ContainerBuilder $containerBuilder) {
       $logger->pushHandler($handler);
 
       return $logger;
+    },
+    ClientInterface::class => function (ContainerInterface $c) {
+      $config = $c->get('redis');
+      return new Predis\Client($config);
     },
     Database::class => function (ContainerInterface $c) {
       $config = $c->get('database');
@@ -49,7 +53,6 @@ return function (ContainerBuilder $containerBuilder) {
       }
       return $db;
     },
-    Redis::class => \DI\autowire(Redis::class)->constructor(\DI\get('redis')),
     MiniProgram::class => \DI\autowire(MiniProgram::class)->constructor(\DI\get('wechat.miniprogram'), \DI\get('redis')),
     Pay::class => \DI\autowire(Pay::class)->constructor(\DI\get('wechat.pay-v2')),
     WeChatPay::class => \DI\autowire(WeChatPay::class)->constructor(\DI\get('wechat.pay-v3')),

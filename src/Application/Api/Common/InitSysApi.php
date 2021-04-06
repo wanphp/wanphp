@@ -12,7 +12,6 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Admin\AdminInterface;
 use App\Domain\Common\ClientsInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class InitSysApi extends Api
@@ -28,7 +27,7 @@ class InitSysApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Post(
    *  path="/auth/initSys",
    *  tags={"Auth"},
@@ -68,7 +67,7 @@ class InitSysApi extends Api
     $uri = $this->request->getUri();
     try {
       $clients = $this->clients->select('id');
-    } catch (DomainException $e) {
+    } catch (\Exception $e) {
       $client_secret = md5(uniqid(rand(), true));
       if ($e->getCode() == '1146') {
         $this->clients->insert([
@@ -83,7 +82,7 @@ class InitSysApi extends Api
 
     try {
       $admin = $this->admin->select('id');
-    } catch (DomainException $e) {
+    } catch (\Exception $e) {
       if ($e->getCode() == '1146') {
         $salt = substr(md5(uniqid(rand(), true)), 10, 11);
         $this->admin->insert([

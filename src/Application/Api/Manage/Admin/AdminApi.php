@@ -12,7 +12,6 @@ namespace App\Application\Api\Manage\Admin;
 use App\Application\Api\Api;
 use App\Domain\Admin\AdminInterface;
 use App\Domain\Admin\RoleInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -34,7 +33,7 @@ class AdminApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Post(
    *  path="/api/manage/admin",
    *  tags={"Admin"},

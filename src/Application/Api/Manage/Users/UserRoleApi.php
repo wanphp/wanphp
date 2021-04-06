@@ -10,7 +10,6 @@ namespace App\Application\Api\Manage\Users;
 
 
 use App\Application\Api\Api;
-use App\Domain\DomainException\DomainException;
 use App\Domain\Weixin\UserRoleInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
@@ -31,7 +30,7 @@ class UserRoleApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Post(
    *  path="/api/manage/user/role",
    *  tags={"UserRole"},

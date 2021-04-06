@@ -11,7 +11,6 @@ namespace App\Application\Api\Common;
 
 use App\Application\Api\Api;
 use App\Domain\Common\FilesInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\UploadedFileInterface;
@@ -30,7 +29,7 @@ class FilesApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Post(
    *  path="/api/file",
    *  tags={"System"},

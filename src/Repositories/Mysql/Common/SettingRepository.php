@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Common;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\SettingInterface;
 use App\Entities\Common\SettingEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class SettingRepository extends BaseRepository implements SettingInterface

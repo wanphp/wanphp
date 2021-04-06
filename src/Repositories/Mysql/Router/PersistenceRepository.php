@@ -8,11 +8,10 @@
 
 namespace App\Repositories\Mysql\Router;
 
-
+use Predis\ClientInterface;
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\NavigateInterface;
 use App\Domain\Common\RouterInterface;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Database\Redis;
 
 class PersistenceRepository
 {
@@ -21,7 +20,7 @@ class PersistenceRepository
   private $permission = [];//授权
   private $restricted = [];//限制
 
-  public function __construct(Database $database, Redis $redis)
+  public function __construct(Database $database, ClientInterface $redis)
   {
     $this->db = $database;
     $this->redis = $redis;
@@ -61,9 +60,10 @@ class PersistenceRepository
           $this->restricted = [];
         }
 
-        $this->redis->set('authority_' . $role_id, ['permission' => $this->permission, 'restricted' => $this->restricted]);
+        $this->redis->set('authority_' . $role_id, json_encode(['permission' => $this->permission, 'restricted' => $this->restricted]));
       }
     } else {
+      $authority = json_decode($authority, true);
       $this->permission = $authority['permission'];
       $this->restricted = $authority['restricted'];
     }
@@ -75,7 +75,9 @@ class PersistenceRepository
     $navigate = $this->redis->get('navigate');
     if (!$navigate) {
       $navigate = $this->db->select(NavigateInterface::TABLENAME, ['id', 'icon', 'name'], ['ORDER' => ['sortOrder' => 'ASC']]);
-      $this->redis->set('navigate', $navigate);
+      $this->redis->set('navigate', json_encode($navigate));
+    } else {
+      $navigate = json_decode($navigate, true);
     }
     if ($navigate) foreach ($navigate as $item) {
       $sidebar[$item['id']] = ['icon' => $item['icon'], 'name' => $item['name'], 'children' => $this->permission[$item['id']] ?? []];

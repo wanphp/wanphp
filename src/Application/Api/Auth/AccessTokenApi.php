@@ -9,7 +9,6 @@
 namespace App\Application\Api\Auth;
 
 
-use App\Domain\DomainException\DomainException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
@@ -23,7 +22,6 @@ class AccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws DomainException
    * @throws \Exception
    * @OA\Post(
    *   path="/auth/accessToken",

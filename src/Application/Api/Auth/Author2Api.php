@@ -9,11 +9,11 @@
 namespace App\Application\Api\Auth;
 
 
+use Predis\Client;
+use Wanphp\Libray\Mysql\Database;
+use Wanphp\Libray\Weixin\MiniProgram;
 use App\Application\Api\Api;
 use App\Domain\Weixin\MiniProgramInterface;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Database\Redis;
-use App\Infrastructure\Weixin\MiniProgram;
 use App\Repositories\Mysql\Author2\AccessTokenRepository;
 use App\Repositories\Mysql\Author2\AuthCodeRepository;
 use App\Repositories\Mysql\Author2\ClientRepository;
@@ -40,13 +40,13 @@ abstract class Author2Api extends Api
   /**
    * Author2Api constructor.
    * @param Database $database
-   * @param Redis $redis
+   * @param Client $redis
    * @throws \Exception
    */
   public function __construct(ContainerInterface $container)
   {
     $this->database = $container->get(Database::class);;
-    $this->redis = new Redis($container->get('redis'));
+    $this->redis = new Client($container->get('redis'));
     $settings = $container->get('settings');
 
     // 初始化存储库

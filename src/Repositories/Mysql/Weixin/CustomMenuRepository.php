@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Weixin;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Weixin\CustomMenuInterface;
 use App\Entities\Weixin\CustomMenuEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class CustomMenuRepository extends BaseRepository implements CustomMenuInterface

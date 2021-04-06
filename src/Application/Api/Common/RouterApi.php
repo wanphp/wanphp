@@ -12,7 +12,6 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Common\NavigateInterface;
 use App\Domain\Common\RouterInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class RouterApi extends Api
@@ -28,7 +27,7 @@ class RouterApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Patch(
    *  path="/api/manage/router/{ID}",
    *  tags={"System"},

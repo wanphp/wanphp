@@ -10,8 +10,7 @@ namespace App\Application\Api\Auth;
 
 
 use App\Domain\Weixin\MiniProgramInterface;
-use App\Domain\DomainException\DomainException;
-use App\Infrastructure\Weixin\MiniProgram;
+use Wanphp\Libray\Weixin\MiniProgram;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -31,7 +30,6 @@ class MiniProgramAccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws DomainException
    * @throws \Exception
    * @OA\Post(
    *   path="/auth/miniProgramAccessToken",

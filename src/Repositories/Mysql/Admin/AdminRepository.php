@@ -9,9 +9,8 @@
 namespace App\Repositories\Mysql\Admin;
 
 
-use App\Infrastructure\Database\Database;
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Admin\AdminInterface;
-use App\Domain\DomainException\NotFoundException;
 use App\Entities\Admin\AdminEntity;
 use App\Repositories\Mysql\BaseRepository;
 
@@ -22,14 +21,20 @@ class AdminRepository extends BaseRepository implements AdminInterface
     parent::__construct($database, self::TABLENAME, AdminEntity::class);
   }
 
-  public function findAdminOfId(int $id): AdminEntity
+  /**
+   * {@inheritDoc}
+   */
+  public function findAdminOfId($id): AdminEntity
   {
     $admin = $this->get('*', ['id' => $id]);
-    if (empty($admin)) throw new NotFoundException('找不到管理员！');
+    if (empty($admin)) throw new \Exception('找不到管理员！');
     return new AdminEntity($admin);
   }
 
-  public function delAdmin(int $id): int
+  /**
+   * {@inheritDoc}
+   */
+  public function delAdmin($id): int
   {
     return $this->delete(['id' => $id]);
   }

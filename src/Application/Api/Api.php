@@ -83,7 +83,6 @@ namespace App\Application\Api;
  * )
  */
 
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Exception\HttpBadRequestException;
@@ -122,16 +121,13 @@ abstract class Api
 
     try {
       return $this->action();
-    } catch (DomainException $e) {
-      throw new HttpBadRequestException($this->request, $e->getMessage());
     } catch (\Exception $e) {
-      throw new HttpNotFoundException($this->request, $e->getMessage());
+      throw new HttpBadRequestException($this->request, $e->getMessage());
     }
   }
 
   /**
    * @return Response
-   * @throws DomainException
    * @throws HttpBadRequestException
    * @throws \Exception
    */

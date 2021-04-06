@@ -10,8 +10,8 @@ namespace App\Application\Api\Manage\Weixin;
 
 
 use App\Application\Api\Api;
-use App\Infrastructure\Database\Redis;
-use App\Infrastructure\Weixin\WeChatBase;
+use Wanphp\Libray\Weixin\WeChatBase;
+use Predis\ClientInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -25,7 +25,7 @@ class TagsApi extends Api
   private $weChatBase;
   private $redis;
 
-  public function __construct(WeChatBase $weChatBase, Redis $redis)
+  public function __construct(WeChatBase $weChatBase, ClientInterface $redis)
   {
     $this->weChatBase = $weChatBase;
     $this->redis = $redis;

@@ -10,7 +10,6 @@ namespace App\Application\Api\User;
 
 
 use App\Application\Api\Api;
-use App\Domain\DomainException\DomainException;
 use App\Domain\Weixin\UserInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
@@ -31,7 +30,7 @@ class UserApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Patch(
    *  path="/api/user",
    *  tags={"User"},

@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Common;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\TagsInterface;
 use App\Entities\Common\TagsEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class TagsRepository extends BaseRepository implements TagsInterface

@@ -10,8 +10,6 @@ namespace App\Domain\Common;
 
 
 use App\Domain\BaseInterface;
-use App\Domain\DomainException\MedooException;
-use App\Domain\DomainException\NotFoundException;
 use App\Entities\Common\RouterEntity;
 
 interface RouterInterface extends BaseInterface
@@ -21,8 +19,7 @@ interface RouterInterface extends BaseInterface
   /**
    * @param int $id
    * @return RouterEntity
-   * @throws NotFoundException
-   * @throws MedooException
+   * @throws \Exception
    */
   public function findActionOfId(int $id): RouterEntity;
 

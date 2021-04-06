@@ -9,16 +9,16 @@
 namespace App\Repositories\Mysql\Author2;
 
 
-use App\Infrastructure\Database\Redis;
 use App\Entities\Author2\RefreshTokenEntity;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
+use Predis\ClientInterface;
 
 class RefreshTokenRepository implements RefreshTokenRepositoryInterface
 {
   private $redis;
 
-  public function __construct(Redis $redis)
+  public function __construct(ClientInterface $redis)
   {
     $this->redis = $redis;
   }
@@ -42,7 +42,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     // $refreshTokenEntity->getExpiryDateTime(); // 获得刷新令牌过期时间
     // $refreshTokenEntity->getAccessToken()->getIdentifier(); // 获得访问令牌标识符
     $expires_in = $refreshTokenEntity->getExpiryDateTime()->getTimestamp() - time();
-    $this->redis->set($refreshTokenEntity->getIdentifier(), [$refreshTokenEntity->getExpiryDateTime()->getTimestamp(),$expires_in], $expires_in);
+    $this->redis->setex($refreshTokenEntity->getIdentifier(), $expires_in, $refreshTokenEntity->getExpiryDateTime()->format('Y-m-d H:i:s'));
   }
 
   public function revokeRefreshToken($tokenId)
@@ -51,7 +51,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     // 原刷新令牌将删除，创建新的刷新令牌
     // 参数为原刷新令牌唯一标识
     // 可在此删除原刷新令牌
-    $this->redis->delete($tokenId);
+    $this->redis->del($tokenId);
   }
 
   public function isRefreshTokenRevoked($tokenId)

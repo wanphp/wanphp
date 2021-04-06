@@ -10,8 +10,6 @@ namespace App\Domain\Admin;
 
 
 use App\Domain\BaseInterface;
-use App\Domain\DomainException\MedooException;
-use App\Domain\DomainException\NotFoundException;
 use App\Entities\Admin\RoleEntity;
 
 interface RoleInterface extends BaseInterface
@@ -20,15 +18,14 @@ interface RoleInterface extends BaseInterface
   /**
    * @param int $id
    * @return RoleEntity
-   * @throws NotFoundException
-   * @throws MedooException
+   * @throws \Exception
    */
   public function findRoleOfId(int $id): RoleEntity;
 
   /**
    * @param int $id
    * @return bool
-   * @throws MedooException
+   * @throws \Exception
    */
   public function delRole(int $id): bool;
 }

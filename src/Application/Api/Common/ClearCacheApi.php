@@ -10,14 +10,14 @@ namespace App\Application\Api\Common;
 
 
 use App\Application\Api\Api;
-use App\Infrastructure\Database\Redis;
+use Predis\ClientInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class ClearCacheApi extends Api
 {
   private $redis;
 
-  public function __construct(Redis $redis)
+  public function __construct(ClientInterface $redis)
   {
     $this->redis = $redis;
   }
@@ -45,7 +45,7 @@ class ClearCacheApi extends Api
   {
     $db = $this->args['db'] ?? 1;
     $this->redis->select($db);
-    $this->redis->delete('*');
+    $this->redis->flushdb();
     return $this->respondWithData('OK!');
   }
 }

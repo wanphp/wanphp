@@ -9,11 +9,10 @@
 namespace App\Application\Api\Auth;
 
 
-use App\Domain\DomainException\DomainException;
 use App\Domain\Weixin\PublicInterface;
 use App\Domain\Weixin\UserInterface;
 use App\Entities\Author2\UserEntity;
-use App\Infrastructure\Weixin\WeChatBase;
+use Wanphp\Libray\Weixin\WeChatBase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
@@ -34,7 +33,6 @@ class AuthorizeApi extends Author2Api
 
   /**
    * @return Response
-   * @throws DomainException
    * @throws \Exception
    * @OA\Get(
    *   path="/auth/authorize",

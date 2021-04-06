@@ -9,12 +9,12 @@
 namespace App\Repositories\Mysql\Author2;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Weixin\MiniProgramInterface;
 use App\Domain\Weixin\UserInterface;
 use App\Entities\Author2\UserEntity;
 use App\Entities\Weixin\UserEntity as WeUserEntity;
-use App\Infrastructure\Database\Database;
-use App\Infrastructure\Weixin\MiniProgram;
+use Wanphp\Libray\Weixin\MiniProgram;
 use App\Repositories\Mysql\BaseRepository;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\UserEntityInterface;

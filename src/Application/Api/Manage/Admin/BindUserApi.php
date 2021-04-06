@@ -11,7 +11,6 @@ namespace App\Application\Api\Manage\Admin;
 
 use App\Application\Api\Api;
 use App\Domain\Admin\AdminInterface;
-use App\Domain\DomainException\DomainException;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class BindUserApi extends Api
@@ -25,7 +24,7 @@ class BindUserApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Get(
    *  path="/api/manage/admin/binduser/{UID}",
    *  tags={"Admin"},

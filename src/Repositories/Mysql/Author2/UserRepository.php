@@ -9,11 +9,10 @@
 namespace App\Repositories\Mysql\Author2;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Admin\AdminInterface;
-use App\Domain\DomainException\MedooException;
 use App\Entities\Admin\AdminEntity;
 use App\Entities\Author2\UserEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\UserEntityInterface;
@@ -33,7 +32,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
    * @param string $grantType
    * @param ClientEntityInterface $clientEntity
    * @return UserEntity|UserEntityInterface|null
-   * @throws MedooException
+   * @throws \Exception
    * @throws OAuthServerException
    */
   public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity)

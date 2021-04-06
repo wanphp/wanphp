@@ -15,5 +15,10 @@ interface MsgTemplateInterface extends BaseInterface
 {
   const TABLENAME = "msg_template";
 
+  /**
+   * @param int $id
+   * @return string
+   * @throws \Exception
+   */
   public function getTemplateId(int $id): string;
 }

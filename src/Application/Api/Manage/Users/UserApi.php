@@ -12,7 +12,7 @@ namespace App\Application\Api\Manage\Users;
 use App\Application\Api\Api;
 use App\Domain\Weixin\PublicInterface;
 use App\Domain\Weixin\UserInterface;
-use App\Infrastructure\Weixin\WeChatBase;
+use Wanphp\Libray\Weixin\WeChatBase;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**

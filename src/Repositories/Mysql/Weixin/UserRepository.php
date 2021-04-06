@@ -9,8 +9,7 @@
 namespace App\Repositories\Mysql\Weixin;
 
 
-use App\Infrastructure\Database\Database;
-use App\Domain\DomainException\NotFoundException;
+use Wanphp\Libray\Mysql\Database;
 use App\Entities\Weixin\UserEntity;
 use App\Domain\Weixin\UserInterface;
 use App\Repositories\Mysql\BaseRepository;
@@ -30,7 +29,7 @@ class UserRepository extends BaseRepository implements UserInterface
   public function findUserOfId(int $id): UserEntity
   {
     $user = $this->get('*', ['id' => $id]);
-    if (empty($user)) throw new NotFoundException("找不到用户！");
+    if (empty($user)) throw new \Exception("找不到用户！");
     return new UserEntity($user);
   }
 

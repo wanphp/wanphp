@@ -9,9 +9,9 @@
 namespace App\Repositories\Mysql\Common;
 
 
+use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\ClientsInterface;
 use App\Entities\Common\ClientsEntity;
-use App\Infrastructure\Database\Database;
 use App\Repositories\Mysql\BaseRepository;
 
 class ClientsRepository extends BaseRepository implements ClientsInterface

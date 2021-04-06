@@ -11,7 +11,6 @@ namespace App\Application\Api\Common;
 
 use App\Application\Api\Api;
 use App\Domain\Common\NavigateInterface;
-use App\Domain\DomainException\DomainException;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 
@@ -28,7 +27,7 @@ class NavigateApi extends Api
 
   /**
    * @return Response
-   * @throws DomainException
+   * @throws \Exception
    * @OA\Post(
    *  path="/api/manage/navigate",
    *  tags={"System"},

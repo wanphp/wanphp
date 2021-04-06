@@ -10,11 +10,10 @@ namespace App\Application\Middleware;
 
 
 use App\Domain\Admin\AdminInterface;
-use App\Infrastructure\Database\Redis;
 use App\Repositories\Mysql\Author2\AccessTokenRepository;
-use Exception;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\ResourceServer;
+use Predis\Client;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,7 +29,7 @@ class OAuthServerMiddleware implements MiddlewareInterface
   public function __construct(ContainerInterface $container)
   {
     $settings = $container->get('settings');
-    $this->redis = new Redis($container->get('redis'));
+    $this->redis = new Client($container->get('redis'));
     $this->redis->select($settings['authRedis']);//选择库
     $this->admin = $container->get(AdminInterface::class);
   }
@@ -65,7 +64,7 @@ class OAuthServerMiddleware implements MiddlewareInterface
             $request = $request->withAttribute('oauth_admin_id', $user_id);
           }
           $request = $request->withAttribute('oauth_admin_role_id', $admin['role_id']);
-        } catch (\App\Domain\DomainException\MedooException $e) {
+        } catch (\Exception $e) {
           return (new OAuthServerException($e->getMessage(), 400, 'BadRequest'))->generateHttpResponse(new \Slim\Psr7\Response());
         }
       }
@@ -74,7 +73,7 @@ class OAuthServerMiddleware implements MiddlewareInterface
     } catch (OAuthServerException $exception) {
       return $exception->generateHttpResponse(new Response());
       // @codeCoverageIgnoreStart
-    } catch (Exception $exception) {
+    } catch (\Exception $exception) {
       return (new OAuthServerException($exception->getMessage(), 0, 'BadRequest'))
         ->generateHttpResponse(new Response());
       // @codeCoverageIgnoreEnd
