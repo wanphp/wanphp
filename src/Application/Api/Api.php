@@ -76,10 +76,10 @@ namespace App\Application\Api;
  * @OA\Schema(
  *   title="成功提示",
  *   schema="Success",
- *   required={"code", "message", "res"},
+ *   required={"code", "message", "datas"},
  *   @OA\Property(property="code", type="string", example="200"),
  *   @OA\Property(property="message", type="string", example="OK"),
- *   @OA\Property(property="res", type="object",description="返回结果")
+ *   @OA\Property(property="datas", type="object",description="返回结果")
  * )
  */
 

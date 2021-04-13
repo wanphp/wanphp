@@ -45,7 +45,7 @@ class BindUserApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="res",example={"id": 0})
+   *         @OA\Property(property="datas",example={"id": 0})
    *       )
    *      }
    *    )

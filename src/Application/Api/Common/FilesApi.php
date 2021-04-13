@@ -60,7 +60,7 @@ class FilesApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="res",
+   *         @OA\Property(property="datas",
    *          @OA\Property(property="id",type="integer",description="文件ID"),
    *          @OA\Property(property="type",type="string",description="文件类型"),
    *          @OA\Property(property="url",type="string",description="文件地址"),
@@ -104,7 +104,7 @@ class FilesApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="res",@OA\Property(property="up_num",type="integer"))
+   *         @OA\Property(property="datas",@OA\Property(property="up_num",type="integer"))
    *       )
    *      }
    *    )

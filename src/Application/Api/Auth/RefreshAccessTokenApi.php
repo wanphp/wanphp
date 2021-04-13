@@ -51,7 +51,7 @@ class RefreshAccessTokenApi extends Author2Api
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
    *         @OA\Property(
-   *           property="res",
+   *           property="datas",
    *           @OA\Property(property="token_type",type="string"),
    *           @OA\Property( property="expires_in",type="integer"),
    *           @OA\Property(property="access_token",type="string"),
