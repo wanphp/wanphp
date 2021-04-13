@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 use App\Application\Middleware\PermissionMiddleware;
+use App\Repositories\Mysql\Router\PersistenceRepository;
+use App\Application\Middleware\OAuthServerMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -18,15 +20,19 @@ return function (App $app) {
     return $response;
   });
 
+  $PermissionMiddleware = new PermissionMiddleware($app->getContainer()->get(PersistenceRepository::class));
+  $OAuthServerMiddleware = new OAuthServerMiddleware($app->getContainer());
+
+  // 加载插件
+  foreach (glob(realpath('../wanphp/plugins') . "/*/src/routes.php") as $filename) {
+    $routes = require $filename;
+    $routes($app, $PermissionMiddleware, $OAuthServerMiddleware);
+  }
   //公众号
-  $app->map(['GET', 'POST'], '/weixin', \App\Application\Api\Weixin\WePublic::class);
+  //$app->map(['GET', 'POST'], '/weixin', \App\Application\Api\Weixin\WePublic::class);
 
-
-  $app->group('/api', function (Group $group) use ($app) {
+  $app->group('/api', function (Group $group) use ($PermissionMiddleware) {
     $group->get('/clearCache[/{db:[0-9]+}]', \App\Application\Api\Common\ClearCacheApi::class);
-    //当前用户
-    $group->map(['GET', 'PATCH'], '/user', \App\Application\Api\User\UserApi::class);
-
     //文件上传
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/files[/{id:[0-9]+}]', \App\Application\Api\Common\FilesApi::class);
 
@@ -38,16 +44,9 @@ return function (App $app) {
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/clients[/{id:[0-9]+}]', \App\Application\Api\Manage\ClientsApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\AdminApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin/role[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\RoleApi::class);
-      $g->map(['GET', 'PATCH', 'POST'], '/users[/{id:[0-9]+}]', \App\Application\Api\Manage\Users\UserApi::class);
-      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/user/role[/{id:[0-9]+}]', \App\Application\Api\Manage\Users\UserRoleApi::class);
-      $g->get('/admin/binduser/{uid:[0-9]+}',\App\Application\Api\Manage\Admin\BindUserApi::class);
-      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/weixin/tag[/{id:[0-9]+}]', \App\Application\Api\Manage\Weixin\TagsApi::class);
-      $g->map(['GET', 'POST', 'DELETE'], '/weixin/tplmsg[/{tplid}]', \App\Application\Api\Manage\Weixin\TemplateMessageApi::class);
-    })->addMiddleware(new PermissionMiddleware(
-      $app->getContainer()->get(\App\Repositories\Mysql\Router\PersistenceRepository::class),
-      $app->getContainer()->get(\App\Repositories\Mysql\Admin\AdminRepository::class)
-    ));
-  })->addMiddleware(new \App\Application\Middleware\OAuthServerMiddleware($app->getContainer()));
+      $g->get('/admin/binduser/{uid:[0-9]+}', \App\Application\Api\Manage\Admin\BindUserApi::class);
+    })->addMiddleware($PermissionMiddleware);
+  })->addMiddleware($OAuthServerMiddleware);
 
 
   $app->group('/auth', function (Group $group) {

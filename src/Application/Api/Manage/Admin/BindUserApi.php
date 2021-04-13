@@ -26,7 +26,7 @@ class BindUserApi extends Api
    * @return Response
    * @throws \Exception
    * @OA\Get(
-   *  path="/api/manage/admin/binduser/{UID}",
+   *  path="/api/manage/admin/binduser/{uid}",
    *  tags={"Admin"},
    *  summary="用户绑定管理员",
    *  operationId="adminBindUser",

@@ -34,7 +34,7 @@ class PersistenceRepository
       if ($routers) {
         //角色限制权限
         if ($role_id > 0) {
-          $role = $this->db->select('role', ['restricted'], ['id' => $role_id]);
+          $role = $this->db->get('role', ['restricted'], ['id' => $role_id]);
           if (isset($role['restricted'])) {
             $restricted = explode(',', $role['restricted']);
             foreach ($routers as $action) {

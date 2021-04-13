@@ -9,11 +9,14 @@
 namespace App\Application\Api\Auth;
 
 
+use DateInterval;
+use Defuse\Crypto\Key;
+use Exception;
 use Predis\Client;
 use Wanphp\Libray\Mysql\Database;
 use Wanphp\Libray\Weixin\MiniProgram;
+use Wanphp\Plugins\Weixin\Domain\MiniProgramInterface;
 use App\Application\Api\Api;
-use App\Domain\Weixin\MiniProgramInterface;
 use App\Repositories\Mysql\Author2\AccessTokenRepository;
 use App\Repositories\Mysql\Author2\AuthCodeRepository;
 use App\Repositories\Mysql\Author2\ClientRepository;
@@ -58,7 +61,7 @@ abstract class Author2Api extends Api
     // 私钥与加密密钥
     $privateKey = new CryptKey($settings['privateKey'], $settings['privateKeyPass'] ?: null); // 如果私钥文件有密码
     //$encryptionKey = 'e9habxOA6IERAr3EXSSm+a231VX+lI5zVMiY4c7RF6s='; // 加密密钥字符串
-    $encryptionKey = \Defuse\Crypto\Key::loadFromAsciiSafeString($settings['encryptionKey']); //如果通过 generate-defuse-key 脚本生成的字符串，可使用此方法传入
+    $encryptionKey = Key::loadFromAsciiSafeString($settings['encryptionKey']); //如果通过 generate-defuse-key 脚本生成的字符串，可使用此方法传入
 
     // 初始化 server
     $this->server = new AuthorizationServer(
@@ -73,8 +76,8 @@ abstract class Author2Api extends Api
   protected function implicit()
   {
     $this->server->enableGrantType(
-      new ImplicitGrant(new \DateInterval('PT1H')),
-      new \DateInterval('PT1H') // access tokens will expire after 1 hour
+      new ImplicitGrant(new DateInterval('PT1H')),
+      new DateInterval('PT1H') // access tokens will expire after 1 hour
     );
   }
 
@@ -90,18 +93,18 @@ abstract class Author2Api extends Api
       $grant = new AuthCodeGrant(
         $authCodeRepository,
         $refreshTokenRepository,
-        new \DateInterval('PT10M') // 设置授权码过期时间为10分钟
+        new DateInterval('PT10M') // 设置授权码过期时间为10分钟
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       throw new HttpNotFoundException($this->request, $e->getMessage());
     }
 
-    $grant->setRefreshTokenTTL(new \DateInterval('P1M')); // 设置刷新令牌过期时间1个月
+    $grant->setRefreshTokenTTL(new DateInterval('P1M')); // 设置刷新令牌过期时间1个月
 
     // 将授权码授权类型添加进 server
     $this->server->enableGrantType(
       $grant,
-      new \DateInterval('PT1H') // 设置访问令牌过期时间1小时
+      new DateInterval('PT1H') // 设置访问令牌过期时间1小时
     );
   }
 
@@ -109,7 +112,7 @@ abstract class Author2Api extends Api
   {
     $this->server->enableGrantType(
       new ClientCredentialsGrant(),
-      new \DateInterval('PT1H') // access tokens will expire after 1 hour
+      new DateInterval('PT1H') // access tokens will expire after 1 hour
     );
   }
 
@@ -123,11 +126,11 @@ abstract class Author2Api extends Api
       $refreshTokenRepository
     );
 
-    $grant->setRefreshTokenTTL(new \DateInterval('PT2H')); //两个小时过期 refresh tokens will expire after 1 month P1M
+    $grant->setRefreshTokenTTL(new DateInterval('PT2H')); //两个小时过期 refresh tokens will expire after 1 month P1M
 
     $this->server->enableGrantType(
       $grant,
-      new \DateInterval('PT1H') // access tokens will expire after 1 hour
+      new DateInterval('PT1H') // access tokens will expire after 1 hour
     );
   }
 
@@ -141,11 +144,11 @@ abstract class Author2Api extends Api
       $refreshTokenRepository
     );
 
-    $grant->setRefreshTokenTTL(new \DateInterval('P1M')); // refresh tokens will expire after 1 month
+    $grant->setRefreshTokenTTL(new DateInterval('P1M')); // refresh tokens will expire after 1 month
 
     $this->server->enableGrantType(
       $grant,
-      new \DateInterval('PT1H') // access tokens will expire after 1 hour
+      new DateInterval('PT1H') // access tokens will expire after 1 hour
     );
   }
 
@@ -153,11 +156,11 @@ abstract class Author2Api extends Api
   {
     $refreshTokenRepository = new RefreshTokenRepository($this->redis);
     $grant = new RefreshTokenGrant($refreshTokenRepository);
-    $grant->setRefreshTokenTTL(new \DateInterval('P1M')); // new refresh tokens will expire after 1 month
+    $grant->setRefreshTokenTTL(new DateInterval('P1M')); // new refresh tokens will expire after 1 month
 
     $this->server->enableGrantType(
       $grant,
-      new \DateInterval('PT1H') // new access tokens will expire after an hour
+      new DateInterval('PT1H') // new access tokens will expire after an hour
     );
   }
 }

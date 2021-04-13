@@ -8,7 +8,6 @@
 
 namespace App\Application\Middleware;
 
-use App\Domain\Admin\AdminInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -20,12 +19,10 @@ use Slim\Routing\RouteContext;
 class PermissionMiddleware implements Middleware
 {
   private $persistence;
-  private $admin;
 
-  public function __construct(PersistenceRepository $persistence, AdminInterface $admin)
+  public function __construct(PersistenceRepository $persistence)
   {
     $this->persistence = $persistence;
-    $this->admin = $admin;
   }
 
   public function process(Request $request, RequestHandler $handler): Response

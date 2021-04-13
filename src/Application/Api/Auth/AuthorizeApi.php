@@ -9,13 +9,15 @@
 namespace App\Application\Api\Auth;
 
 
-use App\Domain\Weixin\PublicInterface;
-use App\Domain\Weixin\UserInterface;
 use App\Entities\Author2\UserEntity;
+use Exception;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Wanphp\Libray\Weixin\WeChatBase;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
+use Wanphp\Plugins\Weixin\Domain\PublicInterface;
+use Wanphp\Plugins\Weixin\Domain\UserInterface;
 
 class AuthorizeApi extends Author2Api
 {
@@ -160,7 +162,6 @@ class AuthorizeApi extends Author2Api
             $this->response->getBody()->write('<form method="post"><button>登录</button></form>');
 
             return $this->response->withHeader('Content-Type', 'text/html')->withStatus(200);
-            break;
         }
       }
 
@@ -182,9 +183,9 @@ class AuthorizeApi extends Author2Api
 
       // 完成后重定向至客户端请求重定向地址
       return $this->server->completeAuthorizationRequest($authRequest, $this->response);
-    } catch (\League\OAuth2\Server\Exception\OAuthServerException $exception) {
+    } catch (OAuthServerException $exception) {
       return $exception->generateHttpResponse($this->response);
-    } catch (\Exception $exception) {
+    } catch (Exception $exception) {
       $body = new Stream(fopen('php://temp', 'r+'));
       $body->write($exception->getMessage());
       return $this->response->withStatus(400)->withBody($body);

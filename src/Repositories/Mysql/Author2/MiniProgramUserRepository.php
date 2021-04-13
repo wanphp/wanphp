@@ -10,10 +10,10 @@ namespace App\Repositories\Mysql\Author2;
 
 
 use Wanphp\Libray\Mysql\Database;
-use App\Domain\Weixin\MiniProgramInterface;
-use App\Domain\Weixin\UserInterface;
+use Wanphp\Plugins\Weixin\Domain\MiniProgramInterface;
+use Wanphp\Plugins\Weixin\Domain\UserInterface;
 use App\Entities\Author2\UserEntity;
-use App\Entities\Weixin\UserEntity as WeUserEntity;
+use Wanphp\Plugins\Weixin\Entities\UserEntity as WeUserEntity;
 use Wanphp\Libray\Weixin\MiniProgram;
 use App\Repositories\Mysql\BaseRepository;
 use League\OAuth2\Server\Entities\ClientEntityInterface;

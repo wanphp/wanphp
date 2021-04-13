@@ -122,7 +122,7 @@ class NavigateApi extends Api
    *  path="/api/manage/navigate",
    *  tags={"System"},
    *  summary="获取导航菜单",
-   *  operationId="router",
+   *  operationId="navigate",
    *  security={{"bearerAuth":{}}},
    *  @OA\Response(response="200",description="请求成功",@OA\JsonContent(ref="#/components/schemas/Success")),
    *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
@@ -135,16 +135,13 @@ class NavigateApi extends Api
         $data = $this->request->getParsedBody();
         $id = $this->navigate->insert($data);
         return $this->respondWithData(['id' => $id], 201);
-        break;
       case 'PUT':
         $data = $this->request->getParsedBody();
         $num = $this->navigate->update($data, ['id' => $this->args['id']]);
         return $this->respondWithData(['up_num' => $num], 201);
-        break;
       case 'DELETE':
-        $delnum = $this - $this->navigate->delete(['id' => $this->args['id']]);
+        $delnum = $this->navigate->delete(['id' => $this->args['id']]);
         return $this->respondWithData(['del_num' => $delnum], 200);
-        break;
       default:
         return $this->respondWithData(array_merge($this->persistence->getSidebar()));
     }
