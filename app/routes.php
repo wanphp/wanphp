@@ -23,6 +23,11 @@ return function (App $app) {
   $PermissionMiddleware = new PermissionMiddleware($app->getContainer()->get(PersistenceRepository::class));
   $OAuthServerMiddleware = new OAuthServerMiddleware($app->getContainer());
 
+  // 加载组件
+  foreach (glob(realpath('../wanphp/components') . "/*/src/routes.php") as $filename) {
+    $routes = require $filename;
+    $routes($app, $PermissionMiddleware, $OAuthServerMiddleware);
+  }
   // 加载插件
   foreach (glob(realpath('../wanphp/plugins') . "/*/src/routes.php") as $filename) {
     $routes = require $filename;
