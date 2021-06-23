@@ -49,7 +49,8 @@ abstract class Author2Api extends Api
   public function __construct(ContainerInterface $container)
   {
     $this->database = $container->get(Database::class);;
-    $this->redis = new Client($container->get('redis'));
+    $redis = $container->get('redis');
+    $this->redis = new Client($redis['parameters'], $redis['options']);
     $settings = $container->get('settings');
 
     // 初始化存储库

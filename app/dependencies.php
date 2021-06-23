@@ -32,7 +32,7 @@ return function (ContainerBuilder $containerBuilder) {
     },
     ClientInterface::class => function (ContainerInterface $c) {
       $config = $c->get('redis');
-      return new Predis\Client($config);
+      return new Predis\Client($config['parameters'], $config['options']);
     },
     Database::class => function (ContainerInterface $c) {
       $config = $c->get('database');

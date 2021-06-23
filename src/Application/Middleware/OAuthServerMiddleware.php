@@ -29,7 +29,8 @@ class OAuthServerMiddleware implements MiddlewareInterface
   public function __construct(ContainerInterface $container)
   {
     $settings = $container->get('settings');
-    $this->redis = new Client($container->get('redis'));
+    $redis = $container->get('redis');
+    $this->redis = new Client($redis['parameters'], $redis['options']);
     $this->redis->select($settings['authRedis']);//选择库
     $this->admin = $container->get(AdminInterface::class);
   }
@@ -52,7 +53,7 @@ class OAuthServerMiddleware implements MiddlewareInterface
       $client_id = $request->getAttribute('oauth_client_id');
       $user_id = $request->getAttribute('oauth_user_id');
       //系统管理
-      if ($client_id == 'sysmanage'){
+      if ($client_id == 'sysmanage') {
         try {
           if (is_numeric($user_id)) { //微信扫码登录
             $admin = $this->admin->get('id,role_id', ['uid' => $user_id]);

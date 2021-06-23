@@ -88,7 +88,13 @@ class AccessTokenApi extends Author2Api
   protected function action(): Response
   {
     try {
-      $this->authorization_code();
+      $post = $this->request->getParsedBody();
+      if (isset($post['grant_type']) && $post['grant_type'] == 'authorization_code') {
+        $this->authorization_code();
+      }
+      if (isset($post['grant_type']) && $post['grant_type'] == 'client_credentials') {
+        $this->client_credentials();
+      }
       // 这里只需要这一行就可以，具体的判断在 Repositories 中
       return $this->server->respondToAccessTokenRequest($this->request, $this->response);
     } catch (\League\OAuth2\Server\Exception\OAuthServerException $exception) {

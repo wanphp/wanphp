@@ -44,17 +44,25 @@ class SyncRouterApi extends Api
         $routes = array_column($routes, 'callable', 'id');
         //现有操作
         $current_actions = [];
-        $files = array_merge(glob(__DIR__ . '/../Manage/*.php'), glob(__DIR__ . '/../Manage/*/*.php'));
+        $files = array_merge(
+          glob(realpath(__DIR__ . '/../Manage') . '/*.php'),
+          glob(realpath(__DIR__ . '/../Manage') . '/*/*.php'),
+          glob(realpath('../wanphp/plugins') . "/*/src/Application/Manage/*.php") //插件操作
+        );
         $stack = [];
 
         //系统控制器
         if (!empty($files)) foreach ($files as $file) {
-          $file = realpath($file);
-          if (strpos($file, '/Auth/') ||
-            strpos($file, '/Home/') ||
-            strpos($file, '/Common/')) continue;
           if (is_file($file)) {
-            $action = str_replace([realpath('../') . '/src', '.php', '/'], ['App', '', '\\'], $file);
+            $action = str_replace(
+              [realpath('../') . '/src', realpath('../') . '/', '/src', '.php'],
+              ['App', '', '', ''],
+              $file);
+            $arr = explode('/', $action);
+            array_walk_recursive($arr, function (&$value) {
+              $value = ucfirst($value);
+            });
+            $action = join('\\', $arr);
             $rc = new \ReflectionClass($action); //建立实体类的反射类
 
             $docblock = $rc->getDocComment();
@@ -94,7 +102,6 @@ class SyncRouterApi extends Api
         }
 
         return $this->respondWithData(['routes' => $routes ?? []]);
-        break;
       default:
         return $this->respondWithError('禁止访问', 403);
     }

@@ -7,6 +7,7 @@ use Slim\App;
 
 return function (App $app) {
   $app->add(new SessionMiddleware($app->getContainer()->get('settings')['privateKey']));
+  $app->add(new RKA\Middleware\IpAddress());
   $app->addRoutingMiddleware();
   $app->add(new MethodOverrideMiddleware());
   $app->addMiddleware(new \App\Application\Middleware\JsonBodyParserMiddleware());

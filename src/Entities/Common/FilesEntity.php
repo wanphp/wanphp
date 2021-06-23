@@ -11,9 +11,15 @@ namespace App\Entities\Common;
 
 use App\Entities\Traits\EntityTrait;
 
+/**
+ * Class FilesEntity
+ * @package App\Entities\Common
+ * @OA\Schema(title="上传文件",required={"url"})
+ */
 class FilesEntity implements \JsonSerializable
 {
   use EntityTrait;
+
   /**
    * @DBType({"key":"PRI","type":"int NOT NULL AUTO_INCREMENT"})
    * @var integer|null
