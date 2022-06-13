@@ -18,6 +18,6 @@ class FilesRepository extends BaseRepository implements FilesInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, FilesEntity::class);
+    parent::__construct($database, self::TABLE_NAME, FilesEntity::class);
   }
 }

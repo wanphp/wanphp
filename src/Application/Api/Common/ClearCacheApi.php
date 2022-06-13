@@ -15,7 +15,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class ClearCacheApi extends Api
 {
-  private $redis;
+  private ClientInterface $redis;
 
   public function __construct(ClientInterface $redis)
   {
@@ -46,6 +46,6 @@ class ClearCacheApi extends Api
     $db = $this->args['db'] ?? 1;
     $this->redis->select($db);
     $this->redis->flushdb();
-    return $this->respondWithData('OK!');
+    return $this->respondWithData(['msg' => 'OK!']);
   }
 }

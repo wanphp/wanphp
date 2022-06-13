@@ -13,5 +13,5 @@ use App\Domain\BaseInterface;
 
 interface SettingInterface extends BaseInterface
 {
-  const TABLENAME = "setting";
+  const TABLE_NAME = "setting";
 }

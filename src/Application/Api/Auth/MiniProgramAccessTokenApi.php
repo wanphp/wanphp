@@ -19,8 +19,8 @@ use Wanphp\Plugins\Weixin\Domain\MiniProgramInterface;
 
 class MiniProgramAccessTokenApi extends Author2Api
 {
-  private $miniProgram;
-  private $miniProgramUser;
+  private MiniProgram $miniProgram;
+  private MiniProgramInterface $miniProgramUser;
 
   public function __construct(MiniProgramInterface $miniProgramUser, MiniProgram $miniProgram, ContainerInterface $container)
   {
@@ -31,7 +31,7 @@ class MiniProgramAccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *   path="/auth/miniProgramAccessToken",
    *   tags={"Auth"},

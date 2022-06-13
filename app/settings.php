@@ -38,14 +38,16 @@ return function (ContainerBuilder $containerBuilder) {
       ],
       'command' => [
         'SET SQL_MODE=ANSI_QUOTES'
-      ]
+      ],
+      'error' => PDO::ERRMODE_SILENT
     ],
     'redis' => [
-      'host' => 'redis',
-      'password' => 'wanphp#1122',
-      'prefix' => 'wp_',
-      'port' => 6379,
-      'database' => 1
+      'parameters' => ['scheme' => 'tcp',
+        'host' => 'redis',
+        'password' => 'wanphp#1122',
+        'port' => 6379,
+        'database' => 1],
+      'options' => ['prefix' => 'wp:']
     ],
     'wechat.base' => [
       'appid' => '',

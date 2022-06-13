@@ -12,6 +12,7 @@ namespace App\Application\Api\Manage\Admin;
 use App\Application\Api\Api;
 use App\Domain\Admin\AdminInterface;
 use App\Domain\Admin\RoleInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -22,8 +23,8 @@ use Psr\Http\Message\ResponseInterface as Response;
  */
 class AdminApi extends Api
 {
-  private $admin;
-  private $role;
+  private AdminInterface $admin;
+  private RoleInterface $role;
 
   public function __construct(AdminInterface $admin, RoleInterface $role)
   {
@@ -33,7 +34,7 @@ class AdminApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *  path="/api/manage/admin",
    *  tags={"Admin"},
@@ -55,7 +56,7 @@ class AdminApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="id",type="integer"))
+   *         @OA\Property(property="id",type="integer")
    *       )
    *      }
    *    )
@@ -90,7 +91,7 @@ class AdminApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="up_num",type="integer"))
+   *         @OA\Property(property="upNum",type="integer")
    *       )
    *      }
    *    )
@@ -117,7 +118,7 @@ class AdminApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="del_num",type="integer"))
+   *         @OA\Property(property="deNum",type="integer")
    *       )
    *      }
    *    )
@@ -150,35 +151,40 @@ class AdminApi extends Api
     switch ($this->request->getMethod()) {
       case  'POST';
         $data = $this->request->getParsedBody();
+        $id = $this->admin->get('id', ['account' => $data['account']]);
+        if (is_numeric($id) && $id > 0) {
+          return $this->respondWithError('帐号已经存在');
+        }
         $data['salt'] = substr(md5(uniqid(rand(), true)), 10, 11);
         $data['password'] = md5(SHA1($data['salt'] . md5($data['password'])));
         $data['ctime'] = time();
         $data['id'] = $this->admin->insert($data);
         return $this->respondWithData($data, 201);
-        break;
       case  'PUT';
+        $id = (int)$this->resolveArg('id');
         $data = $this->request->getParsedBody();
-        if($data['password']){
+        $admin_id = $this->admin->get('id', ['id[!]' => $id, 'account' => $data['account']]);
+        if (is_numeric($admin_id) && $admin_id > 0) {
+          return $this->respondWithError('帐号已经存在');
+        }
+        if (isset($data['password'])) {
           $data['salt'] = substr(md5(uniqid(rand(), true)), 10, 11);
           $data['password'] = md5(SHA1($data['salt'] . md5($data['password'])));
         }
-        $num = $this->admin->update($data, ['id' => $this->args['id']]);
-        return $this->respondWithData(['up_num' => $num], 201);
-        break;
+        $num = $this->admin->update($data, ['id' => $id]);
+        return $this->respondWithData(['upNum' => $num], 201);
       case  'DELETE';
-        $delnum = $this->admin->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 200);
-        break;
+        $delNum = $this->admin->delete(['id' => $this->args['id']]);
+        return $this->respondWithData(['delNum' => $delNum], 200);
       case 'GET';
         $role_id = $this->request->getAttribute('oauth_admin_role_id');
         $roles = $this->role->select('id,name');
-        $datas = [];
+        $data = [];
         foreach ($this->admin->select('id,account,uid,role_id,name,tel,status,lastlogintime,lastloginip', ['role_id[>]' => $role_id]) as $admin) {
           $admin['lastlogintime'] = $admin['lastlogintime'] ? date('Y-m-d H:i:s', $admin['lastlogintime']) : '尚未登录';
-          $datas[] = $admin;
+          $data[] = $admin;
         }
-        return $this->respondWithData(['admins' => $datas, 'roles' => $roles]);
-        break;
+        return $this->respondWithData(['admins' => $data, 'roles' => $roles]);
       default:
         return $this->respondWithError('禁止访问', 403);
     }

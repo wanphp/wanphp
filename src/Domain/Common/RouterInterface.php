@@ -11,15 +11,16 @@ namespace App\Domain\Common;
 
 use App\Domain\BaseInterface;
 use App\Entities\Common\RouterEntity;
+use Exception;
 
 interface RouterInterface extends BaseInterface
 {
-  const TABLENAME = "routers";
+  const TABLE_NAME = "routers";
 
   /**
    * @param int $id
    * @return RouterEntity
-   * @throws \Exception
+   * @throws Exception
    */
   public function findActionOfId(int $id): RouterEntity;
 

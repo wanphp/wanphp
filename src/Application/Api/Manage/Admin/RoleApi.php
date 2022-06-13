@@ -12,6 +12,7 @@ namespace App\Application\Api\Manage\Admin;
 use App\Application\Api\Api;
 use App\Domain\Admin\RoleInterface;
 use App\Domain\Common\RouterInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -22,8 +23,8 @@ use Psr\Http\Message\ResponseInterface as Response;
  */
 class RoleApi extends Api
 {
-  private $role;
-  private $router;
+  private RoleInterface $role;
+  private RouterInterface $router;
 
   public function __construct(RoleInterface $role, RouterInterface $router)
   {
@@ -33,7 +34,7 @@ class RoleApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *  path="/api/manage/admin/role",
    *  tags={"AdminRole"},
@@ -55,7 +56,7 @@ class RoleApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="id",type="integer"))
+   *         @OA\Property(property="id",type="integer")
    *       )
    *      }
    *    )
@@ -90,7 +91,7 @@ class RoleApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="up_num",type="integer"))
+   *         @OA\Property(property="upNum",type="integer")
    *       )
    *      }
    *    )
@@ -117,7 +118,7 @@ class RoleApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="del_num",type="integer"))
+   *         @OA\Property(property="delNum",type="integer")
    *       )
    *      }
    *    )
@@ -150,23 +151,28 @@ class RoleApi extends Api
     switch ($this->request->getMethod()) {
       case  'POST';
         $data = $this->request->getParsedBody();
+        $id = $this->role->get('id', ['name' => $data['name']]);
+        if ($id) {
+          return $this->respondWithError('角色已经存在');
+        }
         $id = $this->role->insert($data);
         return $this->respondWithData(['id' => $id], 201);
-        break;
       case  'PUT';
         $data = $this->request->getParsedBody();
-        $num = $this->role->update($data, ['id' => $this->args['id']]);
-        return $this->respondWithData(['up_num' => $num], 201);
-        break;
+        $id = (int)$this->args['id'];
+        $role_id = $this->role->get('id', ['id[!]' => $id, 'name' => $data['name']]);
+        if (is_numeric($role_id) && $role_id > 0) {
+          return $this->respondWithError('角色已经存在');
+        }
+        $num = $this->role->update($data, ['id' => $id]);
+        return $this->respondWithData(['upNum' => $num], 201);
       case  'DELETE';
-        $delnum = $this->role->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 200);
-        break;
+        $delNum = $this->role->delete(['id' => $this->args['id']]);
+        return $this->respondWithData(['delNum' => $delNum]);
       case 'GET';
         $router = $this->router->select('id,name', ['ORDER' => ['sortOrder' => 'ASC']]);
         $roles = $this->role->select('*');
         return $this->respondWithData(['roles' => $roles, 'router' => $router]);
-        break;
       default:
         return $this->respondWithError('禁止访问', 403);
     }

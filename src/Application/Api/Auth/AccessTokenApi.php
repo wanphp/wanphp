@@ -9,6 +9,8 @@
 namespace App\Application\Api\Auth;
 
 
+use Exception;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
@@ -22,7 +24,7 @@ class AccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *   path="/auth/accessToken",
    *   tags={"Auth"},
@@ -97,9 +99,9 @@ class AccessTokenApi extends Author2Api
       }
       // 这里只需要这一行就可以，具体的判断在 Repositories 中
       return $this->server->respondToAccessTokenRequest($this->request, $this->response);
-    } catch (\League\OAuth2\Server\Exception\OAuthServerException $exception) {
+    } catch (OAuthServerException $exception) {
       return $exception->generateHttpResponse($this->response);
-    } catch (\Exception $exception) {
+    } catch (Exception $exception) {
       $body = new Stream(fopen('php://temp', 'r+'));
       $body->write($exception->getMessage());
       return $this->response->withStatus(400)->withBody($body);

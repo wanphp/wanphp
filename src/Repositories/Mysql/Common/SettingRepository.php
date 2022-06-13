@@ -18,6 +18,6 @@ class SettingRepository extends BaseRepository implements SettingInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, SettingEntity::class);
+    parent::__construct($database, self::TABLE_NAME, SettingEntity::class);
   }
 }

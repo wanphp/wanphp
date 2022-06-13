@@ -9,6 +9,8 @@
 namespace App\Application\Api\Auth;
 
 
+use Exception;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Psr7\Stream;
@@ -22,7 +24,7 @@ class RefreshAccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *   path="/auth/refreshAccessToken",
    *   tags={"Auth"},
@@ -69,9 +71,9 @@ class RefreshAccessTokenApi extends Author2Api
     try {
       $this->refresh_token();
       return $this->server->respondToAccessTokenRequest($this->request, $this->response);
-    } catch (\League\OAuth2\Server\Exception\OAuthServerException $exception) {
+    } catch (OAuthServerException $exception) {
       return $exception->generateHttpResponse($this->response);
-    } catch (\Exception $exception) {
+    } catch (Exception $exception) {
       $body = new Stream(fopen('php://temp', 'r+'));
       $body->write($exception->getMessage());
       return $this->response->withStatus(400)->withBody($body);

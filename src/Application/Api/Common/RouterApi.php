@@ -12,12 +12,13 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Common\NavigateInterface;
 use App\Domain\Common\RouterInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class RouterApi extends Api
 {
-  private $router;
-  private $navigate;
+  private RouterInterface $router;
+  private NavigateInterface $navigate;
 
   public function __construct(RouterInterface $router, NavigateInterface $navigate)
   {
@@ -27,7 +28,7 @@ class RouterApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Patch(
    *  path="/api/manage/router/{ID}",
    *  tags={"System"},
@@ -60,7 +61,7 @@ class RouterApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="up_num",type="integer"))
+   *         @OA\Property(property="datas",@OA\Property(property="upNum",type="integer"))
    *       )
    *      }
    *    )
@@ -83,8 +84,7 @@ class RouterApi extends Api
       case 'PATCH':
         $data = $this->request->getParsedBody();
         $num = $this->router->update($data, ['id' => $this->args['id']]);
-        return $this->respondWithData(['up_num' => $num], 201);
-        break;
+        return $this->respondWithData(['upNum' => $num], 201);
       case 'GET':
         $navigate = $this->navigate->select('*', ['ORDER' => ['sortOrder' => 'ASC']]);
         $menus = [];
@@ -97,7 +97,6 @@ class RouterApi extends Api
         }
         $menus = array_merge($menus);
         return $this->respondWithData(['menus' => $menus, 'routes' => $routes ?? []]);
-        break;
       default:
         return $this->respondWithError('禁止访问', 403);
     }

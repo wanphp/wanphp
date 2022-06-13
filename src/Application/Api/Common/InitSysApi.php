@@ -12,12 +12,13 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Admin\AdminInterface;
 use App\Domain\Common\ClientsInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class InitSysApi extends Api
 {
-  private $admin;
-  private $clients;
+  private AdminInterface $admin;
+  private ClientsInterface $clients;
 
   public function __construct(AdminInterface $admin, ClientsInterface $clients)
   {
@@ -27,7 +28,7 @@ class InitSysApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *  path="/auth/initSys",
    *  tags={"Auth"},
@@ -65,47 +66,41 @@ class InitSysApi extends Api
     if (empty($data)) return $this->respondWithError('无用户数据');
 
     $uri = $this->request->getUri();
-    try {
-      $clients = $this->clients->select('id');
-    } catch (\Exception $e) {
-      $client_secret = md5(uniqid(rand(), true));
-      if ($e->getCode() == '1146') {
-        $this->clients->insert([
-          'client_id' => 'sysmanage',
-          'client_secret' => $client_secret,
-          'name' => '系统管理',
-          'redirect_uri' => $uri->getScheme() . '://' . $uri->getHost() . '/',
-          'confidential' => 1
-        ]);
-      }
+    $clients = $this->clients->get('id,client_id');
+    $client_secret = md5(uniqid(rand(), true));
+    if (!isset($clients['id'])) {
+      $this->clients->insert([
+        'client_id' => 'sysManage',
+        'client_secret' => $client_secret,
+        'name' => '系统管理',
+        'redirect_uri' => $uri->getScheme() . '://' . $uri->getHost() . '/',
+        'confidential' => 1
+      ]);
     }
 
-    try {
-      $admin = $this->admin->select('id');
-    } catch (\Exception $e) {
-      if ($e->getCode() == '1146') {
-        $salt = substr(md5(uniqid(rand(), true)), 10, 11);
-        $this->admin->insert([
-          'account' => $data['account'],
-          'salt' => $salt,
-          'password' => md5(SHA1($salt . md5($data['password']))),
-          'role_id' => -1,
-          'status' => 1,
-          'ctime' => time()
-        ]);
-      }
+    $admin = $this->admin->get('id,account');
+    if (!isset($admin['id'])) {
+      $salt = substr(md5(uniqid(rand(), true)), 10, 11);
+      $this->admin->insert([
+        'account' => $data['account'],
+        'salt' => $salt,
+        'password' => md5(SHA1($salt . md5($data['password']))),
+        'role_id' => -1,
+        'status' => 1,
+        'ctime' => time()
+      ]);
     }
 
     if (isset($clients) && isset($admin)) {
       return $this->respondWithError('系统已初始化过，请求被拒绝。');
     } else {
-      $data = [
-        'client_id' => 'sysmanage',
+      $res = [
+        'client_id' => 'sysManage',
         'client_secret' => $client_secret,
         'account' => $data['account'],
         'password' => $data['password']
       ];
-      return $this->respondWithData($data, 201);
+      return $this->respondWithData($res, 201);
     }
   }
 }

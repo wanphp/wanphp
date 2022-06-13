@@ -1,9 +1,9 @@
 <!-- HTML for static distribution bundle build -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>Swagger UI</title>
+  <title>wanphpAPI</title>
   <link rel="stylesheet" type="text/css" href="/swagger/swagger-ui.css">
   <link rel="icon" type="image/png" href="/swagger/favicon-32x32.png" sizes="32x32"/>
   <link rel="icon" type="image/png" href="/swagger/favicon-16x16.png" sizes="16x16"/>
@@ -36,7 +36,13 @@
   window.onload = function () {
     // Begin Swagger UI call region
     const ui = SwaggerUIBundle({
-      url: document.location.origin + "/docs/docs.php",
+      //url: document.location.origin + "/docs/docs.php",
+      urls: [
+        {url: document.location.origin + "/docs/docs.php?path=/docs.ymal", name: '用户中心'},
+        {url: document.location.origin + "/docs/docs.php?path=/plugins/weixin/docs.ymal", name: '微信扩展'},
+        {url: document.location.origin + "/docs/docs.php?path=/plugins/about/docs.ymal", name: '关于我们扩展'},
+        {url: document.location.origin + "/docs/docs.php?path=/components/category/docs.ymal", name: '分类组件'},
+      ],
       dom_id: '#swagger-ui',
       deepLinking: true,
       presets: [

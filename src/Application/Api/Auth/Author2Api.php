@@ -10,9 +10,13 @@ namespace App\Application\Api\Auth;
 
 
 use DateInterval;
+use Defuse\Crypto\Exception\BadFormatException;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Key;
 use Exception;
 use Predis\Client;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Wanphp\Libray\Mysql\Database;
 use Wanphp\Libray\Weixin\MiniProgram;
 use Wanphp\Plugins\Weixin\Domain\MiniProgramInterface;
@@ -36,19 +40,20 @@ use Slim\Exception\HttpNotFoundException;
 
 abstract class Author2Api extends Api
 {
-  protected $server;
-  protected $database;
-  protected $redis;
+  protected AuthorizationServer $server;
+  protected Database $database;
+  protected Client $redis;
 
   /**
-   * Author2Api constructor.
-   * @param Database $database
-   * @param Client $redis
-   * @throws \Exception
+   * @param ContainerInterface $container
+   * @throws BadFormatException
+   * @throws EnvironmentIsBrokenException
+   * @throws ContainerExceptionInterface
+   * @throws NotFoundExceptionInterface
    */
   public function __construct(ContainerInterface $container)
   {
-    $this->database = $container->get(Database::class);;
+    $this->database = $container->get(Database::class);
     $redis = $container->get('redis');
     $this->redis = new Client($redis['parameters'], $redis['options']);
     $settings = $container->get('settings');
@@ -61,7 +66,6 @@ abstract class Author2Api extends Api
 
     // 私钥与加密密钥
     $privateKey = new CryptKey($settings['privateKey'], $settings['privateKeyPass'] ?: null); // 如果私钥文件有密码
-    //$encryptionKey = 'e9habxOA6IERAr3EXSSm+a231VX+lI5zVMiY4c7RF6s='; // 加密密钥字符串
     $encryptionKey = Key::loadFromAsciiSafeString($settings['encryptionKey']); //如果通过 generate-defuse-key 脚本生成的字符串，可使用此方法传入
 
     // 初始化 server
@@ -77,8 +81,8 @@ abstract class Author2Api extends Api
   protected function implicit()
   {
     $this->server->enableGrantType(
-      new ImplicitGrant(new DateInterval('PT1H')),
-      new DateInterval('PT1H') // access tokens will expire after 1 hour
+      new ImplicitGrant(new DateInterval('P1D')),
+      new DateInterval('P1D') // 设置授权码过期时间为1天
     );
   }
 

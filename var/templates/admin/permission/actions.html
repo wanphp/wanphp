@@ -1,0 +1,307 @@
+{% extends "admin/common/base.html" %}
+{% block styles %}
+<!-- Select2 -->
+<link rel="stylesheet" href="/adminlte/plugins/select2/css/select2.min.css">
+<link rel="stylesheet" href="/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+{% endblock %}
+{% block container %}
+<div class="row">
+  <div class="col-md-3">
+    <div class="modal fade" id="modal-add" style="display: none;" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">添加菜单</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="menuForm" action="/admin/navigate" method="POST" novalidate="novalidate">
+              <div class="form-group">
+                <label for="name">菜单名称</label>
+                <input name="name" type="text" class="form-control" placeholder="菜单名称" id="name" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="icon">ICO样式</label>
+                <input name="icon" type="text" class="form-control" placeholder="fa样式" id="icon">
+              </div>
+              <div class="form-group">
+                <label for="sortOrder">显示排序</label>
+                <input name="sortOrder" type="number" class="form-control" placeholder="显示排序" id="sortOrder">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="submit" form="menuForm" class="btn btn-primary">提交</button>
+          </div>
+        </div>
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
+    <button type="button" class="btn btn-primary btn-block mb-3" data-toggle="modal" data-target="#modal-add">添加菜单</button>
+    {% for index, item in menus %}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="{{ item.icon }}"></i> {{ item.name }}</h3>
+
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+          <button type="button" class="btn btn-tool editMenu" data-data="{{ item|json_encode() }}"><i class="fas fa-edit"></i></button>
+        </div>
+      </div>
+      {% if item.sublist %}
+      <div class="card-body p-0">
+        <ul class="nav nav-pills flex-column sublist">
+          {% for nav in item.sublist %}
+          <li class="nav-item" data-id="{{ nav.id }}">
+            <a href="javascript:;" class="nav-link">
+              <i class="far fa-circle nav-icon"></i> {{ nav.name }}
+              <span class="float-right"><button type="button" class="btn btn-tool up"><i class="fas fa-angle-double-up"></i></button></span>
+              <span class="float-right"><button type="button" class="btn btn-tool down"><i class="fas fa-angle-double-down"></i></button></span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+    {% endfor %}
+  </div>
+  <!-- /.col -->
+  <div class="col-md-9">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">权限管理</h3>
+
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
+            <i class="fas fa-minus"></i></button>
+          <button id="action_sync" type="button" class="btn btn-tool" data-toggle="tooltip" title="更新">
+            <i class="fas fa-sync-alt"></i></button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered">
+          <thead>
+          <tr>
+            <th>所属菜单</th>
+            <th>操作名称</th>
+            <th>路由</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for action in actions %}
+          <tr>
+            <td class="p-1">
+              <select data-id="{{ action.id }}" class="form-control select2" style="width: 100%;">
+                <option value=" ">请选择</option>
+                {% for index, menu in menus %}
+                <option {{ (index==action.navId) ? 'selected' }} value="{{ index }}">{{ menu.name }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>{{ action.name }}</td>
+            <td>{{ action.route }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+  </div>
+  <!-- /.col -->
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/adminlte/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="/adminlte/plugins/jquery-validation/additional-methods.min.js"></script>
+<!-- Select2 -->
+<script src="/adminlte/plugins/select2/js/select2.full.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    $('.select2').select2().change(function (e) {
+      if ($(this).val() != $(this).attr('default-value')) {
+        $(this).attr('default-value', $(this).val());
+        $.ajax({
+          url: '/admin/router/' + $(this).attr('data-id'),
+          type: 'POST',
+          data: {'navId': $(this).val()},
+          dataType: 'json',
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-HTTP-Method-Override", 'PATCH');
+          },
+          success: function (data) {
+            console.log(data);
+            location.reload();
+          },
+          error: errorDialog
+        });
+      }
+      console.log($(this).val(), $(this).attr('default-value'));
+    });
+
+    $.validator.setDefaults({
+      submitHandler: function (e) {
+        $.ajax({
+          url: $(e).attr('action'),
+          data: new FormData(e),
+          type: 'POST',
+          cache: false,
+          contentType: false,
+          processData: false,
+          dataType: 'json',
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-HTTP-Method-Override", $(e).attr('method'));
+          },
+          success: function (data) {
+            console.log(data);
+            location.reload();
+          },
+          error: function (data) {
+            console.log(data);
+            Toast.fire({
+              icon: 'error',
+              title: data.message
+            });
+          }
+        });
+        return false;
+      }
+    });
+    $('#menuForm').validate({
+      rules: {
+        name: {
+          required: true
+        },
+        icon: {
+          required: true
+        },
+        sortOrder: {
+          required: true,
+          number: true
+        }
+      },
+      messages: {
+        name: {
+          required: "请输入菜单名称"
+        },
+        icon: {
+          required: "请输入菜单ICO样式"
+        },
+        sortOrder: {
+          required: "请输入显示排序"
+        }
+      },
+      errorElement: 'span',
+      errorPlacement: function (error, element) {
+        error.addClass('invalid-feedback');
+        element.closest('.form-group').append(error);
+      },
+      highlight: function (element, errorClass, validClass) {
+        $(element).addClass('is-invalid');
+      },
+      unhighlight: function (element, errorClass, validClass) {
+        $(element).removeClass('is-invalid');
+      }
+    });
+
+    $('.editMenu').click(function () {
+      var menu = JSON.parse($(this).attr('data-data'));
+      $('#menuForm').attr('action', '/admin/navigate/' + menu.id);
+      $('#menuForm').attr('method', 'PUT');
+      $("#menuForm input[name='name']").val(menu.name);
+      $("#menuForm input[name='icon']").val(menu.icon);
+      $("#menuForm input[name='sortOrder']").val(menu.sortOrder);
+      $('#modal-add').modal('show');
+    });
+
+    $('#modal-add').on('hidden.bs.modal', function () {
+      $('#menuForm')[0].reset();
+      $('#menuForm').attr('action', '/admin/navigate');
+      $('#menuForm').attr('method', 'POST');
+    });
+
+    $(".sublist").on('click', 'button', function (event) {
+      var parent = $(this).parents('.nav-item');
+      var parents = $(this).parents(".sublist");
+      var len = parents.children().length;
+
+      if ($(this).is(".up") && parent.index() == 0) {
+        toastr.warning('已经位于最顶端！');
+        return false;
+      } else if ($(this).is(".down") && parent.index() == len - 1) {
+        toastr.warning("已经位于最底端！");
+        return false;
+      }
+      if ($(this).is(".up")) {
+        var prev = parent.prev();
+        $.ajax({
+          url: '/admin/router/' + parent.attr('data-id'),
+          type: 'POST',
+          data: {sortOrder: prev.index()},
+          headers: {"X-HTTP-Method-Override": "PATCH"},
+          dataType: 'json',
+          success: function (data) {
+            console.log(data);
+          },
+        });
+        $.ajax({
+          url: '/admin/router/' + prev.attr('data-id'),
+          type: 'POST',
+          data: {sortOrder: parent.index()},
+          headers: {"X-HTTP-Method-Override": "PATCH"},
+          dataType: 'json',
+          success: function (data) {
+            console.log(data);
+          },
+        });
+        parent.insertBefore(prev);
+      }
+      if ($(this).is(".down")) {
+        var next = parent.next();
+        $.ajax({
+          url: '/admin/router/' + parent.attr('data-id'),
+          type: 'POST',
+          data: {sortOrder: next.index()},
+          headers: {"X-HTTP-Method-Override": "PATCH"},
+          dataType: 'json',
+          success: function (data) {
+            console.log(data);
+          },
+        });
+        $.ajax({
+          url: '/admin/router/' + next.attr('data-id'),
+          type: 'POST',
+          data: {sortOrder: parent.index()},
+          headers: {"X-HTTP-Method-Override": "PATCH"},
+          dataType: 'json',
+          success: function (data) {
+            console.log(data);
+          },
+        });
+        parent.insertAfter(next);
+      }
+    });
+
+    $('#action_sync').click(function () {
+      $.ajax({
+        url: '/admin/syncactions',
+        type: 'get',
+        dataType: 'json',
+        success: function (data) {
+          console.log(data);
+          location.reload();
+        },
+        error: errorDialog
+      });
+    });
+  });
+</script>
+{% endblock %}

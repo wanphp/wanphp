@@ -11,15 +11,24 @@ namespace App\Application\Api\Common;
 
 use App\Application\Api\Api;
 use App\Domain\Common\FilesInterface;
+use Exception;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\UploadedFileInterface;
 
 class FilesApi extends Api
 {
-  private $files;
-  private $filepath;
+  private FilesInterface $files;
+  private string $filepath;
 
+  /**
+   * @param ContainerInterface $container
+   * @param FilesInterface $files
+   * @throws ContainerExceptionInterface
+   * @throws NotFoundExceptionInterface
+   */
   public function __construct(ContainerInterface $container, FilesInterface $files)
   {
     $settings = $container->get('settings');
@@ -29,7 +38,7 @@ class FilesApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *  path="/api/file",
    *  tags={"System"},
@@ -158,7 +167,7 @@ class FilesApi extends Api
         }
 
         $content = file_get_contents($uploadedFile->getFilePath());
-        if (preg_match('/\<\?php/i', $content)) {
+        if (preg_match('/<\?php/i', $content)) {
           return $this->respondWithError('文件类型错误！');
         }
 
@@ -169,17 +178,17 @@ class FilesApi extends Api
 
           //大文件分块上传
           if (isset($post['chunks']) && $post['chunks'] > 0) {
-            $tmppath = $this->filepath . '/tmp/' . $data['md5'];//上传文件临时目录
+            $tmpPath = $this->filepath . '/tmp/' . $data['md5'];//上传文件临时目录
 
-            if ($post['current_chunk'] == 1 && is_dir($tmppath)) { //断点续传
+            if ($post['current_chunk'] == 1 && is_dir($tmpPath)) { //断点续传
               //已上传数量
               $current_chunk = 1;
               $num = 1;
               while ($num > 0) {
-                $cacheFile = $tmppath . '/' . $num . '.dat';
+                $cacheFile = $tmpPath . '/' . $num . '.dat';
                 if (!file_exists($cacheFile)) {
                   if ($num == 1) {
-                    $this->moveUploadedFile($tmppath, $uploadedFile, '1.dat');
+                    $this->moveUploadedFile($tmpPath, $uploadedFile, '1.dat');
                     $current_chunk = 1;
                   } else {
                     $current_chunk = $num - 1;//最后上传文件块
@@ -197,8 +206,8 @@ class FilesApi extends Api
             }
 
             //创建临时目录，上传文件块
-            if (!is_dir($tmppath)) mkdir($tmppath, 0755, true);
-            $this->moveUploadedFile($tmppath, $uploadedFile, $post['current_chunk'] . '.dat');
+            if (!is_dir($tmpPath)) mkdir($tmpPath, 0755, true);
+            $this->moveUploadedFile($tmpPath, $uploadedFile, $post['current_chunk'] . '.dat');
 
             if ($post['current_chunk'] == $post['chunks']) {//最后一块,合成大文件
               $extension = strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION));
@@ -208,7 +217,7 @@ class FilesApi extends Api
               $fp = fopen($this->filepath . $video_path, "wb");
               $num = 1;
               while ($num > 0) {
-                $cacheFile = $tmppath . '/' . $num++ . '.dat';
+                $cacheFile = $tmpPath . '/' . $num++ . '.dat';
                 if (file_exists($cacheFile)) {
                   $handle = fopen($cacheFile, 'rb');
                   $content = fread($handle, filesize($cacheFile));
@@ -220,7 +229,7 @@ class FilesApi extends Api
                 } else {
                   $num = -1;
                   //删除目录
-                  rmdir($tmppath);
+                  rmdir($tmpPath);
                 }
               }
               fclose($fp);
@@ -238,7 +247,6 @@ class FilesApi extends Api
         $id = $this->files->insert($data);
 
         return $this->respondWithData(['id' => $id, 'type' => $data['type'], 'host' => $host, 'url' => $data['url']], 201);
-        break;
       case 'PATCH':
         $data = $this->request->getParsedBody();
         $id = (int)$this->args['id'];
@@ -248,18 +256,16 @@ class FilesApi extends Api
         } else {
           return $this->respondWithError('缺少ID', 422);
         }
-        break;
       case 'DELETE':
         $id = (int)($this->args['id'] ?? 0);
         if ($id > 0) {
           $filepath = $this->files->get('url', ['id' => $id]);
           $num = $this->files->delete(['id' => $id]);
           if ($num) unlink($this->filepath . $filepath); //删除文件
-          return $this->respondWithData(['del_num' => $num], 200);
+          return $this->respondWithData(['del_num' => $num]);
         } else {
           return $this->respondWithError('缺少ID');
         }
-        break;
       default:
         $id = $this->args['id'] ?? 0;
         if ($id > 0) {
@@ -273,22 +279,23 @@ class FilesApi extends Api
         }
         $files = $this->files->select('id,cover,name,ctime', $where ?? []);
         //格式化数据
-        $datas = [];
+        $data = [];
         foreach ($files as $file) {
           $file['ctime'] = date('Y-m-d H:i:s', $file['ctime']);
-          $datas[] = $file;
+          $data[] = $file;
         }
-        return $this->respondWithData($datas);
+        return $this->respondWithData($data);
     }
   }
 
   /**
    * @param string $directory
    * @param UploadedFileInterface $uploadedFile
+   * @param string $filename
    * @return string
-   * @throws \Exception
+   * @throws Exception
    */
-  private function moveUploadedFile(string $directory, UploadedFileInterface $uploadedFile, $filename = '')
+  private function moveUploadedFile(string $directory, UploadedFileInterface $uploadedFile, string $filename = ''): string
   {
     $extension = strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION));
 

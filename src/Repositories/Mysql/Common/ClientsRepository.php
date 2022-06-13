@@ -18,6 +18,6 @@ class ClientsRepository extends BaseRepository implements ClientsInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, ClientsEntity::class);
+    parent::__construct($database, self::TABLE_NAME, ClientsEntity::class);
   }
 }

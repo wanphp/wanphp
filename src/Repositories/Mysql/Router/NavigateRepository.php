@@ -18,7 +18,7 @@ class NavigateRepository extends BaseRepository implements NavigateInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, NavigateEntity::class);
+    parent::__construct($database, self::TABLE_NAME, NavigateEntity::class);
   }
   /**
    * {@inheritDoc}

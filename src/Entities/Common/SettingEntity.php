@@ -9,7 +9,7 @@
 namespace App\Entities\Common;
 
 
-use App\Entities\Traits\EntityTrait;
+use Wanphp\Libray\Mysql\EntityTrait;
 
 /**
  * Class Setting
@@ -23,34 +23,35 @@ use App\Entities\Traits\EntityTrait;
 class SettingEntity implements \JsonSerializable
 {
   use EntityTrait;
+
   /**
    * @DBType({"key":"PRI","type":"smallint NOT NULL AUTO_INCREMENT"})
    * @OA\Property(format="int32", description="ID")
    * @var integer
    */
-  private $id;
+  private int $id;
   /**
    * @DBType({"type":"varchar(20) NOT NULL DEFAULT ''"})
    * @OA\Property(description="配置项名称")
    * @var string
    */
-  private $name;
+  private string $name;
   /**
    * @DBType({"key":"PRI","type":"varchar(30) not null DEFAULT ''"})
    * @OA\Property(description="配置项键")
    * @var string
    */
-  private $key;
+  private string $key;
   /**
    * @DBType({"type":"varchar(300) not null DEFAULT ''"})
    * @OA\Property(description="配置项值")
    * @var string
    */
-  private $value;
+  private string $value;
   /**
    * @DBType({"type":" tinyint(4) NOT NULL DEFAULT '0'"})
    * @OA\Property(description="显示排序")
    * @var integer
    */
-  private $sortOrder;
+  private int $sortOrder;
 }

@@ -13,5 +13,5 @@ use App\Domain\BaseInterface;
 
 interface ClientsInterface extends BaseInterface
 {
-  const TABLENAME = "clients";
+  const TABLE_NAME = "clients";
 }

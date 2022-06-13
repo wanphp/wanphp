@@ -11,21 +11,22 @@ namespace App\Domain\Admin;
 
 use App\Domain\BaseInterface;
 use App\Entities\Admin\RoleEntity;
+use Exception;
 
 interface RoleInterface extends BaseInterface
 {
-  const TABLENAME = "role";
+  const TABLE_NAME = "role";
   /**
    * @param int $id
    * @return RoleEntity
-   * @throws \Exception
+   * @throws Exception
    */
   public function findRoleOfId(int $id): RoleEntity;
 
   /**
    * @param int $id
    * @return bool
-   * @throws \Exception
+   * @throws Exception
    */
   public function delRole(int $id): bool;
 }

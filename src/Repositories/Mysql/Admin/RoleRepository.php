@@ -18,7 +18,7 @@ class RoleRepository extends BaseRepository implements RoleInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, RoleEntity::class);
+    parent::__construct($database, self::TABLE_NAME, RoleEntity::class);
   }
 
   /**

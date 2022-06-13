@@ -14,7 +14,9 @@ use App\Repositories\Mysql\Author2\AccessTokenRepository;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\ResourceServer;
 use Predis\Client;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -23,9 +25,14 @@ use Slim\Psr7\Response;
 
 class OAuthServerMiddleware implements MiddlewareInterface
 {
-  private $redis;
-  private $admin;
+  private Client $redis;
+  private AdminInterface $admin;
 
+  /**
+   * @param ContainerInterface $container
+   * @throws ContainerExceptionInterface
+   * @throws NotFoundExceptionInterface
+   */
   public function __construct(ContainerInterface $container)
   {
     $settings = $container->get('settings');
@@ -53,14 +60,14 @@ class OAuthServerMiddleware implements MiddlewareInterface
       $client_id = $request->getAttribute('oauth_client_id');
       $user_id = $request->getAttribute('oauth_user_id');
       //系统管理
-      if ($client_id == 'sysmanage') {
+      if ($client_id == 'sysManage') {
         try {
           if (is_numeric($user_id)) { //微信扫码登录
             $admin = $this->admin->get('id,role_id', ['uid' => $user_id]);
             $request = $request->withAttribute('oauth_admin_id', $admin['uid']);
           } else { //账号密码登录
             $user_id = ltrim($user_id, 'admin_');
-            $admin = $this->admin->get('uid,role_id', ['id' => $user_id]);
+            $admin = $this->admin->get('uid,role_id[JSON]', ['id' => $user_id]);
             $request = $request->withAttribute('oauth_user_id', $admin['uid']);
             $request = $request->withAttribute('oauth_admin_id', $user_id);
           }

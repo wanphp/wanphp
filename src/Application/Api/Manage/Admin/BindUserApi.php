@@ -11,11 +11,12 @@ namespace App\Application\Api\Manage\Admin;
 
 use App\Application\Api\Api;
 use App\Domain\Admin\AdminInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class BindUserApi extends Api
 {
-  private $admin;
+  private AdminInterface $admin;
 
   public function __construct(AdminInterface $admin)
   {
@@ -24,7 +25,7 @@ class BindUserApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Get(
    *  path="/api/manage/admin/binduser/{uid}",
    *  tags={"Admin"},
@@ -45,7 +46,7 @@ class BindUserApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",example={"id": 0})
+   *         @OA\Property(property="id")
    *       )
    *      }
    *    )
@@ -55,6 +56,6 @@ class BindUserApi extends Api
    */
   protected function action(): Response
   {
-    return $this->respondWithData(['id' => $this->admin->get('id', ['uid' => $this->args['uid']])],);
+    return $this->respondWithData(['id' => $this->admin->get('id', ['uid' => $this->args['uid']])]);
   }
 }

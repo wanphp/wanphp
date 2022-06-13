@@ -11,6 +11,7 @@ namespace App\Application\Api\Manage;
 
 use App\Application\Api\Api;
 use App\Domain\Common\ClientsInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 /**
@@ -21,7 +22,7 @@ use Psr\Http\Message\ResponseInterface as Response;
  */
 class ClientsApi extends Api
 {
-  private $clients;
+  private ClientsInterface $clients;
 
   public function __construct(ClientsInterface $clients)
   {
@@ -30,7 +31,7 @@ class ClientsApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *  path="/api/manage/clients",
    *  tags={"Clients"},
@@ -87,7 +88,7 @@ class ClientsApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="up_num",type="integer"))
+   *         @OA\Property(property="upNum",type="integer")
    *       )
    *      }
    *    )
@@ -114,7 +115,7 @@ class ClientsApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="del_num",type="integer"))
+   *         @OA\Property(property="delNum",type="integer")
    *       )
    *      }
    *    )
@@ -150,19 +151,15 @@ class ClientsApi extends Api
         $data['client_secret'] = md5(uniqid(rand(), true));
         $data['id'] = $this->clients->insert($data);
         return $this->respondWithData($data, 201);
-        break;
       case  'PUT';
         $data = $this->request->getParsedBody();
         $num = $this->clients->update($data, ['id' => $this->args['id']]);
-        return $this->respondWithData(['up_num' => $num], 201);
-        break;
+        return $this->respondWithData(['upNum' => $num], 201);
       case  'DELETE';
-        $delnum = $this->clients->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 200);
-        break;
+        $delNum = $this->clients->delete(['id' => $this->args['id']]);
+        return $this->respondWithData(['delNum' => $delNum]);
       case 'GET';
         return $this->respondWithData($this->clients->select('*'));
-        break;
       default:
         return $this->respondWithError('禁止访问', 403);
     }

@@ -13,5 +13,5 @@ use App\Domain\BaseInterface;
 
 interface FilesInterface extends BaseInterface
 {
-  const TABLENAME = "files";
+  const TABLE_NAME = "files";
 }

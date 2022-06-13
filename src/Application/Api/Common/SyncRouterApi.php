@@ -11,11 +11,13 @@ namespace App\Application\Api\Common;
 
 use App\Application\Api\Api;
 use App\Domain\Common\RouterInterface;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
+use ReflectionClass;
 
 class SyncRouterApi extends Api
 {
-  private $router;
+  private RouterInterface $router;
 
   public function __construct(RouterInterface $router)
   {
@@ -24,7 +26,7 @@ class SyncRouterApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Get(
    *  path="/api/manage/syncrouter",
    *  tags={"System"},
@@ -45,6 +47,7 @@ class SyncRouterApi extends Api
         //现有操作
         $current_actions = [];
         $files = array_merge(
+          glob(realpath(__DIR__ . '/../../Actions') . '/*/*.php'),
           glob(realpath(__DIR__ . '/../Manage') . '/*.php'),
           glob(realpath(__DIR__ . '/../Manage') . '/*/*.php'),
           glob(realpath('../wanphp/plugins') . "/*/src/Application/Manage/*.php") //插件操作
@@ -63,14 +66,14 @@ class SyncRouterApi extends Api
               $value = ucfirst($value);
             });
             $action = join('\\', $arr);
-            $rc = new \ReflectionClass($action); //建立实体类的反射类
+            $rc = new ReflectionClass($action); //建立实体类的反射类
 
             $docblock = $rc->getDocComment();
             if ($docblock) {
               $current_actions[] = $rc->getName();
-              preg_match('/\@title\s(.*?)\s\*/s', $docblock, $title);
+              preg_match('/@title\s(.*?)\s\*/s', $docblock, $title);
               $title = isset($title[1]) ? trim($title[1]) : '';
-              preg_match("/\@route\s(.*?)\s\*/s", $docblock, $matches);
+              preg_match("/@route\s(.*?)\s\*/s", $docblock, $matches);
               $route = isset($matches[1]) ? trim($matches[1]) : '';
 
               $data = [
@@ -87,9 +90,9 @@ class SyncRouterApi extends Api
           }
         }
         //删除授权操作，即无须授权即可操作
-        $delactions = array_diff($routes, $current_actions);
-        if (count($delactions) > 0) {
-          $this->router->delete(['id' => array_keys($delactions)]);
+        $delActions = array_diff($routes, $current_actions);
+        if (count($delActions) > 0) {
+          $this->router->delete(['id' => array_keys($delActions)]);
         }
         //新增授权操作
         if (count($stack) > 0) {
@@ -97,10 +100,6 @@ class SyncRouterApi extends Api
         }
 
         $routes = $this->router->select('id,navId,name,route', ['ORDER' => ['sortOrder' => 'ASC']]);
-        foreach ($routes as $action) {
-          if ($action['navId'] > 0) $menus[$action['navId']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
-        }
-
         return $this->respondWithData(['routes' => $routes ?? []]);
       default:
         return $this->respondWithError('禁止访问', 403);

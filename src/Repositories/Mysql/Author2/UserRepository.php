@@ -23,7 +23,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, AdminInterface::TABLENAME, AdminEntity::class);
+    parent::__construct($database, AdminInterface::TABLE_NAME, AdminEntity::class);
   }
 
   /**

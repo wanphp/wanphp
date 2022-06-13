@@ -11,22 +11,23 @@ namespace App\Domain\Common;
 
 use App\Domain\BaseInterface;
 use App\Entities\Common\NavigateEntity;
+use Exception;
 
 interface NavigateInterface extends BaseInterface
 {
-  const TABLENAME = "navigate";
+  const TABLE_NAME = "navigate";
 
   /**
    * @param int $id
    * @return NavigateEntity
-   * @throws \Exception
+   * @throws Exception
    */
   public function findNavigateOfId(int $id): NavigateEntity;
 
   /**
    * @param int $id
    * @return int
-   * @throws \Exception
+   * @throws Exception
    */
   public function delNavigate(int $id): int;
 }

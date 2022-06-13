@@ -9,6 +9,7 @@
 namespace App\Repositories\Mysql\Admin;
 
 
+use Medoo\Medoo;
 use Wanphp\Libray\Mysql\Database;
 use App\Domain\Admin\AdminInterface;
 use App\Entities\Admin\AdminEntity;
@@ -18,7 +19,7 @@ class AdminRepository extends BaseRepository implements AdminInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, AdminEntity::class);
+    parent::__construct($database, self::TABLE_NAME, AdminEntity::class);
   }
 
   /**
@@ -39,4 +40,13 @@ class AdminRepository extends BaseRepository implements AdminInterface
     return $this->delete(['id' => $id]);
   }
 
+  public function getAdminList(array $columns, $where): array
+  {
+    return $this->db->select($this->tableName, $columns, $where);
+  }
+
+  public function adminCount(string $columns, $where = null): ?int
+  {
+    return $this->db->count($this->tableName, $columns, $where);
+  }
 }

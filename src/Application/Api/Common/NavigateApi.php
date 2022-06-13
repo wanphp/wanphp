@@ -12,12 +12,13 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Common\NavigateInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class NavigateApi extends Api
 {
-  private $navigate;
-  private $persistence;
+  private NavigateInterface $navigate;
+  private PersistenceRepository $persistence;
 
   public function __construct(NavigateInterface $navigate, PersistenceRepository $persistence)
   {
@@ -27,7 +28,7 @@ class NavigateApi extends Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *  path="/api/manage/navigate",
    *  tags={"System"},
@@ -49,7 +50,7 @@ class NavigateApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="id",type="integer"))
+   *         @OA\Property(property="id",type="integer")
    *       )
    *      }
    *    )
@@ -84,7 +85,7 @@ class NavigateApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="up_num",type="integer"))
+   *         @OA\Property(property="upNum",type="integer")
    *       )
    *      }
    *    )
@@ -111,7 +112,7 @@ class NavigateApi extends Api
    *      allOf={
    *       @OA\Schema(ref="#/components/schemas/Success"),
    *       @OA\Schema(
-   *         @OA\Property(property="datas",@OA\Property(property="del_num",type="integer"))
+   *         @OA\Property(property="delNum",type="integer")
    *       )
    *      }
    *    )
@@ -138,10 +139,10 @@ class NavigateApi extends Api
       case 'PUT':
         $data = $this->request->getParsedBody();
         $num = $this->navigate->update($data, ['id' => $this->args['id']]);
-        return $this->respondWithData(['up_num' => $num], 201);
+        return $this->respondWithData(['upNum' => $num], 201);
       case 'DELETE':
-        $delnum = $this->navigate->delete(['id' => $this->args['id']]);
-        return $this->respondWithData(['del_num' => $delnum], 200);
+        $delNum = $this->navigate->delete(['id' => $this->args['id']]);
+        return $this->respondWithData(['delNum' => $delNum]);
       default:
         return $this->respondWithData(array_merge($this->persistence->getSidebar()));
     }

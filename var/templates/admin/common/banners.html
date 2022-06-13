@@ -1,0 +1,365 @@
+{% extends "admin/common/base.html" %}
+{% block styles %}
+<!-- DataTables -->
+<link rel="stylesheet" href="/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+{% endblock %}
+{% block container %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">广告管理管理</h3>
+
+    <div class="card-tools">
+      <div class="btn-group">
+        <button type="button" class="btn btn-tool" data-toggle="modal" data-target="#modal-addBanner"><i class="fas fa-plus-circle"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="modal-addBanner" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Banner广告</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="bannerForm" action="/admin/banfocus" method="post" novalidate="novalidate">
+            <div class="form-group">
+              <label for="name">名称</label>
+              <input id="name" name="name" type="text" class="form-control required" placeholder="标签名称" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>图片</label>
+              <a href="javascript:void(0);" style="display: inline-block; color: grey" id="banner-upload" data-toggle="image" class="img-thumbnail"><i
+                  class="fa fa-camera fa-3x"></i></a>
+              <input type="hidden" name="image" value="" id="input-image">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+          <button type="submit" form="bannerForm" class="btn btn-primary">提交</button>
+        </div>
+      </div>
+      <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+  </div>
+  <div class="card-body">
+    <table id="bannersData" class="table table-sm table-bordered table-hover">
+      <thead>
+      <tr>
+        <th style="width: 60px">ID</th>
+        <th>位置</th>
+        <th>图片</th>
+        <th style="width: 120px;">操作</th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <!-- /.card-body -->
+</div>
+<!-- /.card -->
+{% endblock %}
+
+{% block scripts %}
+<script src="/adminlte/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="/adminlte/plugins/jquery-validation/additional-methods.min.js"></script>
+<script src="/adminlte/plugins/jquery-validation/localization/messages_zh.min.js"></script>
+<!-- DataTables -->
+<script src="/adminlte/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/adminlte/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/adminlte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/js/dataTable.defaults.js"></script>
+<script type="text/javascript" src="/js/exif.js"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    var datatables = $('#bannersData').DataTable({
+      serverSide: false,
+      aoColumnDefs: [
+        {orderable: false, aTargets: [3, 2, 1]}// 制定列不参与排序
+      ],
+      ordering: true,//使用排序
+      order: [[0, "asc"]],
+      ajax: {
+        url: "/admin/banfocus",
+        type: 'GET',
+        data: function (d) {
+          return $.extend({}, d, {keyword: $("#keyword").val()});
+        }
+      },
+      columns: [
+        {data: "id"},
+        {data: "name"},
+        {data: "image"},
+        {data: "op", defaultContent: "未知"}
+      ]
+    });
+    $('#search').click(function () {
+      datatables.ajax.reload();
+    });
+    $('#bannerForm').validate({
+      submitHandler: function (form) {
+        var id = form.getAttribute('data-id');
+        var url = '/admin/banfocus';
+        if (id > 0) url = '/admin/banfocus/' + id;
+        var fromdata = new FormData(form);
+        $.ajax({
+          url: url,
+          data: fromdata,
+          type: 'POST',
+          beforeSend: function (xhr) {
+            if (id > 0) xhr.setRequestHeader("X-HTTP-Method-Override", "PUT");
+          },
+          cache: false,
+          contentType: false,
+          processData: false,
+          dataType: 'json',
+          success: function (json) {
+            var banner_id = id;
+            if (!banner_id) banner_id = json.data;
+            var data = {
+              id: banner_id,
+              name: fromdata.get('name'),
+              image: '<img src="' + fromdata.get('image') + '" width="48">',
+              op: '<button type="button" class="btn btn-tool edit" data-id="' + banner_id + '"><i class="fas fa-edit"></i></button>' +
+                '<button type="button" class="btn btn-tool del" data-id="' + banner_id + '"><i class="fas fa-trash-alt"></i></button>'
+            };
+            if (id > 0) {
+              datatables.row($("button[data-id='" + banner_id + "']").parents('tr')).data(data).draw(false);
+            } else {
+              datatables.row.add(data).draw(false);
+            }
+            $('#modal-addBanner').modal('hide');
+          },
+          error: errorDialog
+        });
+        return false;
+      },
+      errorElement: 'span',
+      errorPlacement: function (error, element) {
+        error.addClass('invalid-feedback');
+        element.closest('td').append(error);
+      },
+      highlight: function (element, errorClass, validClass) {
+        $(element).addClass('is-invalid');
+      },
+      unhighlight: function (element, errorClass, validClass) {
+        $(element).removeClass('is-invalid');
+      }
+    });
+
+    $("#bannersData").on('click', '.edit', function () {
+      $.get('/admin/banfocus/' + $(this).attr('data-id'), function (json) {
+        var line = json.data;
+        $('#bannerForm').attr('data-id', line.id);
+        $("#bannerForm input[name='name']").val(line.name);
+        $('#banner-upload').html('<img src="' + line.image + '" width="48">').next('input').val(line.image);
+        $('#modal-addBanner').modal('show');
+      });
+    });
+
+    $("#bannersData").on('click', '.del', function () {
+      var banner = $(this).parents('tr'), id = $(this).attr('data-id');
+      dialog('删除广告', '是否确认删除广告', function () {
+        $.ajax({
+          url: '/admin/banfocus/' + id,
+          type: 'POST',
+          headers: {"X-HTTP-Method-Override": "DELETE"},
+          dataType: 'json',
+          success: function (data) {
+            datatables.row(banner).remove().draw(false);
+            Swal.fire({icon: 'success', title: '删除成功！', showConfirmButton: false, timer: 1500});
+          },
+          error: errorDialog
+        });
+      });
+    });
+
+    $('#modal-addBanner').on('hidden.bs.modal', function () {
+      if ($('#bannerForm')[0].hasAttribute('data-id')) $('#bannerForm')[0].removeAttribute('data-id');
+      $('#banner-upload').html('<i class="fa fa-camera fa-3x"></i>');
+      $('#bannerForm')[0].reset();
+    });
+
+    $('#banner-upload').on('click', function (event) {
+      $('#form-upload').remove();
+      $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" value="" accept="image/gif,image/jpeg,image/jpg,image/png"></form>');
+      $('#form-upload input[name=\'file\']').trigger('click');
+
+      if (typeof timer != 'undefined') {
+        clearInterval(timer);
+      }
+
+      timer = setInterval(function () {
+        if ($("#form-upload input[name='file']").val() != '') {
+          var file = $('#form-upload input[name="file"]')[0].files[0];
+          clearInterval(timer);
+          var form_data = new FormData();
+          if (file.size > 1024000) {
+            photoCompress(file, {
+              width: 1280,
+              quality: 0.7
+            }, function (base64Codes) {
+              var bl = convertBase64UrlToBlob(base64Codes);
+              form_data.append("file", bl, file.name);
+              ajax_upload(event, form_data);
+            });
+          } else {
+            form_data.append('file', file);
+            ajax_upload(event, form_data);
+          }
+        }
+      }, 500);
+    });
+
+    function ajax_upload(event, form_data) {
+      $.ajax({
+          url: '/admin/files',
+          type: 'post',
+          dataType: 'json',
+          data: form_data,
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function (json) {
+            if (event) $('#banner-upload').html('<img src="' + json.data.url + '" width="48">').next('input').val(json.data.url);
+            else $('#content').summernote('insertImage', json.data.url, '');
+          },
+          error: errorDialog
+        }
+      );
+    }
+
+    function photoCompress(file, w, objDiv) {
+      /*图片方向角*/
+      var Orientation = null;
+      EXIF.getData(file, function () {
+        console.log(EXIF.getAllTags(this));
+        Orientation = EXIF.getTag(this, 'Orientation');
+        console.log(Orientation);
+      });
+      var ready = new FileReader();
+      ready.readAsDataURL(file);
+      ready.onload = function () {
+        var re = this.result;
+        canvasDataURL(re, w, objDiv, Orientation)
+      }
+    }
+
+    function canvasDataURL(path, obj, callback, Orientation) {
+      var img = new Image();
+      img.src = path;
+      img.onload = function () {
+        var that = this;
+        var w = that.width,
+          h = that.height,
+          scale = w / h;
+        w = obj.width || w;
+        h = obj.height || (w / scale);
+        var quality = 0.7;
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var anw = document.createAttribute("width");
+        anw.nodeValue = w;
+        var anh = document.createAttribute("height");
+        anh.nodeValue = h;
+        canvas.setAttributeNode(anw);
+        canvas.setAttributeNode(anh);
+        ctx.drawImage(that, 0, 0, w, h);
+
+        /*如果方向角不为1，都需要进行旋转*/
+        if (Orientation != "" && Orientation != 1) {
+          switch (Orientation) {
+            case 6:
+              /*需要顺时针（向左）90度旋转*/
+              rotateImg(that, 'left', canvas);
+              break;
+            case 8:
+              /*需要逆时针（向右）90度旋转*/
+              rotateImg(that, 'right', canvas);
+              break;
+            case 3:
+              /*需要180度旋转*/
+              rotateImg(that, 'right', canvas);
+              rotateImg(that, 'right', canvas);
+              break;
+          }
+        }
+
+        if (obj.quality && obj.quality <= 1 && obj.quality > 0) {
+          quality = obj.quality;
+        }
+        var base64 = canvas.toDataURL('image/jpeg', quality);
+        callback(base64);
+      }
+    }
+
+    function rotateImg(img, direction, canvas) {
+      /*最小与最大旋转方向，图片旋转4次后回到原方向*/
+      var min_step = 0;
+      var max_step = 3;
+      if (img == null) return;
+      /*img的高度和宽度不能在img元素隐藏后获取，否则会出错*/
+      var height = img.height;
+      var width = img.width;
+      var step = 2;
+      if (step == null) {
+        step = min_step;
+      }
+
+      if (direction == 'right') {
+        step++;
+        /*旋转到原位置，即超过最大值*/
+        step > max_step && (step = min_step);
+      } else {
+        step--;
+        step < min_step && (step = max_step);
+      }
+
+      /*旋转角度以弧度值为参数*/
+      var degree = step * 90 * Math.PI / 180;
+      var ctx = canvas.getContext('2d');
+
+      switch (step) {
+        case 0:
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0);
+          break;
+        case 1:
+          canvas.width = height;
+          canvas.height = width;
+          ctx.rotate(degree);
+          ctx.drawImage(img, 0, -height);
+          break;
+        case 2:
+          canvas.width = width;
+          canvas.height = height;
+          ctx.rotate(degree);
+          ctx.drawImage(img, -width, -height);
+          break;
+        case 3:
+          canvas.width = height;
+          canvas.height = width;
+          ctx.rotate(degree);
+          ctx.drawImage(img, -width, 0);
+          break;
+      }
+    }
+
+    function convertBase64UrlToBlob(urlData) {
+      var arr = urlData.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], {type: mime});
+    }
+  });
+</script>
+{% endblock %}

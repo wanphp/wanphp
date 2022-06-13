@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Application\Api;
+namespace App\Application\Handlers;
 
 
 use JsonSerializable;
@@ -21,12 +21,12 @@ class ActionError implements JsonSerializable
   /**
    * @var string
    */
-  private $type;
+  private string $type;
 
   /**
    * @var string
    */
-  private $description;
+  private string $description;
 
   /**
    * @param string $type
@@ -77,13 +77,11 @@ class ActionError implements JsonSerializable
   /**
    * @return array
    */
-  public function jsonSerialize()
+  public function jsonSerialize(): array
   {
-    $payload = [
+    return [
       'type' => $this->type,
-      'description' => $this->description,
+      'description' => $this->description
     ];
-
-    return $payload;
   }
 }

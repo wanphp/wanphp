@@ -9,6 +9,7 @@
 namespace App\Application\Api\Auth;
 
 
+use Exception;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -23,7 +24,7 @@ class PasswordAccessTokenApi extends Author2Api
 
   /**
    * @return Response
-   * @throws \Exception
+   * @throws Exception
    * @OA\Post(
    *   path="/auth/passwordAccessToken",
    *   tags={"Auth"},
@@ -99,7 +100,7 @@ class PasswordAccessTokenApi extends Author2Api
       return $this->server->respondToAccessTokenRequest($this->request, $this->response);
     } catch (OAuthServerException $exception) {
       return $exception->generateHttpResponse($this->response);
-    } catch (\Exception $exception) {
+    } catch (Exception $exception) {
       $body = new Stream(fopen('php://temp', 'r+'));
       $body->write($exception->getMessage());
       return $this->response->withStatus(400)->withBody($body);

@@ -9,7 +9,7 @@
 namespace App\Entities\Admin;
 
 
-use App\Entities\Traits\EntityTrait;
+use Wanphp\Libray\Mysql\EntityTrait;
 
 /**
  * Class RoleEntity
@@ -23,22 +23,23 @@ use App\Entities\Traits\EntityTrait;
 class RoleEntity implements \JsonSerializable
 {
   use EntityTrait;
+
   /**
    * @DBType({"key":"PRI","type":"tinyint(4) NOT NULL AUTO_INCREMENT"})
    * @OA\Property(format="int32", description="ID")
    * @var integer|null
    */
-  private $id;
+  private ?int $id;
   /**
    * @DBType({"type":"varchar(20) NOT NULL DEFAULT ''"})
    * @OA\Property(description="角色名称")
    * @var string
    */
-  private $name;
+  private string $name;
   /**
    * @DBType({"type":"varchar(100) NOT NULL DEFAULT ''"})
    * @OA\Property(description="限制权限")
    * @var string
    */
-  private $restricted;
+  private string $restricted;
 }
