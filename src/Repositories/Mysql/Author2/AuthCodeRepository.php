@@ -16,7 +16,7 @@ use Predis\ClientInterface;
 
 class AuthCodeRepository implements AuthCodeRepositoryInterface
 {
-  private $redis;
+  private ClientInterface $redis;
 
   public function __construct(ClientInterface $redis)
   {
@@ -26,7 +26,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
   /**
    * @return AuthCodeEntityInterface
    */
-  public function getNewAuthCode()
+  public function getNewAuthCode(): AuthCodeEntityInterface
   {
     // 创建新授权码时调用方法
     // 需要返回 AuthCodeEntityInterface 对象
@@ -55,7 +55,7 @@ class AuthCodeRepository implements AuthCodeRepositoryInterface
     $this->redis->del($codeId);
   }
 
-  public function isAuthCodeRevoked($codeId)
+  public function isAuthCodeRevoked($codeId): bool
   {
     // 当使用授权码获取访问令牌时调用此方法
     // 用于验证授权码是否已被删除

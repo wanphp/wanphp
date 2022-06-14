@@ -19,7 +19,7 @@ class ScopeRepository implements ScopeRepositoryInterface
   /**
    * @return ScopeEntityInterface
    */
-  public function getScopeEntityByIdentifier($identifier)
+  public function getScopeEntityByIdentifier($identifier): ScopeEntityInterface
   {
     // 验证权限是否在权限范围中会调用此方法
     // 参数为单个权限标识符
@@ -32,11 +32,12 @@ class ScopeRepository implements ScopeRepositoryInterface
   }
 
   public function finalizeScopes(
-    array $scopes,
-    $grantType,
+    array                 $scopes,
+                          $grantType,
     ClientEntityInterface $clientEntity,
-    $userIdentifier = null
-  ) {
+                          $userIdentifier = null
+  ): array
+  {
     // 在创建授权码与访问令牌前会调用此方法
     // 用于验证权限范围、授权类型、客户端、用户是否匹配
     // 可整合进项目自身的权限控制中

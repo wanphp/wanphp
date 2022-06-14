@@ -9,6 +9,7 @@
 namespace App\Repositories\Mysql\Author2;
 
 
+use Exception;
 use Wanphp\Libray\Mysql\Database;
 use App\Domain\Admin\AdminInterface;
 use App\Entities\Admin\AdminEntity;
@@ -32,10 +33,10 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
    * @param string $grantType
    * @param ClientEntityInterface $clientEntity
    * @return UserEntity|UserEntityInterface|null
-   * @throws \Exception
+   * @throws Exception
    * @throws OAuthServerException
    */
-  public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity)
+  public function getUserEntityByUserCredentials($username, $password, $grantType, ClientEntityInterface $clientEntity): UserEntity|UserEntityInterface|null
   {
     // 验证用户时调用此方法
     // 用于验证用户信息是否符合

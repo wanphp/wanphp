@@ -17,7 +17,7 @@ use Predis\ClientInterface;
 
 class AccessTokenRepository implements AccessTokenRepositoryInterface
 {
-  private $redis;
+  private ClientInterface $redis;
 
   public function __construct(ClientInterface $redis)
   {
@@ -26,9 +26,12 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
 
 
   /**
+   * @param ClientEntityInterface $clientEntity
+   * @param array $scopes
+   * @param null $userIdentifier
    * @return AccessTokenEntityInterface
    */
-  public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null)
+  public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null): AccessTokenEntityInterface
   {
     // 创建新访问令牌时调用方法
     // 需要返回 AccessTokenEntityInterface 对象
@@ -66,7 +69,7 @@ class AccessTokenRepository implements AccessTokenRepositoryInterface
     $this->redis->del($tokenId);
   }
 
-  public function isAccessTokenRevoked($tokenId)
+  public function isAccessTokenRevoked($tokenId): bool
   {
     // 资源服务器验证访问令牌时将调用此方法
     // 用于验证访问令牌是否已被删除

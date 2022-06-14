@@ -16,7 +16,7 @@ use Predis\ClientInterface;
 
 class RefreshTokenRepository implements RefreshTokenRepositoryInterface
 {
-  private $redis;
+  private ClientInterface $redis;
 
   public function __construct(ClientInterface $redis)
   {
@@ -26,7 +26,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
   /**
    * @return RefreshTokenEntityInterface
    */
-  public function getNewRefreshToken()
+  public function getNewRefreshToken(): RefreshTokenEntityInterface
   {
     // 创建新授权码时调用方法
     // 需要返回 RefreshTokenEntityInterface 对象
@@ -54,7 +54,7 @@ class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     $this->redis->del($tokenId);
   }
 
-  public function isRefreshTokenRevoked($tokenId)
+  public function isRefreshTokenRevoked($tokenId): bool
   {
     // 当使用刷新令牌获取访问令牌时调用此方法
     // 用于验证刷新令牌是否已被删除
