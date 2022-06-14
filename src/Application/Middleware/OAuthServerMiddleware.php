@@ -63,7 +63,7 @@ class OAuthServerMiddleware implements MiddlewareInterface
       if ($client_id == 'sysManage') {
         try {
           if (is_numeric($user_id)) { //微信扫码登录
-            $admin = $this->admin->get('id,role_id', ['uid' => $user_id]);
+            $admin = $this->admin->get('id,role_id[JSON]', ['uid' => $user_id]);
             $request = $request->withAttribute('oauth_admin_id', $admin['uid']);
           } else { //账号密码登录
             $user_id = ltrim($user_id, 'admin_');

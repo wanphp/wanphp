@@ -77,15 +77,15 @@ class LoginAction extends Action
           'account' => $account,
           'salt' => $salt,
           'password' => md5(SHA1($salt . $password)),
-          'role_id' => -1,
+          'role_id' => [-1],
           'status' => 1,
           'createtime' => time()
         ]);
         $_SESSION['login_id'] = $id;
-        $_SESSION['role_id'] = -1;
+        $_SESSION['role_id'] = [-1];
         return $this->respondWithData(['msg' => '系统初始化并登录成功！']);
       } else {
-        $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id,status', ['OR' => ['account' => $account, 'tel' => $account]]);
+        $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id[JSON],status', ['OR' => ['account' => $account, 'tel' => $account]]);
       }
 
       if (!isset($admin['id'])) {

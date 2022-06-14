@@ -9,7 +9,6 @@
 namespace App\Application\Middleware;
 
 use App\Domain\Admin\AdminInterface;
-use App\Domain\Help\HelpInterface;
 use App\Domain\Weixin\UserInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
@@ -68,11 +67,10 @@ class PermissionMiddleware implements Middleware
   public function process(Request $request, RequestHandler $handler): Response
   {
     if (isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {//已登录，验证权限
-      $this->persistence->setPermission($_SESSION['role_id'] ?? 0);
+      $this->persistence->setPermission($_SESSION['role_id']);
       $routeContext = RouteContext::fromRequest($request);
 
       if ($this->persistence->hasRestricted($routeContext->getRoute()->getCallable())) {
-
         if ($request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
           $response = new \Slim\Psr7\Response();
           $json = json_encode(['errMsg' => '用户未获得授权，操作被拒绝！'], JSON_PRETTY_PRINT);
@@ -82,15 +80,22 @@ class PermissionMiddleware implements Middleware
           return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/error/404.html', ['message' => '用户未获得授权！']);
         }
       }
-      $request = $request->withAttribute('sidebar', $this->persistence->getSidebar())->withAttribute('loginId', $_SESSION['login_id']);
+
       // 绑定用户
-      $admin = $this->container->get(AdminInterface::class)->get('uid,account,role_id', ['id' => $_SESSION['login_id']]);
+      $admin = $this->container->get(AdminInterface::class)->get('uid,account', ['id' => $_SESSION['login_id']]);
       if (isset($admin['uid']) && $admin['uid'] > 0) {
         $user = $this->container->get(UserInterface::class)->get('headimgurl,nickname,name', ['id' => $admin['uid']]);
-        $request = $request->withAttribute('loginUser', array_merge($admin, $user));
+        $admin = array_merge($admin, $user);
       }
-      // 系统帮助
-      $request = $request->withAttribute('sysHelp', $this->container->get(HelpInterface::class)->select('id,title', ['ORDER' => ['sortOrder' => 'ASC']]));
+
+      $tplVars = [
+        'sidebar' => $this->persistence->getSidebar(),
+        'loginId' => $_SESSION['login_id'],
+        'Role' => $_SESSION['role_id'],
+        'loginUser' => $admin,
+        'thisUri' => $request->getUri()->getScheme() . '://' . $request->getUri()->getHost()
+      ];
+      $request = $request->withAttribute('tplVars', $tplVars);
 
       return $handler->handle($request);
     } else {
@@ -98,14 +103,13 @@ class PermissionMiddleware implements Middleware
       $client_id = $request->getAttribute('oauth_client_id');
       $role_id = $request->getAttribute('oauth_admin_role_id');
 
-      if ($client_id == 'sysmanage' && $role_id) {//已登录，验证权限
+      if ($client_id == 'sysManage' && $role_id) {//已登录，验证权限
         $this->persistence->setPermission($role_id);
         $routeContext = RouteContext::fromRequest($request);
 
         if ($this->persistence->hasRestricted($routeContext->getRoute()->getCallable())) {
           return (new OAuthServerException('未获得授权！', 401, 'Unauthorized'))->generateHttpResponse(new \Slim\Psr7\Response());
         }
-        //$request = $request->withAttribute('sidebar', $this->persistence->getSidebar());
         return $handler->handle($request);
       } else {
         if ($request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
@@ -117,7 +121,7 @@ class PermissionMiddleware implements Middleware
           $code = Crypto::encrypt(session_id(), Key::loadFromAsciiSafeString($this->container->get('settings')['encryptionKey']));
           $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
           $writer = new Writer($renderer);
-          $data['loginQr'] = $writer->writeString('https://cw.ztnews.net/qrlogin?tk=' . $code);
+          $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . '/qrlogin?tk=' . $code);
           return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/login.html', $data);
         }
       }

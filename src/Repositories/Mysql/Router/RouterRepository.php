@@ -18,7 +18,7 @@ class RouterRepository extends BaseRepository implements RouterInterface
 {
   public function __construct(Database $database)
   {
-    parent::__construct($database, self::TABLENAME, RouterEntity::class);
+    parent::__construct($database, self::TABLE_NAME, RouterEntity::class);
   }
 
   /**

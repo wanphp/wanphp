@@ -13,6 +13,7 @@ use App\Entities\Admin\RoleEntity;
 use App\Entities\Common\NavigateEntity;
 use App\Entities\Common\RouterEntity;
 use App\Repositories\Mysql\Admin\RoleRepository;
+use Exception;
 use Predis\ClientInterface;
 use Wanphp\Libray\Mysql\Database;
 use App\Domain\Common\NavigateInterface;
@@ -29,51 +30,52 @@ class PersistenceRepository
 
   public function __construct(Database $database, ClientInterface $redis)
   {
-    $this->routerRepository = new RouterRepository($database, RouterInterface::TABLENAME, RouterEntity::class);
+    $this->routerRepository = new RouterRepository($database, RouterInterface::TABLE_NAME, RouterEntity::class);
     $this->roleRepository = new RoleRepository($database, RoleInterface::TABLE_NAME, RoleEntity::class);
     $this->navigateRepository = new NavigateRepository($database, NavigateInterface::TABLE_NAME, NavigateEntity::class);
     $this->redis = $redis;
   }
 
   /**
-   * @param $role_id
+   * @param array $role_id
    * @return void
-   * @throws \Exception
+   * @throws Exception
    */
-  public function setPermission($role_id)
+  public function setPermission(array $role_id)
   {
-    $cacheKey = 'authority_' . $role_id;
+    $cacheKey = 'authority_' . join('_', $role_id);
     $authority = $this->redis->get($cacheKey);
     if (!$authority) {
       $routers = $this->routerRepository->select('id,navId,name,route,callable', ['route[~]' => '/admin/%', 'ORDER' => ['sortOrder' => 'ASC']]);
       if ($routers) {
         //角色限制权限
-        if (str_contains($role_id, ',') || $role_id > 0) {
-          if (str_contains($role_id, ',')) $role_id = explode(',', $role_id);
-          $restricted = $this->roleRepository->get('restricted', ['id' => $role_id]);
+        if ($role_id) {
+          $restricted = $this->roleRepository->select('restricted[JSON]', ['id' => $role_id]);
           if ($restricted) {
-            $restricted = explode(',', $restricted);
-            foreach ($routers as $action) {
-              if (in_array($action['id'], $restricted)) {
-                $this->restricted[] = $action['callable'];
-              } else {
+            // 各角色禁用权限并集
+            $restricted = call_user_func_array('array_merge', $restricted);
+            if (empty($restricted) || in_array(-1, $restricted)) {
+              // 没有禁用权限、超级管理员不限制权限
+              foreach ($routers as $action) {
                 $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
+              }
+              $this->restricted = [];
+            } else {
+              foreach ($routers as $action) {
+                if (in_array($action['id'], $restricted)) {
+                  $this->restricted[] = $action['callable'];
+                } else {
+                  $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
+                }
               }
             }
           } else {//未找到角色
             $this->permission = [];
             $this->restricted = array_column($routers, 'callable');
           }
-        }
-        if (!is_array($role_id) && $role_id == 0) {//未配置角色限制所有权限
+        } else {//未配置角色,限制所有权限
           $this->permission = [];
           $this->restricted = array_column($routers, 'callable');
-        }
-        if (!is_array($role_id) && $role_id < 0) {//超级管理员不限制权限
-          foreach ($routers as $action) {
-            $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
-          }
-          $this->restricted = [];
         }
 
         $this->redis->set($cacheKey, json_encode(['permission' => $this->permission, 'restricted' => $this->restricted]));
@@ -86,7 +88,7 @@ class PersistenceRepository
   }
 
   /**
-   * @throws \Exception
+   * @throws Exception
    */
   public function getSidebar(): array
   {

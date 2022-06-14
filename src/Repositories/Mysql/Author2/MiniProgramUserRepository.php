@@ -9,6 +9,7 @@
 namespace App\Repositories\Mysql\Author2;
 
 
+use Exception;
 use Wanphp\Libray\Mysql\Database;
 use Wanphp\Plugins\Weixin\Domain\MiniProgramInterface;
 use Wanphp\Plugins\Weixin\Domain\UserInterface;
@@ -22,12 +23,12 @@ use League\OAuth2\Server\Repositories\UserRepositoryInterface;
 
 class MiniProgramUserRepository extends BaseRepository implements UserRepositoryInterface
 {
-  private $miniProgram;
-  private $miniProgramUser;
+  private MiniProgram $miniProgram;
+  private MiniProgramInterface $miniProgramUser;
 
   public function __construct(MiniProgram $miniProgram, MiniProgramInterface $miniProgramUser, Database $database)
   {
-    parent::__construct($database, UserInterface::TABLENAME, WeUserEntity::class);
+    parent::__construct($database, UserInterface::TABLE_NAME, WeUserEntity::class);
     $this->miniProgram = $miniProgram;
     $this->miniProgramUser = $miniProgramUser;
   }
@@ -37,15 +38,15 @@ class MiniProgramUserRepository extends BaseRepository implements UserRepository
    * @param string $password
    * @param string $grantType
    * @param ClientEntityInterface $clientEntity
-   * @return UserEntity|array|UserEntityInterface|null
-   * @throws \Exception
+   * @return UserEntityInterface|null
+   * @throws Exception
    */
   public function getUserEntityByUserCredentials(
     $username,
     $password,
     $grantType,
     ClientEntityInterface $clientEntity
-  )
+  ): UserEntityInterface|null
   {
     // 验证用户时调用此方法
     // 用于验证用户信息是否符合
@@ -69,13 +70,13 @@ class MiniProgramUserRepository extends BaseRepository implements UserRepository
       if (isset($res['unionid'])) $user_id = $this->get('id', ['unionid' => $res['unionid']]);
       if (!isset($user_id)) $user_id = $this->miniProgramUser->get('id', ['openid' => $res['openid']]);
       if (!isset($user_id)) {//添加用户
-        if (is_array($data)) $user_id = $this->insert($data);
+        if (isset($data) && is_array($data)) $user_id = $this->insert($data);
         //关联小程序数据
-        $xcxdata = ['id' => $user_id, 'openid' => $res['openid']];
-        if (isset($data['parent_id'])) $xcxdata['parent_id'] = $data['parent_id'];
-        $this->miniProgramUser->insert($xcxdata);
+        $xcxData = ['id' => $user_id, 'openid' => $res['openid']];
+        if (isset($data['parent_id'])) $xcxData['parent_id'] = $data['parent_id'];
+        $this->miniProgramUser->insert($xcxData);
       } else {//更新用户
-        if (is_array($data)) $this->update($data, ['id' => $user_id]);
+        if (isset($data) && is_array($data)) $this->update($data, ['id' => $user_id]);
       }
       if ($user_id > 0) {
         $userEntity = new UserEntity();

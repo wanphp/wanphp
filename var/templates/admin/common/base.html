@@ -65,9 +65,6 @@
         <a class="nav-link" href="javascript:;" id="clearcache"><i class="fas fa-broom"></i> </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button"> <i class="fas fa-question-circle"></i>帮助 </a>
-      </li>
-      <li class="nav-item">
         <a class="nav-link" href="/loginout"><i class="fas fa-sign-out-alt"></i> 退出</a>
       </li>
     </ul>
@@ -155,28 +152,12 @@
 
   <!-- Main Footer -->
   <footer class="main-footer">
-    <strong>Copyright &copy; 2022 创卫办</strong>
+    <strong>Copyright &copy; 2022 {{thisUri}}</strong>
     版权所有。
     <div class="float-right d-none d-sm-inline-block">
       <b>版本</b> 1.0.0
     </div>
   </footer>
-  <!-- Control Sidebar -->
-  <aside class="control-sidebar control-sidebar-dark">
-    <!-- Control sidebar content goes here -->
-    <div class="p-3 control-sidebar-content">
-      <h5>使用帮助</h5>
-      <hr class="mb-2">
-      <ul style="margin-left: -1rem;">
-        {% for help in sysHelp %}
-        <li>
-          <a href="javascript:helpView({{help.id}})">{{help.title}}</a>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </aside>
-  <!-- /.control-sidebar -->
 </div>
 <!-- ./wrapper  modal-dialog-centered-->
 <div class="modal fade" id="modal-dialog">
