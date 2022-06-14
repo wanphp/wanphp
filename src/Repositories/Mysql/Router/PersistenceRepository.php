@@ -8,16 +8,10 @@
 
 namespace App\Repositories\Mysql\Router;
 
-use App\Domain\Admin\RoleInterface;
-use App\Entities\Admin\RoleEntity;
-use App\Entities\Common\NavigateEntity;
-use App\Entities\Common\RouterEntity;
 use App\Repositories\Mysql\Admin\RoleRepository;
 use Exception;
 use Predis\ClientInterface;
 use Wanphp\Libray\Mysql\Database;
-use App\Domain\Common\NavigateInterface;
-use App\Domain\Common\RouterInterface;
 
 class PersistenceRepository
 {
@@ -30,9 +24,9 @@ class PersistenceRepository
 
   public function __construct(Database $database, ClientInterface $redis)
   {
-    $this->routerRepository = new RouterRepository($database, RouterInterface::TABLE_NAME, RouterEntity::class);
-    $this->roleRepository = new RoleRepository($database, RoleInterface::TABLE_NAME, RoleEntity::class);
-    $this->navigateRepository = new NavigateRepository($database, NavigateInterface::TABLE_NAME, NavigateEntity::class);
+    $this->routerRepository = new RouterRepository($database);
+    $this->roleRepository = new RoleRepository($database);
+    $this->navigateRepository = new NavigateRepository($database);
     $this->redis = $redis;
   }
 

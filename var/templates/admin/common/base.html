@@ -33,7 +33,7 @@
       <li class="nav-item d-none d-sm-inline-block">
         <a href="/admin/index" class="nav-link">首页</a>
       </li>
-      {% if loginUser.role_id<0 %}
+      {% if -1 in Role %}
       <li class="nav-item d-none d-sm-inline-block">
         <a href="/admin/actions" class="nav-link">权限</a>
       </li>
@@ -228,22 +228,10 @@
     $('#modal-dialog').modal('show');
   }
 
-  function helpView(id) {
-    $.ajax({
-      url: '/admin/help/' + id,
-      type: 'GET',
-      dataType: 'json',
-      success: function (data) {
-        modalDialog(data.title, data.content, 'modal-xl');
-      },
-      error: errorDialog
-    });
-  }
-
   $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
     $('#clearcache').click(function () {
-      $.get('/clearcache/3', function (data) {
+      $.get('/clearcache/1', function (data) {
         location.reload();
       });
     });
