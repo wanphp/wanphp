@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-use App\Application\Middleware\OAuthServerMiddleware;
 use App\Application\Middleware\PermissionMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
+use Wanphp\Plugins\Author2Resource\OAuthServerMiddleware;
 
 return function (App $app) {
   $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -53,20 +53,6 @@ return function (App $app) {
     $group->map(['PUT', 'POST', 'DELETE'], '/admins[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\AdminApi::class);
     $group->get('/roles', \App\Application\Actions\Admin\RoleAction::class);
     $group->map(['PUT', 'POST', 'DELETE'], '/roles[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\RoleApi::class);
-    $group->get('/clients', \App\Application\Actions\Clients\ListAction::class);
-    $group->map(['PUT', 'POST', 'DELETE'], '/clients[/{id:[0-9]+}]', \App\Application\Api\Manage\ClientsApi::class);
-
-    //公众号
-    $group->get('/weixin/tags', \App\Application\Actions\Weixin\UserTagsAction::class);
-    $group->map(['PUT', 'POST', 'DELETE'], '/weixin/tags[/{id:[0-9]+}]', \Wanphp\Plugins\Weixin\Application\Manage\TagsApi::class);
-    $group->get('/weixin/template', \App\Application\Actions\Weixin\TemplateMessageAction::class);
-    $group->get('/weixin/users', \App\Application\Actions\Weixin\UserAction::class);
-    $group->get('/weixin/users/search', \App\Application\Actions\Weixin\SearchUserAction::class);
-    $group->patch('/weixin/users/{id:[0-9]+}', \Wanphp\Plugins\Weixin\Application\Manage\UserApi::class);
-
-    //用户角色
-    $group->get('/weixin/roles', \App\Application\Actions\Weixin\RoleAction::class);
-    $group->map(['PUT', 'POST', 'DELETE'], '/weixin/roles[/{id:[0-9]+}]', \Wanphp\Plugins\Weixin\Application\Manage\UserRoleApi::class);
 
     //文件上传
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/files[/{id:[0-9]+}]', \App\Application\Api\Common\FilesApi::class);
@@ -88,14 +74,4 @@ return function (App $app) {
       $g->get('/admin/binduser/{uid:[0-9]+}', \App\Application\Api\Manage\Admin\BindUserApi::class);
     })->addMiddleware($PermissionMiddleware);
   })->addMiddleware($OAuthServerMiddleware);
-
-
-  $app->group('/auth', function (Group $group) {
-    $group->get('/authorize', \App\Application\Api\Auth\AuthorizeApi::class);
-    $group->post('/accessToken', \App\Application\Api\Auth\AccessTokenApi::class);
-    $group->post('/passwordAccessToken', \App\Application\Api\Auth\PasswordAccessTokenApi::class);
-    $group->post('/miniProgramAccessToken', \App\Application\Api\Auth\MiniProgramAccessTokenApi::class);
-    $group->post('/refreshAccessToken', \App\Application\Api\Auth\RefreshAccessTokenApi::class);
-    $group->post('/initSys', \App\Application\Api\Common\InitSysApi::class);
-  });
 };

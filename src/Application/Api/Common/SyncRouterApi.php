@@ -63,7 +63,15 @@ class SyncRouterApi extends Api
               $file);
             $arr = explode('/', $action);
             array_walk_recursive($arr, function (&$value) {
-              $value = ucfirst($value);
+              if (str_contains($value, '-')) {
+                $value = explode('-', $value);
+                array_walk_recursive($value, function (&$item) {
+                  $item = ucfirst($item);
+                });
+                $value = join('', $value);
+              } else {
+                $value = ucfirst($value);
+              }
             });
             $action = join('\\', $arr);
             $rc = new ReflectionClass($action); //建立实体类的反射类

@@ -11,6 +11,7 @@ namespace App\Application\Actions\Common;
 
 use App\Application\Actions\Action;
 use App\Domain\Admin\AdminInterface;
+use App\Domain\Common\ClientsInterface;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -24,6 +25,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Mysql\BaseInterface;
 use Wanphp\Libray\Weixin\WeChatBase;
 use Wanphp\Plugins\Weixin\Domain\PublicInterface;
 
@@ -38,9 +40,11 @@ class LoginAction extends Action
    * @param LoggerInterface $logger
    * @param ContainerInterface $container
    * @param AdminInterface $adminRepository
+   * @param WeChatBase $weChatBase
+   * @param PublicInterface $public
    * @throws BadFormatException
-   * @throws EnvironmentIsBrokenException
    * @throws ContainerExceptionInterface
+   * @throws EnvironmentIsBrokenException
    * @throws NotFoundExceptionInterface
    */
   public function __construct(
@@ -55,11 +59,12 @@ class LoginAction extends Action
     $this->adminRepository = $adminRepository;
     $this->weChatBase = $weChatBase;
     $this->public = $public;
-    $this->key = Key::loadFromAsciiSafeString($container->get('settings')['encryptionKey']);
+    $this->key = Key::loadFromAsciiSafeString($container->get('author2Config')['encryptionKey']);
   }
 
   protected function action(): Response
   {
+    //print_r($this);exit();
     if ($this->isPost()) {
       //获取数据
       $post = $this->request->getParsedBody();

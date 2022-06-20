@@ -2,14 +2,11 @@
 
 namespace App\Application\Actions\Admin;
 
-use App\Application\Handlers\UserHandler;
 use App\Domain\Admin\AdminInterface;
-use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
-use Slim\Exception\HttpBadRequestException;
-use Slim\Exception\HttpNotFoundException;
 use Wanphp\Libray\Weixin\WeChatBase;
+use Wanphp\Plugins\Author2Authorization\Application\WePublicUserHandler;
 use Wanphp\Plugins\Weixin\Domain\PublicInterface;
 use Wanphp\Plugins\Weixin\Domain\UserInterface;
 
@@ -49,13 +46,13 @@ class UserBindAction extends \App\Application\Actions\Action
     } else {
       $queryParams = $this->request->getQueryParams();
       if (isset($queryParams['code'])) {//微信公众号认证回调
-        $user_id = UserHandler::getUserId($this->public, $this->user, $this->weChatBase);
+        $user_id = WePublicUserHandler::getUserId($this->public, $this->user, $this->weChatBase);
         // 检查绑定管理员
         if ($user_id > 0 && isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
           $admin = $this->admin->get('account', ['uid' => $user_id]);
           if ($admin) {
             $data = ['title' => '系统提醒',
-              'msg' => '您的微信已与”'.$admin.'“帐号绑定，需先解除才能绑定！！',
+              'msg' => '您的微信已与”' . $admin . '“帐号绑定，需先解除才能绑定！！',
               'icon' => 'weui-icon-warn'
             ];
             return $this->respondView('admin/error/wxerror.html', $data);
@@ -113,7 +110,7 @@ class UserBindAction extends \App\Application\Actions\Action
           return $this->respondView('admin/error/wxerror.html', $data);
         }
       } else {
-        return UserHandler::publicOauthRedirect($this->request, $this->response, $this->weChatBase);
+        return WePublicUserHandler::publicOauthRedirect($this->request, $this->response, $this->weChatBase);
       }
     }
   }

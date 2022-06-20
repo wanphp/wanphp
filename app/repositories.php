@@ -20,7 +20,6 @@ return function (ContainerBuilder $containerBuilder) {
     \App\Domain\Common\RouterInterface::class => \DI\autowire(\App\Repositories\Mysql\Router\RouterRepository::class),
     \App\Domain\Common\NavigateInterface::class => \DI\autowire(\App\Repositories\Mysql\Router\NavigateRepository::class),
     \App\Repositories\Mysql\Router\PersistenceRepository::class => \DI\autowire(\App\Repositories\Mysql\Router\PersistenceRepository::class),
-    \App\Domain\Common\ClientsInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\ClientsRepository::class),
-    \App\Domain\User\UserInterface::class => \DI\autowire(\App\Repositories\Mysql\User\UserRepository::class)
+    \App\Domain\Common\SettingInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\SettingRepository::class)
   ]);
 };

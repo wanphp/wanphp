@@ -44,17 +44,17 @@ class PersistenceRepository
       if ($routers) {
         //角色限制权限
         if ($role_id) {
-          $restricted = $this->roleRepository->select('restricted[JSON]', ['id' => $role_id]);
-          if ($restricted) {
-            // 各角色禁用权限并集
-            $restricted = call_user_func_array('array_merge', $restricted);
-            if (empty($restricted) || in_array(-1, $restricted)) {
-              // 没有禁用权限、超级管理员不限制权限
-              foreach ($routers as $action) {
-                $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
-              }
-              $this->restricted = [];
-            } else {
+          if (in_array(-1, $role_id)) {
+            //超级管理员不限制权限
+            foreach ($routers as $action) {
+              $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
+            }
+            $this->restricted = [];
+          } else {
+            $restricted = $this->roleRepository->select('restricted[JSON]', ['id' => $role_id]);
+            if ($restricted) {
+              // 各角色禁用权限并集
+              $restricted = call_user_func_array('array_merge', $restricted);
               foreach ($routers as $action) {
                 if (in_array($action['id'], $restricted)) {
                   $this->restricted[] = $action['callable'];
@@ -62,10 +62,10 @@ class PersistenceRepository
                   $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
                 }
               }
+            } else {//未找到角色
+              $this->permission = [];
+              $this->restricted = array_column($routers, 'callable');
             }
-          } else {//未找到角色
-            $this->permission = [];
-            $this->restricted = array_column($routers, 'callable');
           }
         } else {//未配置角色,限制所有权限
           $this->permission = [];

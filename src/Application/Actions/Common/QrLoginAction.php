@@ -2,11 +2,11 @@
 
 namespace App\Application\Actions\Common;
 
-use App\Application\Handlers\UserHandler;
 use App\Domain\Admin\AdminInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Weixin\WeChatBase;
+use Wanphp\Plugins\Author2Authorization\Application\WePublicUserHandler;
 use Wanphp\Plugins\Weixin\Domain\PublicInterface;
 use Wanphp\Plugins\Weixin\Domain\UserInterface;
 
@@ -38,7 +38,7 @@ class QrLoginAction extends \App\Application\Actions\Action
       $queryParams = $this->request->getQueryParams();
       $state = $queryParams['state'] ?? '';
       if (isset($queryParams['code'])) {//微信公众号认证回调
-        $user_id = UserHandler::getUserId($this->public, $this->user, $this->weChatBase);
+        $user_id = WePublicUserHandler::getUserId($this->public, $this->user, $this->weChatBase);
         // 检查绑定管理员
         if ($user_id > 0) {
           $admin = $this->admin->get('id,role_id,account,status', ['uid' => $user_id]);
@@ -78,7 +78,7 @@ class QrLoginAction extends \App\Application\Actions\Action
           return $this->respondWithError('未知用户！');
         }
       } else {
-        return UserHandler::publicOauthRedirect($this->request, $this->response, $this->weChatBase);
+        return WePublicUserHandler::publicOauthRedirect($this->request, $this->response, $this->weChatBase);
       }
     }
   }
