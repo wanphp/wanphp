@@ -13,11 +13,18 @@ return function (ContainerBuilder $containerBuilder) {
         'name' => 'slim-app',
         'path' => isset($_ENV['docker']) ? 'php://stdout' : realpath('../') . '/var/logs/app.log',
         'level' => Logger::DEBUG,
-      ],
-      'privateKey' => realpath('../') . '/var/conf/key/private.key',
+        'uploadFilePath' => realpath('..//var/uploadfiles')
+      ]
+    ],
+    'oauth2Config' => [
+      // openssl genrsa -aes128 -passout pass:wanphp@1122 -out private.key 2048
+      // openssl rsa -in private.key -passin pass:wanphp@1122 -pubout -out public.key
+      'privateKey' => realpath('../var/conf/key/private.key'),
+      // 资源服务器使用
+      'publicKey' => realpath('../var/conf/key/public.key'),
       'privateKeyPass' => 'wanphp@1122',
-      'encryptionKey' => 'def000000488eaf61f323560adace212f12047a7ad5863f8905da1fb28ed290122f07256bf1d512bebf75c9177fdd06b369a7ce63684122b08e9a5884a6010f1ddaafcde',
-      'uploadFilePath' => realpath('../') . '/var/uploadfiles',
+      // echo Key::createNewRandomKey()->saveToAsciiSafeString();
+      'encryptionKey' => 'def000008bd8e66117fe24fd2dacc6c3b777598bbe740dae5581f74fe9363d09c36ae8beaa12b5ef16d091a46fb5ef6c914cf94c2fbac04a2615556a34e7c9f98ed2c397',
       'authRedis' => 2
     ],
     'database' => [

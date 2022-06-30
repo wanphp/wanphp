@@ -59,7 +59,7 @@ class LoginAction extends Action
     $this->adminRepository = $adminRepository;
     $this->weChatBase = $weChatBase;
     $this->public = $public;
-    $this->key = Key::loadFromAsciiSafeString($container->get('author2Config')['encryptionKey']);
+    $this->key = Key::loadFromAsciiSafeString($container->get('oauth2Config')['encryptionKey']);
   }
 
   protected function action(): Response

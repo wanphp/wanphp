@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/plugins/toastr/toastr.min.css">
   {% block styles %}{% endblock %}
   <!-- Theme style -->
-  <link rel="stylesheet" href="/adminlte/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/adminlte/css/adminlte.min.css">
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -75,7 +75,7 @@
   <aside class="main-sidebar elevation-4 sidebar-light-primary">
     <!-- Brand Logo -->
     <a href="javascript:" class="brand-link">
-      <img src="{{ loginUser.headimgurl ?: '/adminlte/dist/img/AdminLTELogo.png' }}" alt="{{loginUser.name}}"
+      <img src="{{ loginUser.headimgurl ?: '/adminlte/img/AdminLTELogo.png' }}" alt="{{loginUser.name}}"
            class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">{{loginUser.nickname ?: '系统管理'}}</span>
     </a>
@@ -186,7 +186,7 @@
 <!-- Toastr -->
 <script src="/plugins/toastr/toastr.min.js"></script>
 <!-- AdminLTE -->
-<script src="/adminlte/dist/js/adminlte.js"></script>
+<script src="/adminlte/js/adminlte.js"></script>
 <script type="text/javascript">
   const Toast = Swal.mixin({
     toast: true,

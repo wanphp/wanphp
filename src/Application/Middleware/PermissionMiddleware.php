@@ -118,7 +118,7 @@ class PermissionMiddleware implements Middleware
           $response->getBody()->write($json);
           return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         } else {
-          $code = Crypto::encrypt(session_id(), Key::loadFromAsciiSafeString($this->container->get('author2Config')['encryptionKey']));
+          $code = Crypto::encrypt(session_id(), Key::loadFromAsciiSafeString($this->container->get('oauth2Config')['encryptionKey']));
           $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
           $writer = new Writer($renderer);
           $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . '/qrlogin?tk=' . $code);

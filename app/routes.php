@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
-use Wanphp\Plugins\Author2Resource\OAuthServerMiddleware;
+use Wanphp\Plugins\OAuth2Resource\OAuthServerMiddleware;
 
 return function (App $app) {
   $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -68,7 +68,6 @@ return function (App $app) {
       $g->get('/syncrouter', \App\Application\Api\Common\SyncRouterApi::class);
       $g->map(['GET', 'PATCH'], '/router[/{id:[0-9]+}]', \App\Application\Api\Common\RouterApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/navigate[/{id:[0-9]+}]', \App\Application\Api\Common\NavigateApi::class);
-      $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/clients[/{id:[0-9]+}]', \App\Application\Api\Manage\ClientsApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\AdminApi::class);
       $g->map(['GET', 'PUT', 'POST', 'DELETE'], '/admin/role[/{id:[0-9]+}]', \App\Application\Api\Manage\Admin\RoleApi::class);
       $g->get('/admin/binduser/{uid:[0-9]+}', \App\Application\Api\Manage\Admin\BindUserApi::class);

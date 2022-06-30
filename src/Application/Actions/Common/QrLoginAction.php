@@ -6,7 +6,7 @@ use App\Domain\Admin\AdminInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Weixin\WeChatBase;
-use Wanphp\Plugins\Author2Authorization\Application\WePublicUserHandler;
+use Wanphp\Plugins\OAuth2Authorization\Application\WePublicUserHandler;
 use Wanphp\Plugins\Weixin\Domain\PublicInterface;
 use Wanphp\Plugins\Weixin\Domain\UserInterface;
 
