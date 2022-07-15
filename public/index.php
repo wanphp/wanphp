@@ -53,7 +53,7 @@ $request = $serverRequestCreator->createServerRequestFromGlobals();
 
 // 创建错误处理程序
 $responseFactory = $app->getResponseFactory();
-$errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
+$errorHandler = new HttpErrorHandler($callableResolver, $responseFactory, $container->get(\Psr\Log\LoggerInterface::class));
 
 // Create Shutdown Handler
 $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);

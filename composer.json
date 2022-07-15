@@ -33,7 +33,10 @@
   },
   "config": {
     "process-timeout": 0,
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "wanphp/installers": true
+    }
   },
   "autoload": {
     "psr-4": {
