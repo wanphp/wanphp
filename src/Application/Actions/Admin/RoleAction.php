@@ -35,10 +35,10 @@ class RoleAction extends Action
 
   protected function action(): Response
   {
-    $actions = $this->routerRepository->select('id,name,route',['route[~]'=>'/admin/%']);
+    $actions = $this->routerRepository->select('id,name,route', ['route[~]' => '/admin/%']);
     $data = [
       'title' => '角色管理',
-      'roles' => $this->roleRepository->select(),
+      'roles' => $this->roleRepository->select('id,name,restricted[JSON]'),
       'actions' => array_column($actions, 'name', 'id'),
       'routes' => $actions
     ];

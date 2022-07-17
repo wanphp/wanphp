@@ -74,11 +74,11 @@ class AdminEntity implements \JsonSerializable
   private string $salt;
   /**
    *
-   * @DBType({"type":"char(10) NOT NULL DEFAULT ''"})
-   * @OA\Property(description="角色")
-   * @var string
+   * @DBType({"type":"json NULL"})
+   * @OA\Property(@OA\Items(),description="角色")
+   * @var array
    */
-  private string $role_id;
+  private array $role_id;
   /**
    * @DBType({"type":"char(10) NOT NULL DEFAULT ''"})
    * @OA\Property(description="最后登录时间")

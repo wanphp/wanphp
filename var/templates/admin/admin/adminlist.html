@@ -220,7 +220,7 @@
         $('#adminForm').attr('action', '/admin/admins/' + data.id);
         $('#adminForm').attr('method', 'PUT');
         $("#adminForm input[name='account']").val(data.account);
-        $("#adminForm select[name='role_id[]']").val(data.role_id.split(',')).trigger("change");
+        $("#adminForm select[name='role_id[]']").val(data.role_id).trigger("change");
         $("#adminForm select[name='status']").val(data.status);
         if ($("#adminForm select[name='townId']").length > 0) $("#adminForm select[name='townId']").val(data.townId);
         $('#modal-addadmin').modal('show');
@@ -283,7 +283,7 @@
               datatables.row($("tr[id='" + id + "']")).data(data).draw(false);
             } else {
               var data = {
-                id: json.res.id,
+                id: json.id,
                 account: fromdata.get('account')
               };
               datatables.row.add(data).draw(false);

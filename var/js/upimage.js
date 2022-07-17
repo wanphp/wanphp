@@ -41,7 +41,7 @@ $(document).ready(function () {
                   loadNext();
                 } else {
                   currentChunk = 0;
-                  upload(spark.end(), 1);
+                  upload(spark.end());
                 }
               };
               fileReader.onerror = function () {

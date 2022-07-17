@@ -9,10 +9,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Predis\ClientInterface;
 use Wanphp\Libray\Mysql\Database;
-use Wanphp\Libray\Weixin\MiniProgram;
-use Wanphp\Libray\Weixin\Pay;
-use Wanphp\Libray\Weixin\WeChatPay;
-use Wanphp\Libray\Weixin\WeChatBase;
+
 
 return function (ContainerBuilder $containerBuilder) {
   $containerBuilder->addDefinitions([
@@ -52,10 +49,12 @@ return function (ContainerBuilder $containerBuilder) {
         }
       }
       return $db;
-    },
-    MiniProgram::class => \DI\autowire(MiniProgram::class)->constructor(\DI\get('wechat.miniprogram'), \DI\get('redis')),
-    Pay::class => \DI\autowire(Pay::class)->constructor(\DI\get('wechat.pay-v2')),
-    WeChatPay::class => \DI\autowire(WeChatPay::class)->constructor(\DI\get('wechat.pay-v3')),
-    WeChatBase::class => \DI\autowire(WeChatBase::class)->constructor(\DI\get('wechat.base'), \DI\get('redis'))
+    }
   ]);
+  // 资源服务器，获取授权服务器用户信息
+  if (class_exists('\Wanphp\Libray\User\User')) {
+    $containerBuilder->addDefinitions([
+      \Wanphp\Libray\User\User::class => \DI\autowire(\Wanphp\Libray\User\User::class)->constructor(\DI\get('userServer'), \DI\get('redis'))
+    ]);
+  }
 };

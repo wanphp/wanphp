@@ -37,9 +37,9 @@ class RoleEntity implements \JsonSerializable
    */
   private string $name;
   /**
-   * @DBType({"type":"varchar(100) NOT NULL DEFAULT ''"})
-   * @OA\Property(description="限制权限")
-   * @var string
+   * @DBType({"type":"json NULL"})
+   * @OA\Property(@OA\Items(),description="限制权限")
+   * @var array
    */
-  private string $restricted;
+  private array $restricted;
 }

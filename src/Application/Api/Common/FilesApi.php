@@ -145,7 +145,7 @@ class FilesApi extends Api
           'md5' => $post['md5'] ?? md5_file($uploadedFile->getFilePath()),
           'size' => $post['size'] ?? $uploadedFile->getSize(),
           'extension' => strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION)),
-          'uid' => $uid,
+          'uid' => $uid ?: 0,
           'uptime' => time()
         ];
 
@@ -162,7 +162,7 @@ class FilesApi extends Api
           return $this->respondWithError('文件类型错误！');
         }
 
-        if (!in_array($data['type'], array('image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'video/mp4', 'text/plain'))) {
+        if (!in_array($data['type'], ['image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'video/mp4', 'text/plain'])) {
           return $this->respondWithError('文件类型错误！');
         }
 

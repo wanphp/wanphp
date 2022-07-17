@@ -9,7 +9,6 @@
 namespace App\Application\Middleware;
 
 use App\Domain\Admin\AdminInterface;
-use App\Domain\Weixin\UserInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -84,8 +83,13 @@ class PermissionMiddleware implements Middleware
       // 绑定用户
       $admin = $this->container->get(AdminInterface::class)->get('uid,account', ['id' => $_SESSION['login_id']]);
       if (isset($admin['uid']) && $admin['uid'] > 0) {
-        $user = $this->container->get(UserInterface::class)->get('headimgurl,nickname,name', ['id' => $admin['uid']]);
-        $admin = array_merge($admin, $user);
+        if ($this->container->has('Wanphp\Plugins\Weixin\Domain\UserInterface')) {
+          $user = $this->container->get('Wanphp\Plugins\Weixin\Domain\UserInterface')->getUser($admin['uid']);
+        }
+        if ($this->container->has('Wanphp\Libray\User\User')) {
+          $user = $this->container->get('Wanphp\Libray\User\User')->getUser($admin['uid']);
+        }
+        if (isset($user)) $admin = array_merge($admin, $user);
       }
 
       $tplVars = [

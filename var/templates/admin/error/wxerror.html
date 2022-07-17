@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <link rel="stylesheet" type="text/css" href="/css/weui.min.css"/>
 </head>
-<body>
+<body style="background: var(--weui-BG-0)">
 <div class="weui-msg">
   <div class="weui-msg__icon-area"><i class="{{icon}} weui-icon_msg"></i></div>
   <div class="weui-msg__text-area">
@@ -18,11 +18,9 @@
       <a href="javascript:closeWx();" class="weui-btn weui-btn_default">关闭页面</a>
     </p>
   </div>
-  <div class="weui-msg__extra-area">
-    <div class="weui-footer">
-      <p class="weui-footer__text">Copyright © 2022 {{thisUri}}</p>
-    </div>
-  </div>
+</div>
+<div class="weui-footer weui-footer_fixed-bottom">
+  <p class="weui-footer__text">Copyright © 2022 {{thisUri}}</p>
 </div>
 <script type="text/javascript" src="/plugins/jquery/jquery.min.js"></script>
 <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>

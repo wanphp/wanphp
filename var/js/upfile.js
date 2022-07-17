@@ -1,21 +1,45 @@
 $(document).ready(function () {
+  let timer;
   $.extend({
-    uploadVideo: function (url, callback) {
-      $('#form-video-upload').remove();
-      $('body').prepend('<form enctype="multipart/form-data" id="form-video-upload" style="display: none;"><input type="file" name="file" value="" accept="video/mp4"></form>');
-      $('#form-video-upload input[name=\'file\']').trigger('click');
+    uploadFile: function (options, callback) {
+      $('#form-file-upload').remove();
+      $('body').prepend('<form enctype="multipart/form-data" id="form-file-upload" style="display: none;"><input type="file" name="file" value="" accept="' + options.accept + '"></form>');
+      $('#form-file-upload input[name=\'file\']').trigger('click');
 
       if (typeof timer != 'undefined') {
         clearInterval(timer);
       }
 
       timer = setInterval(function () {
-        if ($("#form-video-upload input[name='file']").val() != '') {
-          var file = $('#form-video-upload input[name="file"]')[0].files[0];
+        if ($("#form-file-upload input[name='file']").val() != '') {
+          var file = $('#form-file-upload input[name="file"]')[0].files[0];
           clearInterval(timer);
           var ext = file['name'].replace(/^.+\./, '').toLowerCase();
-          if (ext != 'mp4') {
-            callback({code: 'error', description: '格式不支持，请选择mp4格式的文件'});
+          if (ext != options.ext) {
+            callback({code: 'error', description: '格式不支持，请选择' + options.ext + '格式的文件'});
+            return false;
+          }
+          if (file.size <= 2097152) {
+            var form_data = new FormData();
+            form_data.append('file', file, file.name);
+            form_data.append('type', file.type);
+            form_data.append('size', file.size);
+            $.ajax({
+                url: options.url,
+                type: 'post',
+                dataType: 'json',
+                data: form_data,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (json) {
+                  callback(json);
+                },
+                error: function (data) {
+                  callback(data.responseJSON.error);
+                }
+              }
+            );
             return false;
           }
           var fileReader = new FileReader(),
@@ -26,7 +50,7 @@ $(document).ready(function () {
             currentChunk = 0,
             spark = new SparkMD5.ArrayBuffer(),
             cutFile = function (file) {//文件分割
-            console.log(currentChunk);
+              console.log(currentChunk);
               var start = currentChunk * chunkSize, end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
               return blobSlice.call(file, start, end);
             },
@@ -41,7 +65,7 @@ $(document).ready(function () {
               loadNext();
             } else {
               currentChunk = 0;
-              upload(spark.end(), 1);
+              upload(spark.end());
             }
           };
           fileReader.onerror = function () {
@@ -57,7 +81,7 @@ $(document).ready(function () {
             form_data.append('size', file.size);
             form_data.append('md5', file_md5);
             $.ajax({
-                url: url,
+                url: options.url,
                 type: 'post',
                 dataType: 'json',
                 data: form_data,
@@ -70,17 +94,17 @@ $(document).ready(function () {
                     console.log(currentChunk, (currentChunk / chunks * 100).toFixed(2) + '%');
                     upload(file_md5);
                   } else {
-                    callback(json.data);
+                    callback(json);
                   }
                 },
                 error: function (data) {
-                  callback(data.responseJSON.error);
+                  callback(data.responseJSON);
                 }
               }
             );
           }
 
-          $('#button-upload-video').attr('data-original-title', '读取视频文件...').tooltip('show');
+          $('#button-upload-file').attr('data-original-title', '读取文件...').tooltip('show');
           if (chunks > 50) {
             callback({code: 'error', description: '上传文件不能超过100M,当前文件大小' + filesize});
             return false;

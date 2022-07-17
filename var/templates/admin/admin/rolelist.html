@@ -61,7 +61,7 @@
         <td>{{ role.id }}</td>
         <td>{{ role.name }}</td>
         <td>
-          {% for i,id in role.restricted|split(',') %}
+          {% for i,id in role.restricted %}
           {{ i>0 ? '、' }}
           {{ actions[id] }}
           {% endfor %}
@@ -152,7 +152,7 @@
       $('#roleForm').attr('action', '/admin/roles/' + role.id);
       $('#roleForm').attr('method', 'PUT');
       $("#roleForm input[name='name']").val(role.name);
-      $.each(role.restricted.split(','), function () {
+      $.each(role.restricted, function () {
         $("select[name='restricted[]'] option[value='" + this + "']").attr("selected", true);
       });
       $('#modal-addrole').modal('show');
