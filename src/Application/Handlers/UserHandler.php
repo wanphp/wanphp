@@ -70,15 +70,7 @@ class UserHandler
       return \Wanphp\Plugins\OAuth2Authorization\Application\WePublicUserHandler::publicOauthRedirect($request, $response, $container->get('Wanphp\Libray\Weixin\WeChatBase'));
     } else {
       // 资源服务器，前往认证服务器
-      $config = $container->get('userServer');
-      $redis = $container->get(ClientInterface::class);
-      $queryParams = $request->getQueryParams();
-      $redirectUri = $request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $request->getUri()->getPath();
-      $scope = $queryParams['scope'] ?? '';
-      $state = bin2hex(random_bytes(8));
-      $redis->setex($state, 300, 'state');
-      $url = $config['oauthServer'] . 'auth/authorize?client_id=' . $config['appId'] . '&redirect_uri=' . urlencode($redirectUri) . '&response_type=code&scope=' . $scope . '&state=' . $state;
-      return $response->withHeader('Location', $url)->withStatus(301);
+      return $container->get(User::class)->oauthRedirect($request, $response);
     }
   }
 }

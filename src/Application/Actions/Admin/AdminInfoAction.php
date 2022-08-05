@@ -11,11 +11,9 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Key;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\Setting;
 
 class AdminInfoAction extends \App\Application\Actions\Action
 {
@@ -24,22 +22,20 @@ class AdminInfoAction extends \App\Application\Actions\Action
 
   /**
    * @param LoggerInterface $logger
-   * @param ContainerInterface $container
+   * @param Setting $setting
    * @param AdminInterface $admin
    * @throws BadFormatException
-   * @throws ContainerExceptionInterface
    * @throws EnvironmentIsBrokenException
-   * @throws NotFoundExceptionInterface
    */
   public function __construct(
-    LoggerInterface    $logger,
-    ContainerInterface $container,
-    AdminInterface     $admin
+    LoggerInterface $logger,
+    Setting         $setting,
+    AdminInterface  $admin
   )
   {
     parent::__construct($logger);
     $this->admin = $admin;
-    $this->key = Key::loadFromAsciiSafeString($container->get('oauth2Config')['encryptionKey']);
+    $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
   }
 
   /**

@@ -45,7 +45,7 @@ $routes = require __DIR__ . '/../app/routes.php';
 $routes($app);
 
 /** @var bool $displayErrorDetails 显示错误详细信息 */
-$displayErrorDetails = $container->get('settings')['displayErrorDetails'];
+$displayErrorDetails = $container->get(\Wanphp\Libray\Slim\Setting::class)->get('displayErrorDetails');
 
 // Create Request object from globals
 $serverRequestCreator = ServerRequestCreatorFactory::create();

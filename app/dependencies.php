@@ -9,14 +9,15 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Predis\ClientInterface;
 use Wanphp\Libray\Mysql\Database;
+use Wanphp\Libray\Slim\Setting;
 
 
 return function (ContainerBuilder $containerBuilder) {
   $containerBuilder->addDefinitions([
     LoggerInterface::class => function (ContainerInterface $c) {
-      $settings = $c->get('settings');
+      $settings = $c->get(Setting::class);
 
-      $loggerSettings = $settings['logger'];
+      $loggerSettings = $settings->get('logger');
       $logger = new Logger($loggerSettings['name']);
 
       $processor = new UidProcessor();
@@ -28,11 +29,11 @@ return function (ContainerBuilder $containerBuilder) {
       return $logger;
     },
     ClientInterface::class => function (ContainerInterface $c) {
-      $config = $c->get('redis');
+      $config = $c->get(Setting::class)->get('redis');
       return new Predis\Client($config['parameters'], $config['options']);
     },
     Database::class => function (ContainerInterface $c) {
-      $config = $c->get('database');
+      $config = $c->get(Setting::class)->get('database');
       try {
         $db = new Database($config);
       } catch (\Exception $e) {
@@ -54,7 +55,7 @@ return function (ContainerBuilder $containerBuilder) {
   // 资源服务器，获取授权服务器用户信息
   if (class_exists('\Wanphp\Libray\User\User')) {
     $containerBuilder->addDefinitions([
-      \Wanphp\Libray\User\User::class => \DI\autowire(\Wanphp\Libray\User\User::class)->constructor(\DI\get('userServer'), \DI\get('redis'))
+      \Wanphp\Libray\User\User::class => \DI\autowire(\Wanphp\Libray\User\User::class)
     ]);
   }
 };

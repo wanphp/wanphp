@@ -19,11 +19,9 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Key;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\Setting;
 
 class LoginAction extends Action
 {
@@ -32,22 +30,20 @@ class LoginAction extends Action
 
   /**
    * @param LoggerInterface $logger
-   * @param ContainerInterface $container
+   * @param Setting $setting
    * @param AdminInterface $adminRepository
    * @throws BadFormatException
-   * @throws ContainerExceptionInterface
    * @throws EnvironmentIsBrokenException
-   * @throws NotFoundExceptionInterface
    */
   public function __construct(
-    LoggerInterface    $logger,
-    ContainerInterface $container,
-    AdminInterface     $adminRepository
+    LoggerInterface $logger,
+    Setting         $setting,
+    AdminInterface  $adminRepository
   )
   {
     parent::__construct($logger);
     $this->adminRepository = $adminRepository;
-    $this->key = Key::loadFromAsciiSafeString($container->get('oauth2Config')['encryptionKey']);
+    $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
   }
 
   protected function action(): Response
@@ -76,7 +72,7 @@ class LoginAction extends Action
         ]);
         $_SESSION['login_id'] = $id;
         $_SESSION['role_id'] = [-1];
-        return $this->respondWithData(['msg' => '系统初始化并登录成功！']);
+        return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index']);
       } else {
         $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id[JSON],status', ['OR' => ['account' => $account, 'tel' => $account]]);
       }
