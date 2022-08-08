@@ -6,36 +6,29 @@
  * Time: 9:46
  */
 
-namespace App\Application\Api\Common;
+namespace App\Application\Actions\Common;
 
 
-use App\Application\Api\Api;
+use App\Application\Actions\Action;
 use App\Domain\Common\RouterInterface;
 use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
 use ReflectionClass;
 
-class SyncRouterApi extends Api
+class SyncRouterAction extends Action
 {
   private RouterInterface $router;
 
-  public function __construct(RouterInterface $router)
+  public function __construct(LoggerInterface $logger, RouterInterface $router)
   {
+    parent::__construct($logger);
     $this->router = $router;
   }
 
   /**
    * @return Response
    * @throws Exception
-   * @OA\Get(
-   *  path="/api/manage/syncrouter",
-   *  tags={"System"},
-   *  summary="同步路由",
-   *  operationId="SyncNavigate",
-   *  security={{"bearerAuth":{}}},
-   *  @OA\Response(response="200",description="请求成功",@OA\JsonContent(ref="#/components/schemas/Success")),
-   *  @OA\Response(response="400",description="请求失败",@OA\JsonContent(ref="#/components/schemas/Error"))
-   * )
    */
   protected function action(): Response
   {
