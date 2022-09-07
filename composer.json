@@ -17,6 +17,7 @@
     "predis/predis": "^1.1.0",
     "wanphp/libray-slim": "^1.0.0",
     "wanphp/libray-mysql": "^1.1.0",
+    "wanphp/libray-user": "^1.0.0",
     "wanphp/plugins-oauth2-resource": "^1.0.0",
     "almasaeed2010/adminlte": "^3.0",
     "bacon/bacon-qr-code": "^2.0.0",

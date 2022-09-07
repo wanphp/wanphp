@@ -45,6 +45,7 @@ class UserBindAction extends \App\Application\Actions\Action
         $user = UserHandler::getUser($this->request, $this->container);
         // 检查绑定管理员
         if ($user && $user['id'] > 0 && isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
+          $_SESSION['user_id'] = $user['id'];
           $admin = $this->admin->get('account', ['uid' => $user['id']]);
           if ($admin) {
             $data = ['title' => '系统提醒',
