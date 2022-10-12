@@ -103,7 +103,7 @@
     $('.btn-success').click(function () {
       var ua = window.navigator.userAgent.toLowerCase();
       if (ua.match(/MicroMessenger/i) == "micromessenger") {
-        location.href = '/qrlogin?state=weixin';
+        location.href = '/qrLogin?state=weixin';
       } else {
         $('#modal-qrLogin').modal('show');
       }
@@ -113,7 +113,7 @@
     $('#modal-qrLogin').on('shown.bs.modal', function () {
       timer = setInterval(function () {
         checkNum++;
-        $.post('/qrlogin', function (data) {
+        $.post('/qrLogin', function (data) {
           if (data.res == 'OK') {
             location.href = '/admin/index';
             clearInterval(timer);

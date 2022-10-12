@@ -62,10 +62,10 @@
       <!-- Notifications Dropdown Menu -->
       {% block notifications %}{% endblock %}
       <li class="nav-item">
-        <a class="nav-link" href="javascript:;" id="clearcache"><i class="fas fa-broom"></i> </a>
+        <a class="nav-link" href="javascript:" id="clearcache"><i class="fas fa-broom"></i> </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/loginout"><i class="fas fa-sign-out-alt"></i> 退出</a>
+        <a class="nav-link" href="/loginOut"><i class="fas fa-sign-out-alt"></i> 退出</a>
       </li>
     </ul>
   </nav>
@@ -231,7 +231,7 @@
   $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
     $('#clearcache').click(function () {
-      $.get('/clearcache/1', function (data) {
+      $.get('/clearCache', function (data) {
         location.reload();
       });
     });
@@ -244,7 +244,7 @@
     }
     $('.brand-link').click(function () {
       $.ajax({
-        url: '/admin/editpassword',
+        url: '/admin/editPassword',
         type: 'GET',
         success: function (body) {
           //console.log(data);

@@ -36,19 +36,19 @@ return function (App $app) {
   $app->map(['GET', 'POST'], '/weixin', \App\Application\Api\Weixin\WePublic::class);
 
   $app->map(['GET', 'POST'], '/login', \App\Application\Actions\Common\LoginAction::class);
-  $app->map(['GET', 'POST'], '/qrlogin', \App\Application\Actions\Common\QrLoginAction::class);
-  $app->get('/loginout', \App\Application\Actions\Common\LoginOutAction::class);
-  $app->get('/clearcache/{db:[0-9]+}', \App\Application\Actions\Common\ClearCacheAction::class);
+  $app->map(['GET', 'POST'], '/qrLogin', \App\Application\Actions\Common\QrLoginAction::class);
+  $app->get('/loginOut', \App\Application\Actions\Common\LoginOutAction::class);
+  $app->get('/clearCache', \App\Application\Actions\Common\ClearCacheAction::class);
 
   $app->group('/admin', function (Group $group) {
     $group->get('/index', \App\Application\Actions\Home\HomeAction::class);
     $group->get('/actions', \App\Application\Actions\Permission\ListRouterAction::class);
-    $group->get('/syncactions', \App\Application\Actions\Common\SyncRouterAction::class);
+    $group->get('/syncActions', \App\Application\Actions\Common\SyncRouterAction::class);
     $group->patch('/router/{id:[0-9]+}', \App\Application\Actions\Common\RouterAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/navigate[/{id:[0-9]+}]', \App\Application\Actions\Common\NavigateAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/setting[/{id:[0-9]+}]', \App\Application\Actions\Common\SettingAction::class);
-    $group->map(['GET', 'POST'], '/editpassword', \App\Application\Actions\Admin\AdminInfoAction::class);
-    $group->map(['GET', 'POST'], '/userbind', \App\Application\Actions\Admin\UserBindAction::class);
+    $group->map(['GET', 'POST'], '/editPassword', \App\Application\Actions\Admin\AdminInfoAction::class);
+    $group->map(['GET', 'POST'], '/userBind', \App\Application\Actions\Admin\UserBindAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/admins[/{id:[0-9]+}]', \App\Application\Actions\Admin\AdminAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/roles[/{id:[0-9]+}]', \App\Application\Actions\Admin\RoleAction::class);
 

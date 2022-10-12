@@ -41,7 +41,7 @@ class QrLoginAction extends \App\Application\Actions\Action
         $user = UserHandler::getUser($this->request, $this->container);
         // 检查绑定管理员
         if ($user && $user['id'] > 0) {
-          $admin = $this->admin->get('id,role_id[JSON],account,status', ['uid' => $user['id']]);
+          $admin = $this->admin->get('id,role_id,account,status', ['uid' => $user['id']]);
           if (!$admin) {
             $data = ['title' => '系统提醒',
               'msg' => '微信尚未绑定帐号，请使用密码登录！',
@@ -54,7 +54,7 @@ class QrLoginAction extends \App\Application\Actions\Action
             $_SESSION['login_id'] = $admin['id'];
             $_SESSION['role_id'] = $admin['role_id'];
             $_SESSION['user_id'] = $user['id'];
-            $this->admin->update(['lastlogintime' => time(), 'lastloginip' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
+            $this->admin->update(['lastLoginTime' => time(), 'lastLoginIp' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
             if ($state == 'weixin') {
               $this->logger->info('”' . $admin['account'] . '”刚刚通过微信内部授权登录了系统；绑定用户UID' . $user['id']);
               $backUrl = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index';

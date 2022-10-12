@@ -13,21 +13,23 @@ use App\Application\Actions\Action;
 use Predis\ClientInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\Setting;
 
 class ClearCacheAction extends Action
 {
   private ClientInterface $redis;
+  private Setting $setting;
 
-  public function __construct(LoggerInterface $logger, ClientInterface $redis)
+  public function __construct(LoggerInterface $logger, ClientInterface $redis, Setting $setting)
   {
     $this->redis = $redis;
+    $this->setting = $setting;
     parent::__construct($logger);
   }
 
   protected function action(): Response
   {
-    $db = $this->args['db'] ?? 1;
-    $this->redis->select($db);
+    $this->redis->select($this->setting->get('redis')['parameters']['database']);
     $this->redis->flushdb();
     return $this->respondWithData(['msg' => 'OK!']);
   }

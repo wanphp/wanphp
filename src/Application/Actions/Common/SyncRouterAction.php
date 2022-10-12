@@ -59,7 +59,8 @@ class SyncRouterAction extends Action
               if (str_contains($value, '-')) {
                 $value = explode('-', $value);
                 array_walk_recursive($value, function (&$item) {
-                  $item = ucfirst($item);
+                  if ($item == 'oauth2') $item = 'OAuth2';
+                  else $item = ucfirst($item);
                 });
                 $value = join('', $value);
               } else {

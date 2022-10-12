@@ -20,23 +20,4 @@ class RoleRepository extends BaseRepository implements RoleInterface
   {
     parent::__construct($database, self::TABLE_NAME, RoleEntity::class);
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function findRoleOfId($id): RoleEntity
-  {
-    $role = $this->get('*', ['id' => $id]);
-    if (empty($role)) throw new \Exception('找不到角色！');
-    return new RoleEntity($role);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function delRole($id): bool
-  {
-    return $this->delete(['id' => $id]);
-  }
-
 }

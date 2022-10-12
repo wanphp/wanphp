@@ -31,30 +31,28 @@ class PersistenceRepository
   }
 
   /**
-   * @param array $role_id
+   * @param int $role_id
    * @return void
    * @throws Exception
    */
-  public function setPermission(array $role_id)
+  public function setPermission(int $role_id)
   {
-    $cacheKey = 'authority_' . join('_', $role_id);
+    $cacheKey = 'authority_' . $role_id;
     $authority = $this->redis->get($cacheKey);
     if (!$authority) {
       $routers = $this->routerRepository->select('id,navId,name,route,callable', ['route[~]' => '/admin/%', 'ORDER' => ['sortOrder' => 'ASC']]);
       if ($routers) {
         //角色限制权限
         if ($role_id) {
-          if (in_array(-1, $role_id)) {
+          if ($role_id < 0) {
             //超级管理员不限制权限
             foreach ($routers as $action) {
               $this->permission[$action['navId']][] = ['route' => $action['route'], 'name' => $action['name']];
             }
             $this->restricted = [];
           } else {
-            $restricted = $this->roleRepository->select('restricted[JSON]', ['id' => $role_id]);
+            $restricted = $this->roleRepository->get('restricted[JSON]', ['id' => $role_id]);
             if ($restricted) {
-              // 各角色禁用权限并集
-              $restricted = call_user_func_array('array_merge', $restricted);
               foreach ($routers as $action) {
                 if (in_array($action['id'], $restricted)) {
                   $this->restricted[] = $action['callable'];

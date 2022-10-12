@@ -48,7 +48,6 @@ class LoginAction extends Action
 
   protected function action(): Response
   {
-    //print_r($this);exit();
     if ($this->isPost()) {
       //获取数据
       $post = $this->request->getParsedBody();
@@ -66,15 +65,15 @@ class LoginAction extends Action
           'account' => $account,
           'salt' => $salt,
           'password' => md5(SHA1($salt . $password)),
-          'role_id' => [-1],
+          'role_id' => -1,
           'status' => 1,
           'createtime' => time()
         ]);
         $_SESSION['login_id'] = $id;
-        $_SESSION['role_id'] = [-1];
+        $_SESSION['role_id'] = -1;
         return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index']);
       } else {
-        $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id[JSON],status', ['OR' => ['account' => $account, 'tel' => $account]]);
+        $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id,status', ['OR' => ['account' => $account, 'tel' => $account]]);
       }
 
       if (!isset($admin['id'])) {
@@ -90,7 +89,7 @@ class LoginAction extends Action
         $_SESSION['login_id'] = $admin['id'];
         $_SESSION['role_id'] = $admin['role_id'];
         $_SESSION['user_id'] = $admin['uid'];
-        $this->adminRepository->update(['lastlogintime' => time(), 'lastloginip' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
+        $this->adminRepository->update(['lastLoginTime' => time(), 'lastLoginIp' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
         $redirect_uri = $this->request->getHeaderLine('Referer');
         if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index';
         return $this->respondWithData(['msg' => '系统登录成功！', 'redirect_uri' => $redirect_uri]);
@@ -101,7 +100,7 @@ class LoginAction extends Action
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
-      $data['loginQr'] = $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/qrlogin?tk=' . $code);
+      $data['loginQr'] = $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/qrLogin?tk=' . $code);
 
       return $this->respondView('admin/login.html', $data);
     }

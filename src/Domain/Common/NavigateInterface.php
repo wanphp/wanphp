@@ -16,18 +16,4 @@ use Exception;
 interface NavigateInterface extends BaseInterface
 {
   const TABLE_NAME = "navigate";
-
-  /**
-   * @param int $id
-   * @return NavigateEntity
-   * @throws Exception
-   */
-  public function findNavigateOfId(int $id): NavigateEntity;
-
-  /**
-   * @param int $id
-   * @return int
-   * @throws Exception
-   */
-  public function delNavigate(int $id): int;
 }

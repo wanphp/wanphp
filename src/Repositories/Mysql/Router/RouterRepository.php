@@ -20,15 +20,4 @@ class RouterRepository extends BaseRepository implements RouterInterface
   {
     parent::__construct($database, self::TABLE_NAME, RouterEntity::class);
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function findActionOfId($id): RouterEntity
-  {
-    $action = $this->get('*', ['id' => $id]);
-    if (empty($role)) throw new \Exception('找不到路由！');
-    return new RouterEntity($action);
-  }
-
 }

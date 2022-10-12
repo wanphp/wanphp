@@ -20,22 +20,4 @@ class NavigateRepository extends BaseRepository implements NavigateInterface
   {
     parent::__construct($database, self::TABLE_NAME, NavigateEntity::class);
   }
-  /**
-   * {@inheritDoc}
-   */
-  public function findNavigateOfId($id): NavigateEntity
-  {
-    $navigate = $this->get('*', ['id' => $id]);
-    if (empty($navigate)) throw new \Exception('找不到导航菜单！');
-    return new NavigateEntity($navigate);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function delNavigate($id): int
-  {
-    return $this->delete(['id' => $id]);
-  }
-
 }

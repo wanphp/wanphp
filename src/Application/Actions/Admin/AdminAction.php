@@ -48,6 +48,7 @@ class AdminAction extends Action
   /**
    * @throws ContainerExceptionInterface
    * @throws NotFoundExceptionInterface
+   * @throws \Exception
    */
   protected function action(): Response
   {
@@ -82,38 +83,34 @@ class AdminAction extends Action
       case 'GET';
         if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
           $params = $this->request->getQueryParams();
+          $where = [];
           // 查看选择角色
           if (isset($params['role_id']) && $params['role_id'] > 0) {
             $role_id = intval($params['role_id']);
-            $where = "WHERE REPLACE(`role_id`, ',', '][') LIKE '%[\"$role_id\"]%'";
           } else {
-            $role_id = $_SESSION['role_id'] ?? [];
-            if ($role_id) {
-              $role_where = [];
-              foreach ($role_id as $id) {
-                $role_where[] = "REPLACE(`role_id`, ',', '][') LIKE '%[\"$id\"]%'";
-              }
-              $where = 'WHERE (' . join(' OR ', $role_where) . ')';
-            } else $where = "WHERE REPLACE(`role_id`, ',', '][') LIKE '%[\"-1\"]%'";
+            $role_id = $_SESSION['role_id'] ?? -1;
           }
-          if (!in_array(-1, $_SESSION['role_id'])) $where = " AND `parentId`='{$_SESSION['login_id']}'";//只显示自己添加的管理员
+          $where['role_id'] = $role_id;
+          if ($_SESSION['role_id'] != -1) $where['parentId'] = $_SESSION['login_id'];//只显示自己添加的管理员
 
-          $recordsTotal = $this->admin->adminCount('id', Medoo::raw($where));
+          $recordsTotal = $this->admin->count('id', $where);
           if (!empty($params['search']['value'])) {
             $keyword = trim($params['search']['value']);
             $keyword = addcslashes($keyword, '*%_');
-            $where .= " AND (`name` LIKE '%{$keyword}%' OR `account` LIKE '%{$keyword}%' OR `tel` LIKE '%{$keyword}%')";
+            $where['OR'] = [
+              'account[~]' => $keyword,
+              'name[~]' => $keyword,
+              'tel[~]' => $keyword
+            ];
           }
 
-          if (isset($params['order'])) foreach ($params['order'] as $param) {
-            $sort = strtoupper($param['dir']);
-            $where .= " ORDER BY {$params['columns'][$param['column']]['data']} {$sort}";
-          }
+          $order = $this->getOrder();
+          if ($order) $where['ORDER'] = $order;
+          $recordsFiltered = $this->admin->count('id', $where);
+          $limit = $this->getLimit();
+          if ($limit) $where['LIMIT'] = $limit;
 
-          $admins = $this->admin->getAdminList(
-            ['id', 'uid', 'role_id[JSON]', 'name', 'tel', 'account', 'status', 'lastlogintime', 'lastloginip'],
-            Medoo::raw($where . " LIMIT {$params['start']}, {$params['length']}")
-          );
+          $admins = $this->admin->select('id, uid, role_id, name, tel, account, status, lastLoginTime, lastLoginIp', $where);
           $user_id = array_filter(array_column($admins, 'uid'));
           // 绑定微信
           if (!empty($user_id)) {
@@ -139,14 +136,14 @@ class AdminAction extends Action
           $data = [
             "draw" => $params['draw'],
             "recordsTotal" => $recordsTotal,
-            "recordsFiltered" => $this->admin->adminCount('id', Medoo::raw($where)),
+            "recordsFiltered" => $recordsFiltered,
             'data' => $admins
           ];
 
           return $this->respondWithData($data);
         } else {
           $role_id = $_SESSION['role_id'];
-          if (in_array(-1, $role_id)) $role = $this->role->select('id,name');
+          if ($role_id < 0) $role = $this->role->select('id,name');
           else $role = $this->role->select('id,name', ['id' => $role_id]);
           $data = [
             'title' => '管理员管理',

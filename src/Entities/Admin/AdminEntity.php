@@ -45,7 +45,7 @@ class AdminEntity implements \JsonSerializable
   /**
    * @DBType({"type":"smallint(6) NOT NULL DEFAULT 0"})
    * @var integer
-   * @OA\Property(description="上级管理员，一个部门的总管理员id")
+   * @OA\Property(description="添加管理员的管理员id")
    */
   private int $parentId;
   /**
@@ -74,23 +74,23 @@ class AdminEntity implements \JsonSerializable
   private string $salt;
   /**
    *
-   * @DBType({"type":"json NULL"})
-   * @OA\Property(@OA\Items(),description="角色")
-   * @var array
+   * @DBType({"type":"smallint(6) NOT NULL DEFAULT 0"})
+   * @OA\Property(description="角色")
+   * @var int
    */
-  private array $role_id;
+  private int $role_id;
   /**
    * @DBType({"type":"char(10) NOT NULL DEFAULT ''"})
    * @OA\Property(description="最后登录时间")
    * @var int
    */
-  private int $lastlogintime;
+  private int $lastLoginTime;
   /**
    * @DBType({"type":"char(15) NOT NULL DEFAULT ''"})
    * @OA\Property(description="最后登录IP")
    * @var string
    */
-  private string $lastloginip;
+  private string $lastLoginIp;
   /**
    * @DBType({"type":"char(1) NOT NULL DEFAULT '0'"})
    * @OA\Property(description="帐号状态")

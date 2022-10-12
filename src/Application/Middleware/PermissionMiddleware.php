@@ -126,7 +126,7 @@ class PermissionMiddleware implements Middleware
           $code = Crypto::encrypt(session_id(), Key::loadFromAsciiSafeString($this->container->get(Setting::class)->get('oauth2Config')['encryptionKey']));
           $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
           $writer = new Writer($renderer);
-          $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . '/qrlogin?tk=' . $code);
+          $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . '/qrLogin?tk=' . $code);
           return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/login.html', $data);
         }
       }

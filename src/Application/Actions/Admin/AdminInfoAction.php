@@ -65,7 +65,7 @@ class AdminInfoAction extends \App\Application\Actions\Action
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
-      $data = ['bindQr' => $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/userbind?tk=' . $code)];
+      $data = ['bindQr' => $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/userBind?tk=' . $code)];
       return $this->respondView('admin/admin/admininfo.html', $data);
     }
 

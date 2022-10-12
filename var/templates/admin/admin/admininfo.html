@@ -47,12 +47,12 @@
       var value = $("#adminInfo input[name='password']").val();
       if (password.test(value)) {
         $.ajax({
-          url: '/admin/editpassword',
+          url: '/admin/editPassword',
           data: {password: value},
           type: 'POST',
           dataType: 'json',
           success: function (json) {
-            location.href = '/loginout';
+            location.href = '/loginOut';
           },
           error: errorDialog
         });
@@ -100,7 +100,7 @@
       $('#bindQr').show();
       timer = setInterval(function () {
         checkNum++;
-        $.post('/admin/userbind', function (data) {
+        $.post('/admin/userBind', function (data) {
           if (data.res == 'OK') {
             clearInterval(timer);
             location.reload();

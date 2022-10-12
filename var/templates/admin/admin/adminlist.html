@@ -48,7 +48,7 @@
             </div>
             <div class="form-group">
               <label>角色</label>
-              <select name="role_id[]" multiple="multiple" class="form-control select2" style="width: 100%">
+              <select name="role_id" class="form-control select2" style="width: 100%">
                 {% for id, name in roles %}
                 <option value="{{ id }}" {{ (role_id== id) ?
                 ' selected':''}}>{{ name }}</option>
@@ -164,7 +164,7 @@
       if ($(this).hasClass('btn-default')) {
         $('.card-header span[data-id].btn-success').removeClass('btn-success').addClass('btn-default');
         $(this).removeClass('btn-default').addClass('btn-success');
-        $("#adminForm select[name='role_id[]']").val($(this).attr('data-id')).trigger("change");
+        $("#adminForm select[name='role_id']").val($(this).attr('data-id')).trigger("change");
         datatables.ajax.reload();
       }
     });
@@ -190,12 +190,12 @@
         {data: "name", defaultContent: ''},
         {data: "tel", defaultContent: ''},
         {
-          data: "lastlogintime", render: function (data, type, row, meta) {
+          data: "lastLoginTime", render: function (data, type, row, meta) {
             if (data) return new Date(parseInt(data) * 1000).toLocaleString().replace(/:\d{1,2}$/, ' ');
             else return '尚未登录';
           }
         },
-        {data: "lastloginip", defaultContent: ''},
+        {data: "lastLoginIp", defaultContent: ''},
         {
           data: "status", render: function (data, type, row, meta) {
             if (data) {
@@ -220,7 +220,7 @@
         $('#adminForm').attr('action', '/admin/admins/' + data.id);
         $('#adminForm').attr('method', 'PUT');
         $("#adminForm input[name='account']").val(data.account);
-        $("#adminForm select[name='role_id[]']").val(data.role_id).trigger("change");
+        $("#adminForm select[name='role_id']").val(data.role_id).trigger("change");
         $("#adminForm select[name='status']").val(data.status);
         if ($("#adminForm select[name='townId']").length > 0) $("#adminForm select[name='townId']").val(data.townId);
         $('#modal-addadmin').modal('show');

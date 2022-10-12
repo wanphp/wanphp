@@ -16,12 +16,4 @@ use Exception;
 interface RouterInterface extends BaseInterface
 {
   const TABLE_NAME = "routers";
-
-  /**
-   * @param int $id
-   * @return RouterEntity
-   * @throws Exception
-   */
-  public function findActionOfId(int $id): RouterEntity;
-
 }
