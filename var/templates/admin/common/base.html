@@ -229,7 +229,7 @@
   }
 
   $(document).ready(function () {
-    $('[data-toggle="tooltip"]').tooltip();
+    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
     $('#clearcache').click(function () {
       $.get('/clearCache', function (data) {
         location.reload();

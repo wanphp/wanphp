@@ -90,7 +90,7 @@ class PermissionMiddleware implements Middleware
         if ($this->container->has('Wanphp\Libray\User\User')) {
           $user = $this->container->get('Wanphp\Libray\User\User')->getUser($admin['uid']);
         }
-        if (isset($user)) $admin = array_merge($admin, $user);
+        if (isset($user) && $user) $admin = array_merge($admin, $user);
       }
 
       $tplVars = [
