@@ -55,7 +55,13 @@ return function (ContainerBuilder $containerBuilder) {
   // 资源服务器，获取授权服务器用户信息
   if (class_exists('\Wanphp\Libray\User\User')) {
     $containerBuilder->addDefinitions([
-      \Wanphp\Libray\User\User::class => \DI\autowire(\Wanphp\Libray\User\User::class)
+      \Wanphp\Libray\Slim\WpUserInterface::class => \DI\autowire(\Wanphp\Libray\User\User::class)
+    ]);
+  }
+  // 授权服务器
+  if (class_exists('\Wanphp\Plugins\Weixin\Repositories\UserRepository')) {
+    $containerBuilder->addDefinitions([
+      \Wanphp\Libray\Slim\WpUserInterface::class => \DI\autowire(\Wanphp\Plugins\Weixin\Repositories\UserRepository::class)
     ]);
   }
 };

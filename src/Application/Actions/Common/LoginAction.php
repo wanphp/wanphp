@@ -22,27 +22,32 @@ use Defuse\Crypto\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Slim\Setting;
+use Wanphp\Libray\Slim\WpUserInterface;
 
 class LoginAction extends Action
 {
   private AdminInterface $adminRepository;
+  private WpUserInterface $user;
   private Key $key;
 
   /**
    * @param LoggerInterface $logger
    * @param Setting $setting
    * @param AdminInterface $adminRepository
+   * @param WpUserInterface $user
    * @throws BadFormatException
    * @throws EnvironmentIsBrokenException
    */
   public function __construct(
     LoggerInterface $logger,
     Setting         $setting,
-    AdminInterface  $adminRepository
+    AdminInterface  $adminRepository,
+    WpUserInterface $user
   )
   {
     parent::__construct($logger);
     $this->adminRepository = $adminRepository;
+    $this->user = $user;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
   }
 
@@ -90,6 +95,24 @@ class LoginAction extends Action
         $_SESSION['role_id'] = $admin['role_id'];
         $_SESSION['user_id'] = $admin['uid'];
         $this->adminRepository->update(['lastLoginTime' => time(), 'lastLoginIp' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
+        // 发送公众号通知
+        if ($admin['uid'] > 0) {
+          $first = '您的账号“' . $admin['account'] . '”刚刚登录了系统；';
+          $device = $this->request->getHeaderLine('X-HTTP-Device');
+          if ($device) $first .= '登录IP：' . $params['REMOTE_ADDR'] . '，客户端：' . $device . '。';
+          $this->logger->info(str_replace('您的账号', '', $first));
+          $msgData = [
+            'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
+            'url' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
+            'data' => [
+              'first' => ['value' => $first, 'color' => '#173177'],
+              'keyword1' => ['value' => $admin['account'], 'color' => '#173177'],
+              'keyword2' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177'],
+              'remark' => ['value' => '如果不是您本人登录，查看详情及时修改登录密码，并联系管理员。', 'color' => '#173177']
+            ]
+          ];
+          $this->user->sendMessage([$admin['uid']], $msgData);
+        }
         $redirect_uri = $this->request->getHeaderLine('Referer');
         if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index';
         return $this->respondWithData(['msg' => '系统登录成功！', 'redirect_uri' => $redirect_uri]);

@@ -8,17 +8,20 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\WpUserInterface;
 
 class UserBindAction extends \App\Application\Actions\Action
 {
 
   private ContainerInterface $container;
+  private WpUserInterface $user;
   private AdminInterface $admin;
 
-  public function __construct(LoggerInterface $logger, ContainerInterface $container, AdminInterface $admin)
+  public function __construct(LoggerInterface $logger, ContainerInterface $container, WpUserInterface $user, AdminInterface $admin)
   {
     parent::__construct($logger);
     $this->container = $container;
+    $this->user = $user;
     $this->admin = $admin;
   }
 
@@ -45,7 +48,6 @@ class UserBindAction extends \App\Application\Actions\Action
         $user = UserHandler::getUser($this->request, $this->container);
         // 检查绑定管理员
         if ($user && $user['id'] > 0 && isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
-          $_SESSION['user_id'] = $user['id'];
           $admin = $this->admin->get('account', ['uid' => $user['id']]);
           if ($admin) {
             $data = ['title' => '系统提醒',
@@ -58,7 +60,34 @@ class UserBindAction extends \App\Application\Actions\Action
           if ($user['tel']) $data['tel'] = $user['tel'];
           $up = $this->admin->update($data, ['id' => $_SESSION['login_id']]);
           if ($up > 0) {
-            // todo 发公众号通知
+            $account = $this->admin->get('account', ['id' => $_SESSION['login_id']]);
+            $msgData = [
+              'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
+              'data' => [
+                'first' => ['value' => '您的微信已绑定管理帐号“' . $account . '”。', 'color' => '#173177'],
+                'keyword1' => ['value' => $user['name'] ?: '未完善', 'color' => '#173177'],
+                'keyword2' => ['value' => '绑定成功', 'color' => '#173177'],
+                'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177'],
+                'remark' => ['value' => '以后可以使用微信扫码登录系统。', 'color' => '#173177']
+              ]
+            ];
+            $this->user->sendMessage([$user['id']], $msgData);
+            // 通知解绑用户
+            if ($_SESSION['user_id'] > 0) {
+              $unBindUser = $this->user->get('name,tel', ['id' => $_SESSION['user_id']]);
+              $msgData = [
+                'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
+                'data' => [
+                  'first' => ['value' => '您的微信已解除与管理帐号“' . $account . '”的绑定。', 'color' => '#173177'],
+                  'keyword1' => ['value' => $unBindUser['name'] ?: '未完善', 'color' => '#173177'],
+                  'keyword2' => ['value' => '解除绑定成功', 'color' => '#173177'],
+                  'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177'],
+                  'remark' => ['value' => '解除绑定后，不能再使用微信扫码登录系统。', 'color' => '#173177']
+                ]];
+              $this->user->sendMessage([$_SESSION['user_id']], $msgData);
+            }
+            // 记录绑定用户ID
+            $_SESSION['user_id'] = $user['id'];
 
             $data = ['title' => '绑定成功',
               'msg' => '您的帐号已成功已您的微信绑定！',
@@ -71,14 +100,13 @@ class UserBindAction extends \App\Application\Actions\Action
               'icon' => 'weui-icon-warn'
             ];
           }
-          return $this->respondView('admin/error/wxerror.html', $data);
         } else {
           $data = ['title' => '系统提醒',
             'msg' => '未知用户，帐号绑定失败！！',
             'icon' => 'weui-icon-warn'
           ];
-          return $this->respondView('admin/error/wxerror.html', $data);
         }
+        return $this->respondView('admin/error/wxerror.html', $data);
       } else {
         return UserHandler::oauthRedirect($this->request, $this->response, $this->container);
       }

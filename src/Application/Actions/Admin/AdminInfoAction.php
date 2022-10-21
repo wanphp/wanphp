@@ -11,30 +11,36 @@ use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Key;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Slim\Setting;
+use Wanphp\Libray\Slim\WpUserInterface;
 
 class AdminInfoAction extends \App\Application\Actions\Action
 {
   private AdminInterface $admin;
+  private WpUserInterface $user;
   private Key $key;
 
   /**
    * @param LoggerInterface $logger
    * @param Setting $setting
+   * @param WpUserInterface $user
    * @param AdminInterface $admin
    * @throws BadFormatException
    * @throws EnvironmentIsBrokenException
    */
   public function __construct(
-    LoggerInterface $logger,
-    Setting         $setting,
-    AdminInterface  $admin
+    LoggerInterface    $logger,
+    Setting            $setting,
+    WpUserInterface    $user,
+    AdminInterface     $admin
   )
   {
     parent::__construct($logger);
     $this->admin = $admin;
+    $this->user = $user;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
   }
 
@@ -52,11 +58,22 @@ class AdminInfoAction extends \App\Application\Actions\Action
           'password' => md5(SHA1($salt . md5($data['password'])))
         ];
         $num = $this->admin->update($password, ['id' => $_SESSION['login_id']]);
-//        $admin = $this->admin->get('account,uid', ['id' => $_SESSION['login_id']]);
-//        if ($admin['uid'] > 0) {
-//          // 发公众号通知
-//
-//        }
+        $admin = $this->admin->get('account,uid', ['id' => $_SESSION['login_id']]);
+        if ($admin['uid'] > 0) {
+          // 发公众号通知
+          $msgData = [
+            'template_id_short' => 'OPENTM407205168',//密码重置通知,所属行业编号21
+            'url' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/login',
+            'data' => [
+              'first' => array('value' => '您的账号刚刚修改了密码', 'color' => '#173177'),
+              'keyword1' => array('value' => $this->admin->get('account', ['id' => $_SESSION['login_id']]), 'color' => '#173177'),
+              'keyword2' => array('value' => $data['password'], 'color' => '#173177'),
+              'remark' => array('value' => '如果不是您本人操作，则您的帐号存在安全风险，请及时联系管理员处理。', 'color' => '#173177')
+            ]
+          ];
+
+          $this->user->sendMessage([$admin['uid']], $msgData);
+        }
         return $this->respondWithData(['upNum' => $num], 201);
       } else {
         return $this->respondWithError('密码不能为空！！');

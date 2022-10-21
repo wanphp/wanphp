@@ -33,6 +33,7 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Wanphp\Libray\Slim\Setting;
+use Wanphp\Libray\Slim\WpUserInterface;
 
 
 class PermissionMiddleware implements Middleware
@@ -84,13 +85,8 @@ class PermissionMiddleware implements Middleware
       // 绑定用户
       $admin = $this->container->get(AdminInterface::class)->get('uid,account', ['id' => $_SESSION['login_id']]);
       if (isset($admin['uid']) && $admin['uid'] > 0) {
-        if ($this->container->has('Wanphp\Plugins\Weixin\Domain\UserInterface')) {
-          $user = $this->container->get('Wanphp\Plugins\Weixin\Domain\UserInterface')->getUser($admin['uid']);
-        }
-        if ($this->container->has('Wanphp\Libray\User\User')) {
-          $user = $this->container->get('Wanphp\Libray\User\User')->getUser($admin['uid']);
-        }
-        if (isset($user) && $user) $admin = array_merge($admin, $user);
+        $user = $this->container->get(WpUserInterface::class)->getUser($admin['uid']);
+        if ($user) $admin = array_merge($admin, $user);
       }
 
       $tplVars = [

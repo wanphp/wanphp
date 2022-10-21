@@ -12,12 +12,9 @@ namespace App\Application\Actions\Admin;
 use App\Application\Actions\Action;
 use App\Domain\Admin\AdminInterface;
 use App\Domain\Admin\RoleInterface;
-use Medoo\Medoo;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\WpUserInterface;
 
 /**
  * Class AdminAction
@@ -29,26 +26,24 @@ class AdminAction extends Action
 {
   private RoleInterface $role;
   private AdminInterface $admin;
-  private ContainerInterface $container;
+  private WpUserInterface $user;
 
   /**
    * @param LoggerInterface $logger
    * @param AdminInterface $admin
    * @param RoleInterface $role
-   * @param ContainerInterface $container
+   * @param WpUserInterface $user
    */
-  public function __construct(LoggerInterface $logger, AdminInterface $admin, RoleInterface $role, ContainerInterface $container)
+  public function __construct(LoggerInterface $logger, AdminInterface $admin, RoleInterface $role, WpUserInterface $user)
   {
     parent::__construct($logger);
     $this->admin = $admin;
     $this->role = $role;
-    $this->container = $container;
+    $this->user = $user;
   }
 
   /**
-   * @throws ContainerExceptionInterface
-   * @throws NotFoundExceptionInterface
-   * @throws \Exception
+   * @inheritDoc
    */
   protected function action(): Response
   {
@@ -110,24 +105,12 @@ class AdminAction extends Action
           $limit = $this->getLimit();
           if ($limit) $where['LIMIT'] = $limit;
 
-          $admins = $this->admin->select('id, uid, role_id, name, tel, account, status, lastLoginTime, lastLoginIp', $where);
+          $admins = $this->admin->select('id,uid,role_id,name,tel,account,status,lastLoginTime,lastLoginIp', $where);
           $user_id = array_filter(array_column($admins, 'uid'));
           // 绑定微信
           if (!empty($user_id)) {
             $users = [];
-            if ($this->container->has('Wanphp\Plugins\Weixin\Domain\UserInterface')) {
-              $user = $this->container->get('Wanphp\Plugins\Weixin\Domain\UserInterface');
-              foreach ($user->select('id,nickname,headimgurl', ['id' => $user_id]) as $item) {
-                $users[$item['id']] = ['nickname' => $item['nickname'], 'headimgurl' => $item['headimgurl']];
-              }
-            }
-            if ($this->container->has('Wanphp\Libray\User\User')) {
-              $user = $this->container->get('Wanphp\Libray\User\User');
-              foreach ($user->getUsers($user_id) as $item) {
-                $users[$item['id']] = ['nickname' => $item['nickname'], 'headimgurl' => $item['headimgurl']];
-              }
-            }
-
+            foreach ($this->user->getUsers($user_id) as $item) $users[$item['id']] = ['nickname' => $item['nickname'], 'headimgurl' => $item['headimgurl']];
             if ($users) foreach ($admins as &$admin) {
               $admin['weuser'] = ['nickname' => $users[$admin['uid']]['nickname'] ?? '', 'headimgurl' => $users[$admin['uid']]['headimgurl'] ?? ''];
             }
