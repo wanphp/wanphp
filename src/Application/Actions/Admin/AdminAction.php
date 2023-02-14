@@ -106,7 +106,7 @@ class AdminAction extends Action
           if ($limit) $where['LIMIT'] = $limit;
 
           $admins = $this->admin->select('id,uid,role_id,name,tel,account,status,lastLoginTime,lastLoginIp', $where);
-          $user_id = array_filter(array_column($admins, 'uid'));
+          $user_id = array_unique(array_column($admins, 'uid'));
           // 绑定微信
           if (!empty($user_id)) {
             $users = [];

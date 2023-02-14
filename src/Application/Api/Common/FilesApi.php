@@ -12,11 +12,9 @@ namespace App\Application\Api\Common;
 use App\Application\Api\Api;
 use App\Domain\Common\FilesInterface;
 use Exception;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\UploadedFileInterface;
+use Wanphp\Libray\Slim\Setting;
 
 class FilesApi extends Api
 {
@@ -24,16 +22,13 @@ class FilesApi extends Api
   private string $filepath;
 
   /**
-   * @param ContainerInterface $container
+   * @param Setting $setting
    * @param FilesInterface $files
-   * @throws ContainerExceptionInterface
-   * @throws NotFoundExceptionInterface
    */
-  public function __construct(ContainerInterface $container, FilesInterface $files)
+  public function __construct(Setting $setting, FilesInterface $files)
   {
-    $settings = $container->get('settings');
+    $this->filepath = $setting->get('uploadFilePath');
     $this->files = $files;
-    $this->filepath = $settings['uploadFilePath'];
   }
 
   /**

@@ -89,8 +89,8 @@ $(document).ready(function () {
                 contentType: false,
                 processData: false,
                 success: function (json) {
-                  if (json.data.current_chunk && json.data.current_chunk < chunks) {
-                    currentChunk = parseInt(json.data.current_chunk);
+                  if (json.current_chunk && json.current_chunk < chunks) {
+                    currentChunk = parseInt(json.current_chunk);
                     console.log(currentChunk, (currentChunk / chunks * 100).toFixed(2) + '%');
                     upload(file_md5);
                   } else {
