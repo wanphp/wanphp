@@ -21,6 +21,7 @@ return function (ContainerBuilder $containerBuilder) {
     \App\Domain\Common\NavigateInterface::class => \DI\autowire(\App\Repositories\Mysql\Router\NavigateRepository::class),
     \App\Repositories\Mysql\Router\PersistenceRepository::class => \DI\autowire(\App\Repositories\Mysql\Router\PersistenceRepository::class),
     \App\Domain\Common\SettingInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\SettingRepository::class),
-    \App\Domain\Common\FilesInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\FilesRepository::class)
+    \App\Domain\Common\FilesInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\FilesRepository::class),
+    \Wanphp\Libray\Slim\UploaderInterface::class => \DI\autowire(\App\Repositories\Mysql\Common\UploaderRepository::class)
   ]);
 };
