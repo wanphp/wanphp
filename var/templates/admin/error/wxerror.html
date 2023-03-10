@@ -22,7 +22,7 @@
   <div class="weui-msg__icon-area"><i class="{{icon}} weui-icon_msg"></i></div>
   <div class="weui-msg__text-area">
     <h2 class="weui-msg__title">{{title}}</h2>
-    <p class="weui-msg__desc">{{ msg }}！</p>
+    <p class="weui-msg__desc">{{ msg | raw }}！</p>
   </div>
   <div class="weui-msg__opr-area">
     <p class="weui-btn-area">
@@ -34,7 +34,7 @@
   <p class="weui-footer__text">Copyright © 2022 {{thisUri}}</p>
 </div>
 <script type="text/javascript" src="/plugins/jquery/jquery.min.js"></script>
-<script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
 <script type="text/javascript">
   var ua = window.navigator.userAgent.toLowerCase();
   if (ua.match(/MicroMessenger/i) == "micromessenger") {

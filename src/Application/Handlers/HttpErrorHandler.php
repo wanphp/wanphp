@@ -52,7 +52,7 @@ class HttpErrorHandler extends SlimErrorHandler
     }
 
     $response = $this->responseFactory->createResponse($statusCode);
-    $this->logger->error($error->getDescription() . $exception->getFile() . $exception->getLine());
+    $this->logger->error($this->request->getUri()->getPath() . '，' . $error->getDescription() . $exception->getFile() . $exception->getLine());
     $json = json_encode(['code' => $statusCode, 'errMsg' => $error->getDescription()], JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE);
     $response->getBody()->write($json);
 

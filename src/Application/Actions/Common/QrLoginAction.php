@@ -5,28 +5,24 @@ namespace App\Application\Actions\Common;
 use App\Application\Handlers\UserHandler;
 use App\Domain\Admin\AdminInterface;
 use Exception;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\WpUserInterface;
 
 class QrLoginAction extends \App\Application\Actions\Action
 {
-  private ContainerInterface $container;
+  private WpUserInterface $user;
   private AdminInterface $admin;
 
-  public function __construct(LoggerInterface $logger, ContainerInterface $container, AdminInterface $admin)
+  public function __construct(LoggerInterface $logger, WpUserInterface $user, AdminInterface $admin)
   {
     parent::__construct($logger);
-    $this->container = $container;
+    $this->user = $user;
     $this->admin = $admin;
   }
 
   /**
    * @return Response
-   * @throws ContainerExceptionInterface
-   * @throws NotFoundExceptionInterface
    * @throws Exception
    */
   protected function action(): Response
@@ -38,7 +34,7 @@ class QrLoginAction extends \App\Application\Actions\Action
       $queryParams = $this->request->getQueryParams();
       $state = $queryParams['state'] ?? '';
       if (isset($queryParams['code'])) {//微信公众号认证回调
-        $user = UserHandler::getUser($this->request, $this->container);
+        $user = UserHandler::getUser($this->request, $this->user);
         // 检查绑定管理员
         if ($user && $user['id'] > 0) {
           $admin = $this->admin->get('id,role_id,account,status', ['uid' => $user['id']]);
@@ -78,7 +74,7 @@ class QrLoginAction extends \App\Application\Actions\Action
           return $this->respondWithError('未知用户！');
         }
       } else {
-        return UserHandler::oauthRedirect($this->request, $this->response, $this->container);
+        return UserHandler::oauthRedirect($this->request, $this->response, $this->user);
       }
     }
   }

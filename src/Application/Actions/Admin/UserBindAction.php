@@ -4,6 +4,7 @@ namespace App\Application\Actions\Admin;
 
 use App\Application\Handlers\UserHandler;
 use App\Domain\Admin\AdminInterface;
+use Predis\ClientInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -13,14 +14,16 @@ use Wanphp\Libray\Slim\WpUserInterface;
 class UserBindAction extends \App\Application\Actions\Action
 {
 
-  private ContainerInterface $container;
   private WpUserInterface $user;
   private AdminInterface $admin;
 
-  public function __construct(LoggerInterface $logger, ContainerInterface $container, WpUserInterface $user, AdminInterface $admin)
+  public function __construct(
+    LoggerInterface $logger,
+    WpUserInterface $user,
+    AdminInterface  $admin
+  )
   {
     parent::__construct($logger);
-    $this->container = $container;
     $this->user = $user;
     $this->admin = $admin;
   }
@@ -45,7 +48,7 @@ class UserBindAction extends \App\Application\Actions\Action
     } else {
       $queryParams = $this->request->getQueryParams();
       if (isset($queryParams['code'])) {//微信公众号认证回调
-        $user = UserHandler::getUser($this->request, $this->container);
+        $user = UserHandler::getUser($this->request, $this->user);
         // 检查绑定管理员
         if ($user && $user['id'] > 0 && isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
           $admin = $this->admin->get('account', ['uid' => $user['id']]);
@@ -108,7 +111,7 @@ class UserBindAction extends \App\Application\Actions\Action
         }
         return $this->respondView('admin/error/wxerror.html', $data);
       } else {
-        return UserHandler::oauthRedirect($this->request, $this->response, $this->container);
+        return UserHandler::oauthRedirect($this->request, $this->response, $this->user);
       }
     }
   }
