@@ -77,7 +77,7 @@ class UserBindAction extends \App\Application\Actions\Action
             $this->user->sendMessage([$user['id']], $msgData);
             // 通知解绑用户
             if ($_SESSION['user_id'] > 0) {
-              $unBindUser = $this->user->get('name,tel', ['id' => $_SESSION['user_id']]);
+              $unBindUser = $this->user->getUser($_SESSION['user_id']);
               $msgData = [
                 'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
                 'data' => [

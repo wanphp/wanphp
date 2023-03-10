@@ -75,4 +75,9 @@ use Wanphp\Libray\Slim\Action;
 abstract class Api extends Action
 {
 
+  protected function thumb(string $image, string $size): string
+  {
+    $info = pathinfo($image);
+    return str_replace('/image/', '/image/thumb/', $info['dirname']) . "/{$info['filename']}/{$size}.{$info['extension']}";
+  }
 }
