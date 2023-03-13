@@ -21,7 +21,7 @@ class UserHandler
     $queryParams = $request->getQueryParams();
     if (isset($queryParams['code']) && $queryParams['code'] != '' &&
       isset($queryParams['state']) && $queryParams['state'] != '' &&
-      $_SESSION[$queryParams['state']] == $queryParams['state']) {
+      isset($_SESSION[$queryParams['state']]) && $_SESSION[$queryParams['state']] == $queryParams['state']) {
       $redirectUri = $request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $request->getUri()->getPath();
       $access_token = $user->getOauthAccessToken($queryParams['code'], $redirectUri);
       // 通过token取用户信息

@@ -30,7 +30,12 @@ class ClearCacheAction extends Action
   protected function action(): Response
   {
     $this->redis->select($this->setting->get('redis')['parameters']['database']);
-    $this->redis->flushdb();
-    return $this->respondWithData(['msg' => 'OK!']);
+    $keys = $this->redis->keys('*');
+    $count = 0;
+    if ($keys) {
+      $keys = str_replace($this->setting->get('redis')['options']['prefix'], '', $keys);
+      $count = $this->redis->del($keys);
+    }
+    return $this->respondWithData(['msg' => '清除记录' . $count . '!']);
   }
 }

@@ -30,7 +30,6 @@ class UserBindAction extends \App\Application\Actions\Action
 
   /**
    * @inheritDoc
-   * @throws ContainerExceptionInterface
    */
   protected function action(): Response
   {
