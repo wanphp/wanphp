@@ -39,7 +39,7 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
 
     $data = [
       'name' => $uploadedFile->getClientFilename(),
-      'type' => $uploadedFile->getClientMediaType(),
+      'type' => $formData['type'] ?? $uploadedFile->getClientMediaType(),
       'md5' => $formData['md5'] ?? md5_file($uploadedFile->getFilePath()),
       'size' => $uploadedFile->getSize(),
       'extension' => strtolower(pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION)),

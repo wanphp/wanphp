@@ -1,26 +1,94 @@
 $(document).ready(function () {
   let timer;
   $.extend({
-    uploadFile: function (options, callback) {
-      $('#form-file-upload').remove();
-      $('body').prepend('<form enctype="multipart/form-data" id="form-file-upload" style="display: none;"><input type="file" name="file" value="" accept="' + options.accept + '"></form>');
-      $('#form-file-upload input[name=\'file\']').trigger('click');
+    uploadFile: function (options) {
+      if (!options.maxSize) options.maxSize = 100;
+      if (!options.success) options.success = function (data) {
+        console.log(data);
+      };
+      if (!options.error) options.error = function (data) {
+        console.log(data);
+      };
+      if (!options.processResults) options.processResults = function (data) {
+        console.log(data);
+      };
+      if (!options.file) {
+        $('#form-file-upload').remove();
+        $('body').prepend('<form enctype="multipart/form-data" id="form-file-upload" style="display: none;"><input type="file" name="file" value="" accept="' + options.accept + '"></form>');
+        $('#form-file-upload input[name=\'file\']').trigger('click');
 
-      if (typeof timer != 'undefined') {
-        clearInterval(timer);
-      }
-
-      timer = setInterval(function () {
-        if ($("#form-file-upload input[name='file']").val() != '') {
-          var file = $('#form-file-upload input[name="file"]')[0].files[0];
+        if (typeof timer != 'undefined') {
           clearInterval(timer);
-          var ext = file['name'].replace(/^.+\./, '').toLowerCase();
-          if (ext != options.ext) {
-            callback({code: 'error', description: '格式不支持，请选择' + options.ext + '格式的文件'});
+        }
+      }
+      timer = setInterval(function () {
+        let file;
+        if (options.file || $("#form-file-upload input[name='file']").val() !== '') {
+          if (!options.file) {
+            file = $('#form-file-upload input[name="file"]')[0].files[0];
+          } else {
+            file = options.file;
+          }
+          clearInterval(timer);
+          const ext = file['name'].replace(/^.+\./, '').toLowerCase();
+          if (options.ext.indexOf(ext) === -1) {
+            options.error({code: 'error', description: '格式不支持，请选择' + options.ext + '格式的文件'});
+            return false;
+          }
+          // 图片压缩,gif有可能是动图，不做压缩
+          if (options.compress && ',jpg,jpeg,png'.indexOf(ext) === -1) {
+            //读取上传文件
+            let reader = new FileReader();
+            //readAsDataURL方法可以将File对象转化为data:URL格式的字符串（base64编码）
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+              let sourceImage = new Image();
+              sourceImage.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const w = sourceImage.naturalWidth;
+                const h = sourceImage.naturalHeight;
+
+                const ratio = Math.min(1, options.compress.maxWidth / w, options.compress.maxHeight / h);
+                canvas.width = w * ratio;
+                canvas.height = h * ratio;
+
+                ctx.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
+                let arr = canvas.toDataURL("image/jpeg", options.compress.quality).split(','),
+                  mime = arr[0].match(/:(.*?);/)[1],
+                  bstr = atob(arr[1]),
+                  n = bstr.length,
+                  u8arr = new Uint8Array(n);
+                while (n--) u8arr[n] = bstr.charCodeAt(n);
+                const form_data = new FormData();
+                form_data.append('file', new Blob([u8arr], {type: mime}), file.name);
+                form_data.append('type', mime);
+                $.ajax({
+                    url: options.url,
+                    type: 'post',
+                    dataType: 'json',
+                    data: form_data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function (json) {
+                      options.success(json);
+                    },
+                    error: function (data) {
+                      options.error(data);
+                    }
+                  }
+                );
+                // 释放内存占用
+                sourceImage = null;
+              };
+              sourceImage.src = reader.result;
+            }
             return false;
           }
           if (file.size <= 2097152) {
-            var form_data = new FormData();
+            const form_data = new FormData();
             form_data.append('file', file, file.name);
             form_data.append('type', file.type);
             form_data.append('size', file.size);
@@ -33,16 +101,16 @@ $(document).ready(function () {
                 contentType: false,
                 processData: false,
                 success: function (json) {
-                  callback(json);
+                  options.success(json);
                 },
                 error: function (data) {
-                  callback(data.responseJSON.error);
+                  options.error(data);
                 }
               }
             );
             return false;
           }
-          var fileReader = new FileReader(),
+          let fileReader = new FileReader(),
             blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
             filesize = (file.size / 1024 / 1024).toFixed(2) + 'M',
             chunkSize = 2097152,//每块2M
@@ -51,14 +119,14 @@ $(document).ready(function () {
             spark = new SparkMD5.ArrayBuffer(),
             cutFile = function (file) {//文件分割
               console.log(currentChunk);
-              var start = currentChunk * chunkSize, end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+              const start = currentChunk * chunkSize, end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
               return blobSlice.call(file, start, end);
             },
             loadNext = function () {
               fileReader.readAsArrayBuffer(cutFile(file));
             };
           fileReader.onload = function (e) {
-            console.log((parseInt(currentChunk + 1) / chunks * 100).toFixed(2) + '%');
+            console.log(((currentChunk + 1) / chunks * 100).toFixed(2) + '%');
             spark.append(e.target.result);
             currentChunk++;
             if (currentChunk < chunks) {
@@ -69,14 +137,14 @@ $(document).ready(function () {
             }
           };
           fileReader.onerror = function () {
-            callback({code: 'error', description: '文件读取出错'});
+            options.error({code: 'error', description: '文件读取出错'});
           };
 
           function upload(file_md5) {
-            var form_data = new FormData();
+            const form_data = new FormData();
             form_data.append('file', cutFile(file), file.name);
-            form_data.append('current_chunk', currentChunk + 1);
-            form_data.append('chunks', chunks);
+            form_data.append('current_chunk', (currentChunk + 1).toString());
+            form_data.append('chunks', chunks.toString());
             form_data.append('type', file.type);
             form_data.append('size', file.size);
             form_data.append('md5', file_md5);
@@ -91,22 +159,23 @@ $(document).ready(function () {
                 success: function (json) {
                   if (json.current_chunk && json.current_chunk < chunks) {
                     currentChunk = parseInt(json.current_chunk);
-                    console.log(currentChunk, (currentChunk / chunks * 100).toFixed(2) + '%');
+                    options.processResults((currentChunk / chunks * 100).toFixed(2) + '%');
                     upload(file_md5);
                   } else {
-                    callback(json);
+                    options.processResults('100%');
+                    options.success(json);
                   }
                 },
                 error: function (data) {
-                  callback(data.responseJSON);
+                  options.error(data);
                 }
               }
             );
           }
 
-          $('#button-upload-file').attr('data-original-title', '读取文件...').tooltip('show');
-          if (chunks > 50) {
-            callback({code: 'error', description: '上传文件不能超过100M,当前文件大小' + filesize});
+          options.processResults('读取文件中...');
+          if (chunks > (options.maxSize / 2)) {
+            options.error({code: 'error', description: '上传文件不能超过' + options.maxSize + 'M,当前文件大小' + filesize});
             return false;
           }
           loadNext();
