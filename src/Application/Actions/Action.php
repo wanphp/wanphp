@@ -47,4 +47,10 @@ abstract class Action extends \Wanphp\Libray\Slim\Action
   {
     return $this->request->getMethod() == 'DELETE';
   }
+
+  protected function thumb(string $image, string $size): string
+  {
+    $info = pathinfo($image);
+    return str_replace('/image/', '/image/thumb/', $info['dirname']) . "/{$info['filename']}/{$size}.{$info['extension']}";
+  }
 }

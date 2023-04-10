@@ -36,18 +36,16 @@ class FilesEntity implements \JsonSerializable
   /**
    * @DBType({"type":"varchar(50) NOT NULL DEFAULT ''"})
    * @var string
-   * @OA\Property(description="标题")
+   * @OA\Property(description="名称")
    */
   private string $name;
   /**
-   * 图片md5，上传图片时验证,redis存key=>value,img_md5=>img_url
    * @DBType({"type":"char(32) NOT NULL DEFAULT ''"})
    * @var string
-   * @OA\Property(description="图片md5值")
+   * @OA\Property(description="md5值")
    */
   private string $md5;
   /**
-   * url 组成 /YM(一年12个目录)/文件最多65535个，（一个月最多可上传65535个文件）
    * @DBType({"type":"varchar(120) NOT NULL DEFAULT ''"})
    * @var string
    * @OA\Property(description="文件地址")
@@ -60,7 +58,7 @@ class FilesEntity implements \JsonSerializable
    */
   private int $size;
   /**
-   * @DBType({"type":"varchar(20) NOT NULL DEFAULT ''"})
+   * @DBType({"type":"varchar(80) NOT NULL DEFAULT ''"})
    * @var string
    * @OA\Property(description="文件类型")
    */
@@ -68,7 +66,7 @@ class FilesEntity implements \JsonSerializable
   /**
    * @DBType({"type":"varchar(10) NOT NULL DEFAULT ''"})
    * @var string
-   * @OA\Property(description="图片扩展名")
+   * @OA\Property(description="文件扩展名")
    */
   private string $extension;
   /**

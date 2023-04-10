@@ -48,7 +48,8 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
     ];
 
     $type = explode('/', $data['type']);
-    $filepath = '/' . $type[0] . date('/Ym');
+    if ($type[0] == 'application') $filepath = '/' . $data['extension'] . date('/Ym');
+    else $filepath = '/' . $type[0] . date('/Ym');
     if (!is_dir($this->filepath . $filepath)) mkdir($this->filepath . $filepath, 0755, true);
 
     //大文件分块上传
@@ -137,15 +138,31 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
   /**
    * @inheritDoc
    */
-  public function delFile(int $id): int
+  public function delFile(int|string $file): int
   {
-    $filepath = $this->database->get(FilesInterface::TABLE_NAME, 'url', ['id' => $id]);
-    $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
-    if ($res) {
-      unlink($this->filepath . $filepath); //删除文件
-      return $res->rowCount();
+    if (is_numeric($file)) {
+      $id = intval($file);
+      $filepath = $this->database->get(FilesInterface::TABLE_NAME, 'url', ['id' => $id]);
+      $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
+      if ($res) {
+        unlink($this->filepath . $filepath); //删除文件
+        return $res->rowCount();
+      } else {
+        return 0;
+      }
     } else {
-      return 0;
+      $id = $this->database->get(FilesInterface::TABLE_NAME, 'id', ['url' => $file]);
+      if ($id) {
+        $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
+        if ($res) {
+          unlink($this->filepath . $file); //删除文件
+          return $res->rowCount();
+        } else {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
     }
   }
 
@@ -170,4 +187,23 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
 
     return $filename;
   }
+
+  /**
+   * 允许上传文件扩展名
+   * @param array $extension
+   */
+  public function allowExtension(array $extension): void
+  {
+    $this->extension = $extension;
+  }
+
+  /**
+   * 允许上传方的类型
+   * @param array $fileType
+   */
+  public function allowFileType(array $fileType): void
+  {
+    $this->fileType = $fileType;
+  }
+
 }

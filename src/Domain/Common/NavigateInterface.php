@@ -10,8 +10,6 @@ namespace App\Domain\Common;
 
 
 use App\Domain\BaseInterface;
-use App\Entities\Common\NavigateEntity;
-use Exception;
 
 interface NavigateInterface extends BaseInterface
 {

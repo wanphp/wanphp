@@ -10,8 +10,6 @@ namespace App\Domain\Common;
 
 
 use App\Domain\BaseInterface;
-use App\Entities\Common\RouterEntity;
-use Exception;
 
 interface RouterInterface extends BaseInterface
 {

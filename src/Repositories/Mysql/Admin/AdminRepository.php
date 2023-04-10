@@ -9,7 +9,6 @@
 namespace App\Repositories\Mysql\Admin;
 
 
-use Medoo\Medoo;
 use Wanphp\Libray\Mysql\Database;
 use App\Domain\Admin\AdminInterface;
 use App\Entities\Admin\AdminEntity;
