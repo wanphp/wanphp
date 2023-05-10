@@ -16,7 +16,7 @@ return function (ContainerBuilder $containerBuilder) {
           'path' => isset($_ENV['docker']) ? 'php://stdout' : realpath('../') . '/var/logs/app.log',
           'level' => Logger::DEBUG
         ],
-        'uploadFilePath' => realpath('..//var/uploadfiles'),
+        'uploadFilePath' => realpath('../var/uploadfiles'),
         'oauth2Config' => [
           // openssl genrsa -aes128 -passout pass:wanphp@1122 -out private.key 2048
           // openssl rsa -in private.key -passin pass:wanphp@1122 -pubout -out public.key
@@ -26,13 +26,16 @@ return function (ContainerBuilder $containerBuilder) {
           'privateKeyPass' => 'wanphp@1122',
           // echo Key::createNewRandomKey()->saveToAsciiSafeString();
           'encryptionKey' => 'def000008bd8e66117fe24fd2dacc6c3b777598bbe740dae5581f74fe9363d09c36ae8beaa12b5ef16d091a46fb5ef6c914cf94c2fbac04a2615556a34e7c9f98ed2c397',
-          'redis' => [
-            'parameters' => ['scheme' => 'tcp',
-              'host' => 'redis',
-              'password' => 'wanphp#1122',
-              'port' => 6379,
-              'database' => 2],
-            'options' => ['prefix' => 'uc:']
+          'storage' => [
+            'type' => 'redis', // redis/mysql
+            'database' => [
+              'parameters' => ['scheme' => 'tcp',
+                'host' => 'redis',
+                'password' => 'wanphp#1122',
+                'port' => 6379,
+                'database' => 2],
+              'options' => ['prefix' => 'uc:']
+            ]
           ]
         ],
         'userServer' => [
