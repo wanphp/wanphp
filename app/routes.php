@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
-use Wanphp\Plugins\OAuth2Resource\OAuthServerMiddleware;
+use Wanphp\Plugins\Weixin\Application\OAuthServerMiddleware;
 
 return function (App $app) {
   $app->options('/{routes:.*}', function (Request $request, Response $response) {
@@ -20,7 +20,7 @@ return function (App $app) {
   });
 
   $PermissionMiddleware = new PermissionMiddleware($app->getContainer());
-  $OAuthServerMiddleware = new OAuthServerMiddleware($app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class));
+  $OAuthServerMiddleware = new OAuthServerMiddleware($app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config'));
 
   // 加载组件
   foreach (glob(realpath('../wanphp/components') . "/*/src/routes.php") as $filename) {
