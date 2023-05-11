@@ -101,7 +101,6 @@ return function (ContainerBuilder $containerBuilder) {
         ]
       ]);
     },
-    ,
     // todo 自定义缓存库
     \Wanphp\Libray\Slim\CacheInterface::class => new \App\Repositories\RedisCacheRepository(
       new Predis\Client(['scheme' => 'tcp', 'host' => 'redis', 'password' => 'wanphp#1122', 'port' => 6379, 'database' => 1], ['prefix' => 'wp:'])
