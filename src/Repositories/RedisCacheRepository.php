@@ -14,6 +14,7 @@ class RedisCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
   public function __construct(ClientInterface $client, Setting $setting)
   {
     $this->client = $client;
+    $this->client->select($setting->get('redisCache') ?? 1);
     $this->prefix = $setting->get('redis')['options']['prefix'] ?? '';
   }
 
