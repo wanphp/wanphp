@@ -10,24 +10,24 @@ namespace App\Repositories\Mysql\Router;
 
 use App\Repositories\Mysql\Admin\RoleRepository;
 use Exception;
-use Predis\ClientInterface;
 use Wanphp\Libray\Mysql\Database;
+use Wanphp\Libray\Slim\CacheInterface;
 
 class PersistenceRepository
 {
   private RouterRepository $routerRepository;
   private RoleRepository $roleRepository;
   private NavigateRepository $navigateRepository;
-  private ClientInterface $redis;
+  private CacheInterface $cache;
   private array $permission = [];//授权
   private array $restricted = [];//限制
 
-  public function __construct(Database $database, ClientInterface $redis)
+  public function __construct(Database $database, CacheInterface $cache)
   {
     $this->routerRepository = new RouterRepository($database);
     $this->roleRepository = new RoleRepository($database);
     $this->navigateRepository = new NavigateRepository($database);
-    $this->redis = $redis;
+    $this->cache = $cache;
   }
 
   /**
@@ -38,7 +38,7 @@ class PersistenceRepository
   public function setPermission(int $role_id)
   {
     $cacheKey = 'authority_' . $role_id;
-    $authority = $this->redis->get($cacheKey);
+    $authority = $this->cache->get($cacheKey);
     if (!$authority) {
       $routers = $this->routerRepository->select('id,navId,name,route,callable', ['route[~]' => '/admin/%', 'ORDER' => ['sortOrder' => 'ASC']]);
       if ($routers) {
@@ -70,10 +70,9 @@ class PersistenceRepository
           $this->restricted = array_column($routers, 'callable');
         }
 
-        $this->redis->set($cacheKey, json_encode(['permission' => $this->permission, 'restricted' => $this->restricted]));
+        $this->cache->set($cacheKey, ['permission' => $this->permission, 'restricted' => $this->restricted]);
       }
     } else {
-      $authority = json_decode($authority, true);
       $this->permission = $authority['permission'];
       $this->restricted = $authority['restricted'];
     }
@@ -85,12 +84,10 @@ class PersistenceRepository
   public function getSidebar(): array
   {
     $sidebar = [];
-    $navigate = $this->redis->get('navigate');
+    $navigate = $this->cache->get('navigate');
     if (!$navigate) {
       $navigate = $this->navigateRepository->select('id,icon,name', ['ORDER' => ['sortOrder' => 'ASC']]);
-      $this->redis->set('navigate', json_encode($navigate));
-    } else {
-      $navigate = json_decode($navigate, true);
+      $this->cache->set('navigate', $navigate);
     }
     if ($navigate) foreach ($navigate as $item) {
       if (isset($this->permission[$item['id']])) $sidebar[$item['id']] = ['icon' => $item['icon'], 'name' => $item['name'], 'children' => $this->permission[$item['id']]];

@@ -4,9 +4,6 @@ namespace App\Application\Actions\Admin;
 
 use App\Application\Handlers\UserHandler;
 use App\Domain\Admin\AdminInterface;
-use Predis\ClientInterface;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Slim\WpUserInterface;

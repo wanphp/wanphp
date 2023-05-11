@@ -10,32 +10,22 @@ namespace App\Application\Actions\Common;
 
 
 use App\Application\Actions\Action;
-use Predis\ClientInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
-use Wanphp\Libray\Slim\Setting;
+use Wanphp\Libray\Slim\CacheInterface;
 
 class ClearCacheAction extends Action
 {
-  private ClientInterface $redis;
-  private Setting $setting;
+  private CacheInterface $cache;
 
-  public function __construct(LoggerInterface $logger, ClientInterface $redis, Setting $setting)
+  public function __construct(LoggerInterface $logger, CacheInterface $cache)
   {
-    $this->redis = $redis;
-    $this->setting = $setting;
+    $this->cache = $cache;
     parent::__construct($logger);
   }
 
   protected function action(): Response
   {
-    $this->redis->select($this->setting->get('redis')['parameters']['database']);
-    $keys = $this->redis->keys('*');
-    $count = 0;
-    if ($keys) {
-      $keys = str_replace($this->setting->get('redis')['options']['prefix'], '', $keys);
-      $count = $this->redis->del($keys);
-    }
-    return $this->respondWithData(['msg' => '清除记录' . $count . '!']);
+    return $this->respondWithData(['msg' => '清除记录' . $this->cache->clear() . '!']);
   }
 }
