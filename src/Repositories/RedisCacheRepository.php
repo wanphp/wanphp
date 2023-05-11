@@ -4,18 +4,15 @@ namespace App\Repositories;
 
 use Exception;
 use Predis\ClientInterface;
-use Wanphp\Libray\Slim\Setting;
+use Predis\Command\Processor\KeyPrefixProcessor;
 
 class RedisCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
 {
   private ClientInterface $client;
-  private string $prefix;
 
-  public function __construct(ClientInterface $client, Setting $setting)
+  public function __construct(ClientInterface $client)
   {
     $this->client = $client;
-    $this->client->select($setting->get('redisCache') ?? 1);
-    $this->prefix = $setting->get('redis')['options']['prefix'] ?? '';
   }
 
   /**
@@ -58,9 +55,12 @@ class RedisCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
   public function clear(): bool
   {
     $keys = $this->client->keys('*');
+    $prefix = '';
+    $options = $this->client->getOptions();
+    if ($options->prefix instanceof KeyPrefixProcessor) $prefix = $options->prefix->getPrefix();
     $count = 0;
     if ($keys) {
-      $keys = str_replace($this->prefix, '', $keys);
+      if ($prefix != '') $keys = str_replace($prefix, '', $keys);
       $count = $this->client->del($keys);
     }
     return $count > 0;
