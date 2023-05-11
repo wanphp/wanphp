@@ -28,10 +28,6 @@ return function (ContainerBuilder $containerBuilder) {
 
       return $logger;
     },
-    ClientInterface::class => function (ContainerInterface $c) {
-      $config = $c->get(Setting::class)->get('redis');
-      return new Predis\Client($config['parameters'], $config['options']);
-    },
     Database::class => function (ContainerInterface $c) {
       $config = $c->get(Setting::class)->get('database');
       try {
