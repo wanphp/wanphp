@@ -8,9 +8,9 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 
 return function (App $app) {
-  $paths = [realpath('../var/templates')];
+  $paths = [ROOT_PATH . '/var/templates'];
   // 插件模板
-  foreach (glob(realpath('../wanphp/plugins') . '/*/templates') as $path) {
+  foreach (glob(ROOT_PATH . '/wanphp/plugins/*/templates') as $path) {
     $arr = explode('/', $path);
     $namespace = $arr[count($arr) - 2];
     $paths[$namespace] = $path;

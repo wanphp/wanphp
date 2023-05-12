@@ -5,12 +5,12 @@ use DI\ContainerBuilder;
 
 return function (ContainerBuilder $containerBuilder) {
   // 加载组件
-  foreach (glob(realpath('../wanphp/components') . "/*/src/repositories.php") as $filename) {
+  foreach (glob(ROOT_PATH . '/wanphp/components/*/src/repositories.php') as $filename) {
     $repositories = require $filename;
     $repositories($containerBuilder);
   }
   // 加载插件
-  foreach (glob(realpath('../wanphp/plugins') . "/*/src/repositories.php") as $filename) {
+  foreach (glob(ROOT_PATH . '/wanphp/plugins/*/src/repositories.php') as $filename) {
     $repositories = require $filename;
     $repositories($containerBuilder);
   }

@@ -20,15 +20,18 @@ return function (App $app) {
   });
 
   $PermissionMiddleware = new PermissionMiddleware($app->getContainer());
-  $OAuthServerMiddleware = new OAuthServerMiddleware($app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config'));
+  $OAuthServerMiddleware = new OAuthServerMiddleware(
+    $app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config'),
+    $app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('AuthCodeStorage')
+  );
 
   // 加载组件
-  foreach (glob(realpath('../wanphp/components') . "/*/src/routes.php") as $filename) {
+  foreach (glob(ROOT_PATH . '/wanphp/components/*/src/routes.php') as $filename) {
     $routes = require $filename;
     $routes($app, $PermissionMiddleware, $OAuthServerMiddleware);
   }
   // 加载插件
-  foreach (glob(realpath('../wanphp/plugins') . "/*/src/routes.php") as $filename) {
+  foreach (glob(ROOT_PATH . '/wanphp/plugins/*/src/routes.php') as $filename) {
     $routes = require $filename;
     $routes($app, $PermissionMiddleware, $OAuthServerMiddleware);
   }

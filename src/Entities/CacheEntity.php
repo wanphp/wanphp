@@ -15,7 +15,7 @@ class CacheEntity implements \JsonSerializable
    */
   private string $key;
   /**
-   * @DBType({"type":"varchar(500) NOT NULL DEFAULT ''"})
+   * @DBType({"type":"text NOT NULL DEFAULT ''"})
    * @OA\Property(description="配置项名称")
    * @var string
    */

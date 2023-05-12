@@ -8,24 +8,25 @@ use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 
-require __DIR__ . '/../vendor/autoload.php';
+define('ROOT_PATH', realpath(__DIR__ . '/../'));
+require ROOT_PATH . '/vendor/autoload.php';
 // 实例化 PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
 
-if (false) { // 生产中应设置为true
-  $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
+//if (false) { // 生产中应设置为true
+//  $containerBuilder->enableCompilation(ROOT_PATH . '/var/cache');
+//}
 
 // Set up settings
-$settings = require __DIR__ . '/../app/settings.php';
+$settings = require ROOT_PATH . '/app/settings.php';
 $settings($containerBuilder);
 
 // 设置依赖
-$dependencies = require __DIR__ . '/../app/dependencies.php';
+$dependencies = require ROOT_PATH . '/app/dependencies.php';
 $dependencies($containerBuilder);
 
 // 设置存储库
-$repositories = require __DIR__ . '/../app/repositories.php';
+$repositories = require ROOT_PATH . '/app/repositories.php';
 $repositories($containerBuilder);
 
 // Build PHP-DI Container instance
@@ -37,11 +38,11 @@ $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 
 // Register middleware
-$middleware = require __DIR__ . '/../app/middleware.php';
+$middleware = require ROOT_PATH . '/app/middleware.php';
 $middleware($app);
 
 // Register routes
-$routes = require __DIR__ . '/../app/routes.php';
+$routes = require ROOT_PATH . '/app/routes.php';
 $routes($app);
 
 /** @var bool $displayErrorDetails 显示错误详细信息 */

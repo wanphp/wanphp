@@ -47,7 +47,9 @@ class MysqlCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
       'expires_at' => $ttl > 0 ? time() + $ttl : 0
     ];
     if (!is_string($value)) $data['value'] = json_encode($value);
-    $this->database->insert($this->tableName, $data);
+    if ($this->database->get($this->tableName, 'key', ['key' => $key])) {
+      $this->database->update($this->tableName, ['value' => $data['value'], 'expires_at' =>  $data['expires_at']], ['key' => $key]);
+    } else $this->database->insert($this->tableName, $data);
     return $this->returnResult($this->database->id() > 0);
   }
 
@@ -98,13 +100,19 @@ class MysqlCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
     $data = [];
     foreach ($values as $key => $value) {
       if (!is_string($value)) $value = json_encode($value);
-      $data[] = [
-        'key' => $key,
-        'value' => $value,
-        'expires_at' => $ttl > 0 ? time() + $ttl : 0
-      ];
+
+      if ($this->database->get($this->tableName, 'key', ['key' => $key])) {
+        $this->database->update($this->tableName, ['value' => $value, 'expires_at' => $ttl > 0 ? time() + $ttl : 0], ['key' => $key]);
+      } else {
+        $data[] = [
+          'key' => $key,
+          'value' => $value,
+          'expires_at' => $ttl > 0 ? time() + $ttl : 0
+        ];
+      }
+
     }
-    $this->database->insert($this->tableName, $data);
+    if ($data) $this->database->insert($this->tableName, $data);
     return $this->returnResult($this->database->id() > 0);
   }
 

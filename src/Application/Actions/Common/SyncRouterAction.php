@@ -40,10 +40,8 @@ class SyncRouterAction extends Action
         //现有操作
         $current_actions = [];
         $files = array_merge(
-          glob(realpath(__DIR__ . '/../../Actions') . '/*/*.php'),
-          glob(realpath(__DIR__ . '/../Manage') . '/*.php'),
-          glob(realpath(__DIR__ . '/../Manage') . '/*/*.php'),
-          glob(realpath('../wanphp/plugins') . "/*/src/Application/Manage/*.php") //插件操作
+          glob(ROOT_PATH . '/src/Application/Actions' . '/*/*.php'),
+          glob(ROOT_PATH . '/wanphp/plugins/*/src/Application/Manage/*.php') //插件操作
         );
         $stack = [];
 
@@ -51,7 +49,7 @@ class SyncRouterAction extends Action
         if (!empty($files)) foreach ($files as $file) {
           if (is_file($file)) {
             $action = str_replace(
-              [realpath('../') . '/src', realpath('../') . '/', '/src', '.php'],
+              [ROOT_PATH . '/src', ROOT_PATH . '/', '/src', '.php'],
               ['App', '', '', ''],
               $file);
             $arr = explode('/', $action);
