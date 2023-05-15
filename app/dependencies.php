@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 use DI\ContainerBuilder;
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Predis\ClientInterface;
 use Wanphp\Libray\Mysql\Database;
 use Wanphp\Libray\Slim\Setting;
 
@@ -19,11 +19,10 @@ return function (ContainerBuilder $containerBuilder) {
 
       $loggerSettings = $settings->get('logger');
       $logger = new Logger($loggerSettings['name']);
+      $logger->pushProcessor(new UidProcessor());
 
-      $processor = new UidProcessor();
-      $logger->pushProcessor($processor);
-
-      $handler = new StreamHandler($loggerSettings['path'], $loggerSettings['level']);
+      $handler = new StreamHandler($loggerSettings['path'] . DIRECTORY_SEPARATOR . date('Ymd') . '.log', $loggerSettings['level']);
+      $handler->setFormatter(new LineFormatter("[%datetime%][%channel%] %level_name%: %message% %context% %extra%\n", "Y-m-d H:i:s"));
       $logger->pushHandler($handler);
 
       return $logger;
