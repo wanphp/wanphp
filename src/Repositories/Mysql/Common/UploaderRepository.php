@@ -12,8 +12,8 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
 {
   private Database $database;
   private string $filepath;
-  private array $extension = ['jpg', 'jpeg', 'gif', 'png', 'mp4', 'txt'];
-  private array $fileType = ['image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'video/mp4', 'text/plain'];
+  private array $extension = ['jpg', 'jpeg', 'gif', 'png', 'mp3','mp4', 'txt'];
+  private array $fileType = ['image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'audio/mpeg','video/mp4', 'text/plain', 'application/octet-stream'];
 
   public function __construct(Database $database, Setting $setting)
   {

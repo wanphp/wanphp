@@ -36,7 +36,7 @@ $(document).ready(function () {
             return false;
           }
           // 图片压缩,gif有可能是动图，不做压缩
-          if (options.compress && ',jpg,jpeg,png'.indexOf(ext) === -1) {
+          if (options.compress && ['jpg','jpeg','png'].includes(ext)) {
             //读取上传文件
             let reader = new FileReader();
             //readAsDataURL方法可以将File对象转化为data:URL格式的字符串（base64编码）

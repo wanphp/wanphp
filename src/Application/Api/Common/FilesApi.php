@@ -132,7 +132,8 @@ class FilesApi extends Api
         $uploadedFile = $uploadedFiles['file'];
 
         // 文件已上传过
-        $fileMd5 = $post['md5'] ?? md5_file($uploadedFile->getFilePath());
+        $formData = $this->getFormData();
+        $fileMd5 = $formData['md5'] ?? md5_file($uploadedFile->getFilePath());
         $file = $this->files->get('id,type,url', ['md5' => $fileMd5]);
         $uri = $this->request->getUri();
         if (isset($file['id'])) {
@@ -142,10 +143,13 @@ class FilesApi extends Api
 
         // 上传文件
         if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
-          $formData = $this->getFormData();
           $formData['uid'] = $uid;
           $formData['host'] = $uri->getScheme() . '://' . $uri->getHost();
-          return $this->respondWithData($this->uploader->uploadFile($formData, $uploadedFile));
+          try {
+            return $this->respondWithData($this->uploader->uploadFile($formData, $uploadedFile));
+          } catch (Exception $exception) {
+            return $this->respondWithError($exception->getMessage());
+          }
         } else {
           return $this->respondWithError('文件上传失败');
         }

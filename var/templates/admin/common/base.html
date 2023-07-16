@@ -161,7 +161,7 @@
 </div>
 <!-- ./wrapper  modal-dialog-centered-->
 <div class="modal fade" id="modal-dialog">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title"></h4>
@@ -214,7 +214,7 @@
   function errorDialog(data) {
     console.log(data);
     Swal.fire({icon: 'error', title: data.responseJSON.errMsg, confirmButtonText: '好的'}).then((result) => {
-      if (result.isConfirmed && data.responseJSON.type == 'reload') {
+      if (result.isConfirmed && data.responseJSON.type === 'reload') {
         location.reload();
       }
     });
