@@ -21,7 +21,9 @@ class UserHandler
     $queryParams = $request->getQueryParams();
     if (isset($queryParams['code']) && $queryParams['code'] != '' &&
       isset($queryParams['state']) && $queryParams['state'] != '' &&
-      isset($_SESSION[$queryParams['state']]) && $_SESSION[$queryParams['state']] == $queryParams['state']) {
+      isset($_SESSION[$queryParams['state']]) &&
+      $_SESSION[$queryParams['state']] == $queryParams['state']) {
+      unset($_SESSION[$queryParams['state']]);
       $redirectUri = $request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $request->getUri()->getPath();
       $access_token = $user->getOauthAccessToken($queryParams['code'], $redirectUri);
       // 通过token取用户信息
@@ -45,9 +47,13 @@ class UserHandler
   public static function oauthRedirect(Request $request, Response $response, WpUserInterface $user): Response
   {
     $queryParams = $request->getQueryParams();
-    $state = bin2hex(random_bytes(8));
+    if (!isset($queryParams['state']) || $queryParams['state'] == '') {
+      $state = bin2hex(random_bytes(8));
+      $request = $request->withQueryParams(['state' => $state]);
+    } else {
+      $state = $queryParams['state'];
+    }
     $_SESSION[$state] = $state;
-    if (!isset($queryParams['state'])) $request = $request->withQueryParams(['state' => $state]);
     return $user->oauthRedirect($request, $response);
   }
 }
