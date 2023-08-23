@@ -12,8 +12,8 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
 {
   private Database $database;
   private string $filepath;
-  private array $extension = ['jpg', 'jpeg', 'gif', 'png', 'mp3','mp4', 'txt'];
-  private array $fileType = ['image/gif', 'image/jpg', 'image/png', 'image/jpeg', 'audio/mpeg','video/mp4', 'text/plain', 'application/octet-stream'];
+  private array $extension = ['jpg', 'jpeg', 'gif', 'png', 'pdf', 'mp3', 'mp4', 'txt'];
+  private array $fileType = ['image/gif', 'image/jpg', 'image/png', 'application/pdf', 'image/jpeg', 'audio/mpeg', 'video/mp4', 'text/plain', 'application/octet-stream'];
 
   public function __construct(Database $database, Setting $setting)
   {
@@ -145,7 +145,7 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
       $filepath = $this->database->get(FilesInterface::TABLE_NAME, 'url', ['id' => $id]);
       $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
       if ($res) {
-        unlink($this->filepath . $filepath); //删除文件
+        if (is_file($this->filepath . $filepath)) unlink($this->filepath . $filepath); //删除文件
         return $res->rowCount();
       } else {
         return 0;
@@ -155,7 +155,7 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
       if ($id) {
         $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
         if ($res) {
-          unlink($this->filepath . $file); //删除文件
+          if (is_file($this->filepath . $file)) unlink($this->filepath . $file); //删除文件
           return $res->rowCount();
         } else {
           return 0;
