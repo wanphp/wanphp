@@ -105,10 +105,8 @@ class LoginAction extends Action
             'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
             'url' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
             'data' => [
-              'first' => ['value' => $first, 'color' => '#173177'],
-              'keyword1' => ['value' => $admin['account'], 'color' => '#173177'],
-              'keyword2' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177'],
-              'remark' => ['value' => '如果不是您本人登录，查看详情及时修改登录密码，并联系管理员。', 'color' => '#173177']
+              'keyword1' => ['value' => $admin['account'].'，通过密码登录了系统', 'color' => '#173177'],
+              'keyword2' => ['value' => date('Y-m-d').'，点击详情可修改密码', 'color' => '#173177']
             ]
           ];
           $this->user->sendMessage([$admin['uid']], $msgData);

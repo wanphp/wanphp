@@ -34,6 +34,8 @@ class UserBindAction extends \App\Application\Actions\Action
       if (isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
         $admin = $this->admin->get('uid,account', ['id' => $_SESSION['login_id']]);
         if (isset($admin['uid']) && $admin['uid'] > 0 && $admin['uid'] != $_SESSION['user_id']) {
+          // 记录绑定用户ID
+          $_SESSION['user_id'] = $admin['uid'];
           return $this->respondWithData(['res' => 'OK']);
         } else {
           return $this->respondWithError('尚未绑定！');
@@ -63,11 +65,9 @@ class UserBindAction extends \App\Application\Actions\Action
             $msgData = [
               'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
               'data' => [
-                'first' => ['value' => '您的微信已绑定管理帐号“' . $account . '”。', 'color' => '#173177'],
                 'keyword1' => ['value' => $user['name'] ?: '未完善', 'color' => '#173177'],
-                'keyword2' => ['value' => '绑定成功', 'color' => '#173177'],
-                'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177'],
-                'remark' => ['value' => '以后可以使用微信扫码登录系统。', 'color' => '#173177']
+                'keyword2' => ['value' => '绑定帐号“' . $account . '”成功', 'color' => '#173177'],
+                'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177']
               ]
             ];
             $this->user->sendMessage([$user['id']], $msgData);
@@ -77,16 +77,12 @@ class UserBindAction extends \App\Application\Actions\Action
               $msgData = [
                 'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
                 'data' => [
-                  'first' => ['value' => '您的微信已解除与管理帐号“' . $account . '”的绑定。', 'color' => '#173177'],
                   'keyword1' => ['value' => $unBindUser['name'] ?: '未完善', 'color' => '#173177'],
-                  'keyword2' => ['value' => '解除绑定成功', 'color' => '#173177'],
-                  'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177'],
-                  'remark' => ['value' => '解除绑定后，不能再使用微信扫码登录系统。', 'color' => '#173177']
+                  'keyword2' => ['value' => '解除绑定帐号“' . $account . '”成功', 'color' => '#173177'],
+                  'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177']
                 ]];
               $this->user->sendMessage([$_SESSION['user_id']], $msgData);
             }
-            // 记录绑定用户ID
-            $_SESSION['user_id'] = $user['id'];
 
             $data = ['title' => '绑定成功',
               'msg' => '您的帐号已成功已您的微信绑定！',
