@@ -42,6 +42,7 @@ class RoleAction extends Action
         if ($id) {
           return $this->respondWithError('角色已经存在');
         }
+        if (is_string($data['restricted'])) $data['restricted'] = json_decode($data['restricted'], true);
         $id = $this->role->insert($data);
         return $this->respondWithData(['id' => $id], 201);
       case  'PUT';
@@ -51,21 +52,46 @@ class RoleAction extends Action
         if (is_numeric($role_id) && $role_id > 0) {
           return $this->respondWithError('角色已经存在');
         }
+        if (is_string($data['restricted'])) $data['restricted'] = json_decode($data['restricted'], true);
         $num = $this->role->update($data, ['id' => $id]);
         return $this->respondWithData(['upNum' => $num], 201);
       case  'DELETE';
         $delNum = $this->role->delete(['id' => $this->args['id']]);
         return $this->respondWithData(['delNum' => $delNum]);
       case 'GET';
-        $actions = $this->router->select('id,name,route', ['route[~]' => '/admin/%']);
-        $data = [
-          'title' => '角色管理',
-          'roles' => $this->role->select('id,name,restricted[JSON]'),
-          'actions' => array_column($actions, 'name', 'id'),
-          'routes' => $actions
-        ];
+        if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
+          $params = $this->request->getQueryParams();
+          $where = [];
 
-        return $this->respondView('admin/admin/rolelist.html', $data);
+          $recordsTotal = $this->role->count('id', $where);
+          if (!empty($params['search']['value'])) {
+            $keyword = trim($params['search']['value']);
+            $keyword = addcslashes($keyword, '*%_');
+            $where['name[~]'] = $keyword;
+          }
+
+          $order = $this->getOrder();
+          if ($order) $where['ORDER'] = $order;
+          $recordsFiltered = $this->role->count('id', $where);
+          $limit = $this->getLimit();
+          if ($limit) $where['LIMIT'] = $limit;
+
+          return $this->respondWithData([
+            "draw" => $params['draw'],
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $recordsFiltered,
+            'data' => $this->role->select('id,name,restricted[JSON]', $where)
+          ]);
+        } else {
+          $actions = $this->router->select('id,name,route', ['route[~]' => '/admin/%']);
+          $data = [
+            'title' => '角色管理',
+            'actions' => json_encode(array_column($actions, 'name', 'id'),JSON_UNESCAPED_UNICODE + JSON_NUMERIC_CHECK),
+            'routes' => $actions
+          ];
+
+          return $this->respondView('admin/admin/rolelist.html', $data);
+        }
       default:
         return $this->respondWithError('禁止访问', 403);
     }

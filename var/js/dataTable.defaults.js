@@ -32,5 +32,10 @@ $.extend($.fn.dataTable.defaults, {
   stateSave: false,//刷新时是否保存状态
   autoWidth: true,//自动计算宽度
   deferRender: true,//延迟渲染
-  search: {return: true}
+  search: {return: true},
+  responsive: true,//自适应
+  columnDefs: [
+    {responsivePriority: 1, targets: 1}, // 第一列优先显示
+    {responsivePriority: 2, targets: -1} // 最后一列次优先显示
+  ],
 });

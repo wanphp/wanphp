@@ -1,53 +1,49 @@
-{% extends "admin/common/base.html" %}
-{% block styles %}
-<!-- DataTables -->
-<link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-{% endblock %}
-{% block container %}
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">{{title}}</h3>
+    <h3 class="card-title">自定义系统配置</h3>
 
     <div class="card-tools">
       <div class="btn-group">
-        <button type="button" class="btn btn-tool" data-toggle="modal" data-target="#modal-addSetting"><i class="fas fa-plus-circle"></i></button>
+        <button type="button" class="btn btn-tool" data-bs-toggle="modal" data-bs-target="#modal-addSetting">
+          <i class="fas fa-plus-circle" data-bs-toggle="tooltip" data-bs-title="添加配置">添加</i>
+        </button>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="modal-addSetting" style="display: none;" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
+  <div class="modal fade" id="modal-addSetting" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">配置</h4>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
+          <h5 class="modal-title">系统配置 </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="setForm" action="/admin/setting" method="POST" novalidate="novalidate">
-            <div class="form-group">
-              <label for="name">配置名称</label>
-              <input id="name" name="name" type="text" class="form-control required" placeholder="配置名称" autocomplete="off">
+          <form id="setForm" action="/admin/setting" method="POST" class="needs-validation" novalidate>
+            <div class="form-group position-relative col-auto">
+              <label for="name" class="form-label">配置名称</label>
+              <input id="name" name="name" type="text" class="form-control" required placeholder="配置名称" autocomplete="off">
+              <div class="invalid-feedback">请填写配置名称</div>
             </div>
             <div class="form-group">
-              <label for="key">键</label>
-              <input id="key" name="key" type="text" class="form-control required" autocomplete="off">
+              <label for="key" class="form-label">键</label>
+              <input id="key" name="key" type="text" class="form-control" required autocomplete="off">
+              <div class="invalid-feedback">请填写配置键名</div>
             </div>
             <div class="form-group">
-              <label for="value">值
+              <label for="value" class="form-label">值
                 <button id="upload_image" type="button" class="btn btn-tool"><i class="fa fa-file-upload"></i></button>
               </label>
-              <input id="value" name="value" type="text" class="form-control required" autocomplete="off">
+              <input id="value" name="value" type="text" class="form-control" required autocomplete="off">
+              <div class="invalid-feedback">请填写配置键值</div>
             </div>
             <div class="form-group">
-              <label for="sortOrder">排序</label>
-              <input id="sortOrder" name="sortOrder" type="text" class="form-control required" placeholder="排序" autocomplete="off">
+              <label for="sortOrder" class="form-label">显示排序</label>
+              <input id="sortOrder" name="sortOrder" type="text" class="form-control" required placeholder="排序" autocomplete="off">
             </div>
           </form>
         </div>
         <div class="modal-footer justify-content-between">
-          <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
           <button type="submit" form="setForm" class="btn btn-primary">提交</button>
         </div>
       </div>
@@ -56,47 +52,26 @@
     <!-- /.modal-dialog -->
   </div>
   <div class="card-body">
-    <table id="settingData" class="table table-sm table-bordered table-hover">
-      <thead>
-      <tr>
-        <th style="width: 60px">ID</th>
-        <th>配置名称</th>
-        <th>键</th>
-        <th>值</th>
-        <th>排序</th>
-        <th style="width: 120px;">操作</th>
-      </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <table id="settingData" class="table table-sm table-bordered table-hover"></table>
   </div>
   <!-- /.card-body -->
 </div>
 <!-- /.card -->
-{% endblock %}
 
-{% block scripts %}
-<script src="/plugins/jquery-validation/jquery.validate.min.js"></script>
-<script src="/plugins/jquery-validation/additional-methods.min.js"></script>
-<script src="/plugins/jquery-validation/localization/messages_zh.min.js"></script>
-<!-- DataTables -->
-<script src="/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="/js/dataTable.defaults.js"></script>
 <!-- 上传图片 -->
 <script type="text/javascript" src="/js/exif.js"></script>
 <script type="text/javascript" src="/js/upimage.js"></script>
 <script type="text/javascript">
   $(document).ready(function () {
-    var datatables = $('#settingData').DataTable({
+    const buttonStr = '<button type="button" class="btn btn-tool edit" data-bs-toggle="tooltip" data-bs-title="修改"><i class="fas fa-edit"></i></button>' +
+      '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>';
+    const datatables = $('#settingData').DataTable({
       serverSide: false,
       aoColumnDefs: [
-        {orderable: false, aTargets: [3, 2, 1, 5]}// 制定列不参与排序
+        {orderable: false, aTargets: [0, 2, 4]}// 制定列不参与排序
       ],
       ordering: true,//使用排序
-      order: [[0, "asc"]],
+      order: [[3, "asc"]],
       ajax: {
         url: "/admin/setting",
         type: 'GET',
@@ -106,19 +81,19 @@
       },
       rowId: 'id',
       columns: [
-        {data: "id"},
-        {data: "name"},
-        {data: "key"},
-        {data: "value"},
-        {data: "sortOrder"},
+        {title: '配置名称', data: "name"},
+        {title: '键', data: "key"},
+        {title: '值', data: "value"},
+        {title: '排序', data: "sortOrder"},
         {
-          data: "op", defaultContent: '<button type="button" class="btn btn-tool edit"><i class="fas fa-edit"></i></button>\n' +
-            '<button type="button" class="btn btn-tool del"><i class="fas fa-trash-alt"></i></button>'
+          title: '操作',
+          data: "op",
+          defaultContent: buttonStr
         }
       ]
     });
     $('#settingData tbody').on('click', 'button', function () {
-      var setting = datatables.row($(this).parents('tr')).data();
+      const setting = datatables.row($(this).parents('tr')).data();
       //console.log(setting);
       if ($(this).hasClass('edit')) {
         $('#setForm').attr('action', '/admin/setting/' + setting.id);
@@ -130,7 +105,7 @@
         $('#modal-addSetting').modal('show');
       }
       if ($(this).hasClass('del')) {
-        var deltr = $(this).parents('tr');
+        const delRow = $(this).parents('tr');
         dialog('删除配置', '是否确认删除配置项', function () {
           $.ajax({
             url: '/admin/setting/' + setting.id,
@@ -138,7 +113,7 @@
             headers: {"X-HTTP-Method-Override": "DELETE"},
             dataType: 'json',
             success: function (data) {
-              datatables.row(deltr).remove().draw(false);
+              datatables.row(delRow).remove().draw(false);
               Swal.fire({icon: 'success', title: '删除成功！', showConfirmButton: false, timer: 1500});
             },
             error: errorDialog
@@ -146,37 +121,37 @@
         });
       }
     });
-    $('#setForm').validate({
-      submitHandler: function (e) {
-        var fromdata = new FormData(e);
+    $('#setForm').submit(function (e) {
+      console.log(e.target.checkValidity());
+      if (e.target.checkValidity()) {
+        const fromData = new FormData(e.target);
         $.ajax({
-          url: $(e).attr('action'),
-          data: fromdata,
+          url: $(e.target).attr('action'),
+          data: fromData,
           type: 'POST',
           beforeSend: function (xhr) {
-            xhr.setRequestHeader("X-HTTP-Method-Override", $(e).attr('method'));
+            xhr.setRequestHeader("X-HTTP-Method-Override", $(e.target).attr('method'));
           },
           cache: false,
           contentType: false,
           processData: false,
           dataType: 'json',
           success: function (json) {
-            var set_id;
-            if ($(e).attr('method') == 'PUT') {
-              var set_id = $(e).attr('action').split('/').pop();
+            let set_id;
+            if ($(e.target).attr('method') === 'PUT') {
+              set_id = $(e.target).attr('action').split('/').pop();
             } else {
               set_id = json.id;
             }
-            var data = {
+            const data = {
               id: set_id,
-              name: fromdata.get('name'),
-              key: fromdata.get('key'),
-              value: fromdata.get('value'),
-              sortOrder: fromdata.get('sortOrder'),
-              op: '<button type="button" class="btn btn-tool edit"><i class="fas fa-edit"></i></button>' +
-                '<button type="button" class="btn btn-tool del"><i class="fas fa-trash-alt"></i></button>'
+              name: fromData.get('name'),
+              key: fromData.get('key'),
+              value: fromData.get('value'),
+              sortOrder: fromData.get('sortOrder'),
+              op: buttonStr
             };
-            if ($(e).attr('method') == 'PUT') {
+            if ($(e.target).attr('method') === 'PUT') {
               datatables.row($("tr[id='" + set_id + "']")).data(data).draw(false);
             } else {
               datatables.row.add(data).draw(false);
@@ -185,18 +160,6 @@
           },
           error: errorDialog
         });
-        return false;
-      },
-      errorElement: 'span',
-      errorPlacement: function (error, element) {
-        error.addClass('invalid-feedback');
-        element.closest('td').append(error);
-      },
-      highlight: function (element, errorClass, validClass) {
-        $(element).addClass('is-invalid');
-      },
-      unhighlight: function (element, errorClass, validClass) {
-        $(element).removeClass('is-invalid');
       }
     });
 
@@ -221,4 +184,4 @@
     });
   });
 </script>
-{% endblock %}
+

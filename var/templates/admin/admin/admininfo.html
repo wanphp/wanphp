@@ -1,121 +1,112 @@
 <div id="adminInfo" class="form-horizontal">
-  <div class="form-group">
-    <label class="control-label">绑定用户</label>
-    <div class="user-panel pb-2 d-flex">
-      {% if loginUser['headimgurl'] %}
-      <div class="image">
-        <img src="{{loginUser.headimgurl}}" class="img-circle elevation-2" alt="{{loginUser.name}}">
-      </div>
-      <div class="info">
-        {{loginUser.nickname}}({{loginUser.name}})
-      </div>
-      <div class="info">
-        <a href="javascript:" class="d-block">重新绑定</a>
-      </div>
-      {% else %}
-      <a href="javascript:" class="d-block">现在绑定</a>
-      {% endif %}
-    </div>
-    <div id="bindQr" class="row text-center" style="display: none">
-      <style>
-        #adminInfo svg {
-          max-width: 100%;
-          height: auto;
-        }
-      </style>
-      {{ bindQr | raw }}
-    </div>
+  <div id="bindQr" class="row text-center" style="display: none">
+    <style>
+      #adminInfo svg {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+    {{ bindQr | raw }}
   </div>
-  <div class="form-group">
-    <label class="control-label">帐号密码</label>
-    <input name="password" type="text" onfocus="this.type='password'" placeholder="帐号密码" class="form-control" autocomplete="off">
-  </div>
-  <div class="text-center">
-    <div class="btn-group">
-      {% if loginUser %}
-      <button id="resetpasswd" class="btn btn-danger">帮我设置</button>
-      {% endif %}
-      <button class="btn btn-primary" type="button">修改密码</button>
-      <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+  <form id="editPassword" method="post" class="was-validated">
+    <div class="input-group has-validation">
+      <input name="password" type="password" placeholder="修改账号密码" class="form-control" required
+             pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$" autocomplete="off">
+      <div class="input-group-text" onclick="$(this).prev().attr('type',$(this).prev().attr('type')=='text'?'password':'text')">
+        <span class="fas fa-eye"></span>
+      </div>
+      <div class="invalid-feedback">密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位</div>
     </div>
-  </div>
+  </form>
 </div>
-<script type="text/javascript">
-  $(document).ready(function () {
-    $('#adminInfo .btn-primary').click(function () {
-      var password = /^(?=.*?[A-Za-z])(?=.*?[0-9])(?=.*((?=[\x21-\x7e]+)[^A-Za-z0-9])).{8,}$/;
-      var value = $("#adminInfo input[name='password']").val();
-      if (password.test(value)) {
-        $.ajax({
-          url: '/admin/editPassword',
-          data: {password: value},
-          type: 'POST',
-          dataType: 'json',
-          success: function (json) {
-            location.href = '/loginOut';
-          },
-          error: errorDialog
-        });
-      } else {
-        Toast.fire({
-          icon: 'error',
-          title: "密码请输入至少8位密码（至少包含1个字母，1个数字和1个特殊字符）"
-        });
+</div><!-- end modal-body -->
+<div class="modal-footer">
+  <div class="btn-group">
+    <button type="button" id="resetPasswd" class="btn btn-danger">帮我设置</button>
+    <button type="submit" class="btn btn-primary" form="editPassword">修改密码</button>
+  </div>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      let userInfo='';
+      if(currentUser.head){
+        userInfo='<div class="info-box">\n' +
+          '        <span class="info-box-icon">\n' +
+          '          <img src="'+currentUser.head+'" class="rounded-circle shadow-sm" alt="'+currentUser.nickname+'">\n' +
+          '        </span>\n' +
+          '    <div class="info-box-content">\n' +
+          '      <span class="info-box-text">'+currentUser.nickname+'('+currentUser.name+')</span>\n' +
+          '      <a href="javascript:" class="info-box-text d-block">重新绑定</a>\n' +
+          '    </div>\n' +
+          '  </div>';
+      }else{
+        userInfo='<a href="javascript:" class="info-box-text d-block">绑定微信</a>';
       }
-    });
-
-    $('#resetpasswd').click(function () {
-      var length = 8;
-      var passwordArray = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '1234567890', '_?!@#$%^&()'];
-      var password = '';
-      // 随机生成开始字符串
-      var startIndex = parseInt(Math.random() * (length));
-      var randIndex = [];
-      for (var i = 0; i < length; i++) {
-        randIndex.push(i);
-      }
-      for (var i = 0; i < length; i++) {
-        // 根据随机数组生成随机位置
-        var r = parseInt(Math.random() * (randIndex.length));
-        var num = randIndex[r] + startIndex;
-        // 根据随机值取余数
-        var randRemainder = num % passwordArray.length;
-        // 当前密码串【大写字母，小写字母，数字等】
-        var currentPassword = passwordArray[randRemainder];
-        // 根据当前密码串长度取随机数
-        var index = parseInt(Math.random() * (currentPassword.length));
-        // 获取随机字符串
-        var str = currentPassword.substring(index, index + 1);
-        // 删除随机数组中已经使用的值
-        randIndex.splice(r, 1);
-        password += str;
-      }
-      $("#adminInfo input[name='password']").val(password);
-    });
-
-    var timer;
-    var checkNum = 0;
-    $('#adminInfo .d-block').click(function () {
-      $('#adminInfo .user-panel').remove();
-      $('#bindQr').show();
-      timer = setInterval(function () {
-        checkNum++;
-        $.post('/admin/userBind', function (data) {
-          if (data.res == 'OK') {
-            clearInterval(timer);
-            location.reload();
-          }
-        }, 'json');
-        if (checkNum > 100) {
-          clearInterval(timer);
-          $('#bindQr').html('二维码已过期！');
+      $('#adminInfo').prepend(userInfo);
+      $('#editPassword').submit(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.target.checkValidity()) {
+          Swal.fire({
+            title: "是否确定已记住密码？",
+            text: "确定修改密码后系统将自动退出。",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: '确定',
+            cancelButtonText: '没记住'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              $.ajax({
+                url: '/admin/editPassword',
+                data: new FormData(e.target),
+                type: 'POST',
+                dataType: 'json',
+                success: function (json) {
+                  location.href = '/loginOut';
+                },
+                error: errorDialog
+              });
+            }
+          });
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: '账号或密码格式不正确'
+          });
         }
-      }, 2000);
+      });
+
+      $('#resetPasswd').click(function () {
+        var regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/;
+        var password = "";
+        do {
+          password = generateRandomString(Math.floor(Math.random() * 9) + 8);
+        } while (!regex.test(password)); // 检查密码是否满足要求
+        // 返回生成的密码
+        $("#adminInfo input[name='password']").attr('type', 'text').val(password);
+      });
+
+      let timer;
+      let checkNum = 0;
+      $('#adminInfo .d-block').click(function () {
+        $('#adminInfo .info-box').remove();
+        $('#bindQr').show();
+        timer = setInterval(function () {
+          checkNum++;
+          $.post('/admin/userBind', function (data) {
+            if (data.res === 'OK') {
+              clearInterval(timer);
+              location.reload();
+            }
+          }, 'json');
+          if (checkNum > 100) {
+            clearInterval(timer);
+            $('#bindQr').html('二维码已过期！');
+          }
+        }, 2000);
+      });
+      $('#adminInfo').parents('.modal').on('hidden.bs.modal', function () {
+        checkNum = 0;
+        if (timer) clearInterval(timer);
+      });
     });
-    $('#modal-dialog').on('hidden.bs.modal', function () {
-      checkNum = 0;
-      console.log(timer);
-      clearInterval(timer);
-    });
-  });
-</script>
+  </script>

@@ -78,25 +78,19 @@ class PermissionMiddleware implements Middleware
           $response->getBody()->write($json);
           return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         } else {
-          return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/error/404.html', ['message' => '用户未获得授权！']);
+          return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/error/404.html?loadTpl=1', ['message' => '用户未获得授权！']);
         }
       }
 
-      // 绑定用户
-      $admin = $this->container->get(AdminInterface::class)->get('uid,account', ['id' => $_SESSION['login_id']]);
-      if (isset($admin['uid']) && $admin['uid'] > 0) {
-        $user = $this->container->get(WpUserInterface::class)->getUser($admin['uid']);
-        if ($user) $admin = array_merge($admin, $user);
-      }
-
       $tplVars = [
-        'sidebar' => $this->persistence->getSidebar(),
         'loginId' => $_SESSION['login_id'],
         'Role' => $_SESSION['role_id'],
-        'loginUser' => $admin,
         'thisUri' => $request->getUri()->getScheme() . '://' . $request->getUri()->getHost()
       ];
       $request = $request->withAttribute('tplVars', $tplVars);
+      // 加载模板
+      $queryParams = $request->getQueryParams();
+      if (isset($queryParams['loadTpl']) && $request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") $request = $request->withHeader('X-Requested-With', '');
 
       return $handler->handle($request);
     } else {

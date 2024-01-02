@@ -19,6 +19,8 @@ class LoginOutAction extends Action
     $this->logger->info("退出系统，用户ID为：`{$_SESSION['login_id']}`。");
     session_unset();
     session_destroy();
+    session_start();
+    session_regenerate_id(true);
     return $this->response->withHeader('Location', '/login')->withStatus(302);
   }
 

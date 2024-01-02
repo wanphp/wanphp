@@ -51,9 +51,8 @@ class AdminAction extends Action
       case  'POST';
         $data = $this->request->getParsedBody();
         $id = $this->admin->get('id', ['account' => $data['account']]);
-        if (is_numeric($id) && $id > 0) {
-          return $this->respondWithError('帐号已经存在');
-        }
+        if (is_numeric($id) && $id > 0) return $this->respondWithError('帐号已经存在');
+        if ($data['password'] == '') return $this->respondWithError('帐号密码不能为空！');
         $data['salt'] = substr(md5(uniqid(rand(), true)), 10, 11);
         $data['password'] = md5(SHA1($data['salt'] . md5($data['password'])));
         $data['ctime'] = time();
@@ -63,9 +62,7 @@ class AdminAction extends Action
         $id = (int)$this->resolveArg('id');
         $data = $this->request->getParsedBody();
         $admin_id = $this->admin->get('id', ['id[!]' => $id, 'account' => $data['account']]);
-        if (is_numeric($admin_id) && $admin_id > 0) {
-          return $this->respondWithError('帐号已经存在');
-        }
+        if (is_numeric($admin_id) && $admin_id > 0) return $this->respondWithError('帐号已经存在');
         if (isset($data['password'])) {
           $data['salt'] = substr(md5(uniqid(rand(), true)), 10, 11);
           $data['password'] = md5(SHA1($data['salt'] . md5($data['password'])));
@@ -73,7 +70,9 @@ class AdminAction extends Action
         $num = $this->admin->update($data, ['id' => $id]);
         return $this->respondWithData(['upNum' => $num], 201);
       case  'DELETE';
-        $delNum = $this->admin->delete(['id' => $this->args['id']]);
+        $id = $this->resolveArg('id');
+        if ($_SESSION['login_id'] == $id) return $this->respondWithError('不能删除自己');
+        $delNum = $this->admin->delete(['id' => $id]);
         return $this->respondWithData(['delNum' => $delNum], 200);
       case 'GET';
         if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
@@ -81,11 +80,10 @@ class AdminAction extends Action
           $where = [];
           // 查看选择角色
           if (isset($params['role_id']) && $params['role_id'] > 0) {
-            $role_id = intval($params['role_id']);
-          } else {
-            $role_id = $_SESSION['role_id'] ?? -1;
+            $where['role_id'] = intval($params['role_id']);
+          } else if ($_SESSION['role_id'] > 0) {
+            $where['role_id'] = $_SESSION['role_id'];
           }
-          $where['role_id'] = $role_id;
           if ($_SESSION['role_id'] != -1) $where['parentId'] = $_SESSION['login_id'];//只显示自己添加的管理员
 
           $recordsTotal = $this->admin->count('id', $where);
@@ -126,8 +124,9 @@ class AdminAction extends Action
           return $this->respondWithData($data);
         } else {
           $role_id = $_SESSION['role_id'];
+          // id越大，权限越少
           if ($role_id < 0) $role = $this->role->select('id,name');
-          else $role = $this->role->select('id,name', ['id' => $role_id]);
+          else $role = $this->role->select('id,name', ['id[>]' => $role_id]);
           $data = [
             'title' => '管理员管理',
             'roles' => array_column($role, 'name', 'id'),

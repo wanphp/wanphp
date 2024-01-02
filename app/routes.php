@@ -14,11 +14,6 @@ return function (App $app) {
     return $response;
   });
 
-  $app->get('/', function (Request $request, Response $response) {
-    $response->getBody()->write('<h1 style="text-align: center;">Hello PHP!</h1>');
-    return $response;
-  });
-
   $PermissionMiddleware = new PermissionMiddleware($app->getContainer());
   $OAuthServerMiddleware = new OAuthServerMiddleware(
     $app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config'),
@@ -43,8 +38,8 @@ return function (App $app) {
   $app->get('/loginOut', \App\Application\Actions\Common\LoginOutAction::class);
   $app->get('/clearCache', \App\Application\Actions\Common\ClearCacheAction::class);
 
+  $app->get('/', \App\Application\Actions\Home\HomeAction::class)->addMiddleware($PermissionMiddleware);
   $app->group('/admin', function (Group $group) {
-    $group->get('/index', \App\Application\Actions\Home\HomeAction::class);
     $group->get('/actions', \App\Application\Actions\Permission\ListRouterAction::class);
     $group->get('/syncActions', \App\Application\Actions\Common\SyncRouterAction::class);
     $group->patch('/router/{id:[0-9]+}', \App\Application\Actions\Common\RouterAction::class);
