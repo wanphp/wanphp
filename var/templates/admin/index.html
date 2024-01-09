@@ -31,7 +31,7 @@
         <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fa-solid fa-bars"></i></a></li>
         {% block headnavbar %}
         <li class="nav-item d-none d-md-block">
-          <a href="javascript:" data-linkhref="/" class="nav-link">首页</a>
+          <a href="javascript:" data-link="/admin/dashboard" class="nav-link">首页</a>
         </li>
         {% if Role<0 %}
         <li class="nav-item d-none d-md-block">
@@ -66,7 +66,8 @@
   <aside class="app-sidebar bg-body-secondary shadow-sm">
     <div class="sidebar-brand">
       <a href="javascript:" class="brand-link">
-        <img src="{{ loginUser.headimgurl ?: '/adminlte/img/AdminLTELogo.png' }}" alt="{{loginUser.name}}" class="brand-image rounded-5 shadow">
+        <img src="{{ loginUser.headimgurl ?: '/adminlte/assets/img/AdminLTELogo.png' }}" alt="{{loginUser.name}}"
+             class="brand-image rounded-5 shadow">
         <span class="brand-text fw-light">{{loginUser.nickname ?: '系统管理'}}</span>
       </a>
     </div>
@@ -149,6 +150,22 @@
   const currentUser = {head: '{{loginUser.headimgurl}}', nickname: '{{loginUser.nickname}}', name: '{{loginUser.name}}'};
   const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
 
+  // 传入一个时间戳（毫秒）
+  function formatTimestamp(timestamp) {
+    // 创建一个Date对象，传入时间戳
+    const date = new Date(timestamp);
+
+    // 获取年、月、日等信息
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2); // 月份是从0开始的，所以要加1，并确保两位数
+    const day = ('0' + date.getDate()).slice(-2);
+    const hours = ('0' + date.getHours()).slice(-2);
+    const minutes = ('0' + date.getMinutes()).slice(-2);
+    const seconds = ('0' + date.getSeconds()).slice(-2);
+
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+  }
+
   function dialog(title, content, callable) {
     Swal.fire({
       title: title,
@@ -200,7 +217,7 @@
     });
   }
 
-  function modalDialog(title, body, dialogClass = 'modal-lg', buttons = []|'', callable = null, backdrop = true) {
+  function modalDialog(title, body, dialogClass = 'modal-lg', buttons = [] | '', callable = null, backdrop = true) {
     let buttonStr = '';
     if (buttons instanceof Array && buttons.length) {
       buttonStr += '<div class="modal-footer">';
@@ -236,6 +253,7 @@
   }
 
   if (window.location.hash) loadAppContent(window.location.hash.substring(1));
+  else loadAppContent('admin/dashboard');
 
   window.addEventListener('popstate', function () {
     if (window.location.hash) {

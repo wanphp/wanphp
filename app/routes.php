@@ -40,6 +40,7 @@ return function (App $app) {
 
   $app->get('/', \App\Application\Actions\Home\HomeAction::class)->addMiddleware($PermissionMiddleware);
   $app->group('/admin', function (Group $group) {
+    $group->get('/dashboard', \App\Application\Actions\Home\DashboardAction::class);
     $group->get('/actions', \App\Application\Actions\Permission\ListRouterAction::class);
     $group->get('/syncActions', \App\Application\Actions\Common\SyncRouterAction::class);
     $group->patch('/router/{id:[0-9]+}', \App\Application\Actions\Common\RouterAction::class);
