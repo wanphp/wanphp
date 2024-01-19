@@ -9,6 +9,9 @@ $(document).ready(function () {
       if (!options.error) options.error = function (data) {
         console.log(data);
       };
+      if (!options.uploadStart) options.uploadStart = function (data) {
+        console.log(data);
+      };
       if (!options.processResults) options.processResults = function (data) {
         console.log(data);
       };
@@ -24,6 +27,7 @@ $(document).ready(function () {
       timer = setInterval(function () {
         let file;
         if (options.file || $("#form-file-upload input[name='file']").val() !== '') {
+          options.uploadStart('上传开始');
           if (!options.file) {
             file = $('#form-file-upload input[name="file"]')[0].files[0];
           } else {
@@ -32,23 +36,26 @@ $(document).ready(function () {
           clearInterval(timer);
           const ext = file['name'].replace(/^.+\./, '').toLowerCase();
           if (options.ext.indexOf(ext) === -1) {
-            options.error({code: 'error', description: '格式不支持，请选择' + options.ext + '格式的文件'});
+            options.error({code: 'error', errMsg: '格式不支持，请选择' + options.ext + '格式的文件'});
             return false;
           }
           // 图片压缩,gif有可能是动图，不做压缩
-          if (options.compress && ['jpg','jpeg','png'].includes(ext)) {
+          if (options.compress && ['jpg', 'jpeg', 'png'].includes(ext)) {
             //读取上传文件
             let reader = new FileReader();
             //readAsDataURL方法可以将File对象转化为data:URL格式的字符串（base64编码）
             reader.readAsDataURL(file);
             reader.onload = () => {
               let sourceImage = new Image();
+              sourceImage.src = reader.result;
               sourceImage.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
                 const w = sourceImage.naturalWidth;
                 const h = sourceImage.naturalHeight;
+                if (!options.compress.maxWidth) options.compress.maxWidth = w;
+                if (!options.compress.maxHeight) options.compress.maxHeight = h;
 
                 const ratio = Math.min(1, options.compress.maxWidth / w, options.compress.maxHeight / h);
                 canvas.width = w * ratio;
@@ -64,6 +71,8 @@ $(document).ready(function () {
                 const form_data = new FormData();
                 form_data.append('file', new Blob([u8arr], {type: mime}), file.name);
                 form_data.append('type', mime);
+                form_data.append('uid', options.uid ?? 0);
+                form_data.append('id', options.fileId ?? 0);
                 $.ajax({
                     url: options.url,
                     type: 'post',
@@ -83,7 +92,6 @@ $(document).ready(function () {
                 // 释放内存占用
                 sourceImage = null;
               };
-              sourceImage.src = reader.result;
             }
             return false;
           }
@@ -92,6 +100,7 @@ $(document).ready(function () {
             form_data.append('file', file, file.name);
             form_data.append('type', file.type);
             form_data.append('size', file.size);
+            form_data.append('uid', options.uid ?? 0);
             $.ajax({
                 url: options.url,
                 type: 'post',
@@ -127,17 +136,19 @@ $(document).ready(function () {
             };
           fileReader.onload = function (e) {
             console.log(((currentChunk + 1) / chunks * 100).toFixed(2) + '%');
+            options.processResults('读取文件' + (currentChunk / chunks * 100).toFixed(2) + '%');
             spark.append(e.target.result);
             currentChunk++;
             if (currentChunk < chunks) {
               loadNext();
             } else {
               currentChunk = 0;
+              options.processResults('开始上传...');
               upload(spark.end());
             }
           };
           fileReader.onerror = function () {
-            options.error({code: 'error', description: '文件读取出错'});
+            options.error({code: 'error', errMsg: '文件读取出错'});
           };
 
           function upload(file_md5) {
@@ -148,6 +159,7 @@ $(document).ready(function () {
             form_data.append('type', file.type);
             form_data.append('size', file.size);
             form_data.append('md5', file_md5);
+            form_data.append('uid', options.uid ?? 0);
             $.ajax({
                 url: options.url,
                 type: 'post',
@@ -175,7 +187,7 @@ $(document).ready(function () {
 
           options.processResults('读取文件中...');
           if (chunks > (options.maxSize / 2)) {
-            options.error({code: 'error', description: '上传文件不能超过' + options.maxSize + 'M,当前文件大小' + filesize});
+            options.error({code: 'error', errMsg: '上传文件不能超过' + options.maxSize + 'M,当前文件大小' + filesize});
             return false;
           }
           loadNext();

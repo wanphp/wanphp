@@ -19,6 +19,29 @@
   <link rel="stylesheet" href="/select2/bootstrap5/select2-bootstrap-5-theme.min.css">
   <!-- Theme style -->
   <link href="/adminlte/css/adminlte.min.css" rel="stylesheet">
+  <style>
+    .btn-default {
+      background-color: #f8f9fa;
+      border-color: #ddd;
+      color: #444;
+    }
+
+    .btn-default.hover, .btn-default:active, .btn-default:hover {
+      background-color: #e9ecef;
+      color: #2b2b2b
+    }
+
+    .btn-default.disabled, .btn-default:disabled {
+      color: #444;
+      background-color: #f8f9fa
+    }
+
+    .dataTables_wrapper .dataTables_info {
+      clear: both;
+      float: left;
+      padding-top: 0.755em;
+    }
+  </style>
 </head>
 
 <body class="sidebar-expand-lg sidebar-mini bg-body-tertiary layout-fixed sidebar-open">
@@ -78,7 +101,7 @@
       <nav class="mt-2">
         <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
           {% for index, item in sidebar %}
-          <li class="nav-item">
+          <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon {{ item.icon }}"></i>
               <p>{{ item.name }}<i class="nav-arrow fas fa-angle-right"></i></p>
@@ -142,12 +165,14 @@
 <script src="/datatables/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
 <script src="/datatables/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
 <script src="/datatables/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+<script src="/datatables/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/datatables/datatables.net-buttons/js/buttons.html5.min.js"></script>
 <script src="/js/dataTable.defaults.js"></script>
 <!-- Select2 -->
 <script src="/select2/js/select2.full.min.js"></script>
 <script src="/select2/js/i18n/zh-CN.js"></script>
 <script type="text/javascript">
-  const currentUser = {head: '{{loginUser.headimgurl}}', nickname: '{{loginUser.nickname}}', name: '{{loginUser.name}}'};
+  const currentUser = {uid: '{{loginUser.uid}}', head: '{{loginUser.headimgurl}}', nickname: '{{loginUser.nickname}}', name: '{{loginUser.name}}'};
   const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
 
   // 传入一个时间戳（毫秒）
@@ -211,7 +236,7 @@
       url: config.url,
       type: 'GET',
       success: function (body) {
-        modalDialog(config.title, body, dialogClass, true);
+        modalDialog(config.title, body, dialogClass);
       },
       error: errorDialog
     });
@@ -243,7 +268,13 @@
     $('#modalDialog').modal('show');
   }
 
+  function closeModalDialog() {
+    $('#modalDialog').modal('hide');
+  }
+
   function loadAppContent(url) {
+    // 展开侧边栏
+    (new adminlte.PushMenu($("[data-lte-toggle='sidebar']")[0])).expand();
     swal.showLoading();
     $('.app-content .container-fluid').load(url + '?loadTpl=1', function (response, status) {
       swal.close();
@@ -279,21 +310,26 @@
         location.reload();
       });
     });
-    $('.sidebar-wrapper li:eq(0)').addClass('menu-open');
-    $('.sidebar-wrapper li:eq(0)>a').addClass('active');
+    if (window.location.hash) {
+      const menu = $('.sidebar-wrapper a[data-link="' + window.location.hash.substring(1) + '"]');
+      menu.parents('li.has-treeview').addClass('menu-open');
+      menu.parents('ul.nav-treeview').prev().addClass('active');
+      menu.addClass('active');
+    } else {
+      $('.sidebar-wrapper li:eq(0)').addClass('menu-open');
+      $('.sidebar-wrapper li:eq(0)>a').addClass('active');
+    }
     $('.brand-link').click(function () {
       loadDialog({title: '用户信息', url: '/admin/editPassword'});
     });
-    $('.nav-item a.nav-link').click(function (e) {
-      if (e.currentTarget.dataset.link) {
-        window.location.hash = e.currentTarget.dataset.link;
+    $('body').on('click', 'a[data-link]', function (e) {
+      window.location.hash = e.currentTarget.dataset.link;
+      if ($(this).hasClass('nav-link')) {
         $('.nav-item li a.active').removeClass('active');
         $(e.currentTarget).parents('ul.nav-treeview').prev().addClass('active');
         $(e.currentTarget).addClass('active');
       }
-    });
-
-    $('body').on('submit', 'form.needs-validation', function (e) {
+    }).on('submit', 'form.needs-validation', function (e) {
       e.preventDefault();
       e.stopPropagation();
       e.target.classList.add('was-validated');

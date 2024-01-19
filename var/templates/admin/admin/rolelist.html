@@ -60,7 +60,7 @@
 <!-- /.card -->
 
 <script type="text/javascript">
-  const actions = {{ actions | raw }};
+  var actions = JSON.parse('{{ actions | raw }}');
   $(document).ready(function () {
     const buttonStr = '<button type="button" class="btn btn-tool edit" data-bs-toggle="tooltip" data-bs-title="修改"><i class="fas fa-edit"></i></button>' +
       '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>';
