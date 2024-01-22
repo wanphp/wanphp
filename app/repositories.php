@@ -17,6 +17,7 @@ return function (ContainerBuilder $containerBuilder) {
   $containerBuilder->addDefinitions([
     \App\Domain\Admin\AdminInterface::class => \DI\autowire(\App\Repositories\Mysql\Admin\AdminRepository::class),
     \App\Domain\Admin\RoleInterface::class => \DI\autowire(\App\Repositories\Mysql\Admin\RoleRepository::class),
+    \App\Domain\Admin\AdminGroupInterface::class => \DI\autowire(\App\Repositories\Mysql\Admin\AdminGroupRepository::class),
     \App\Domain\Common\RouterInterface::class => \DI\autowire(\App\Repositories\Mysql\Router\RouterRepository::class),
     \App\Domain\Common\NavigateInterface::class => \DI\autowire(\App\Repositories\Mysql\Router\NavigateRepository::class),
     \App\Repositories\Mysql\Router\PersistenceRepository::class => \DI\autowire(\App\Repositories\Mysql\Router\PersistenceRepository::class),
