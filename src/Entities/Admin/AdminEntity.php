@@ -80,6 +80,13 @@ class AdminEntity implements \JsonSerializable
    */
   private int $role_id;
   /**
+   *
+   * @DBType({"type":"smallint(6) NOT NULL DEFAULT 0"})
+   * @OA\Property(description="分组ID")
+   * @var int
+   */
+  private int $groupId;
+  /**
    * @DBType({"type":"char(10) NOT NULL DEFAULT ''"})
    * @OA\Property(description="最后登录时间")
    * @var int

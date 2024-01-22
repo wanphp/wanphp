@@ -10,7 +10,7 @@
   </div>
   <div class="collapse" id="collapseAdmin">
     <div class="card-body">
-      <form id="adminForm" action="/admin/admins" method="POST"  class="needs-validation" novalidate>
+      <form id="adminForm" action="/admin/admins" method="POST" class="needs-validation" novalidate>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
           <div class="col mb-3 position-relative">
             <div class="input-group">
@@ -38,6 +38,16 @@
                 {% for id, name in roles %}
                 <option value="{{ id }}" {{ (role_id== id) ?
                 ' selected':''}}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col mb-3">
+            <div class="input-group">
+              <label for="group_id" class="input-group-text">分组</label>
+              <select id="group_id" name="groupId" class="form-select">
+                {% for id, name in group %}
+                <option value="{{ id }}">{{ name }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -93,11 +103,22 @@
 <!-- /.card -->
 <script type="text/javascript">
   $(document).ready(function () {
+    var thGroup = '<ul class="navbar-nav">\n' +
+      '        <li class="nav-item dropdown">\n' +
+      '          <span class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">分组</span>\n' +
+      '          <ul class="dropdown-menu">\n';
+    $('#group_id option').each(function (index, item) {
+      thGroup += '            <li><a class="dropdown-item" href="javascript:" data-value="' + item.value + '">' + item.text + '</a></li>\n'
+    });
+    thGroup += '          </ul>\n' +
+      '        </li>\n' +
+      '      </ul>';
     const datatables = $('#adminData').DataTable({
       ajax: {
         "url": "/admin/admins",
         "data": function (d) {
           d.role_id = $('.card-header span[data-id].btn-success').attr('data-id');
+          if ($('#adminData thead .dropdown-item.active').length) d.groupId = $('#adminData thead .dropdown-item.active')[0].dataset.value;
         }
       },
       rowId: 'id',
@@ -115,6 +136,9 @@
         },
         {title: '联系人', data: "name", defaultContent: ''},
         {title: '手机号', data: "tel", defaultContent: ''},
+        {
+          title: thGroup, data: "groupId", defaultContent: ''
+        },
         {
           title: '最后登录时间',
           data: "lastLoginTime", render: function (data, type, row, meta) {
@@ -197,6 +221,11 @@
         datatables.ajax.reload();
       }
     });
+    $('#adminData thead').on('click', '.dropdown-item', function (e) {
+      $(e.currentTarget).parents('ul.dropdown-menu').find('a.active').removeClass('active');
+      $(e.currentTarget).addClass('active');
+      datatables.ajax.reload();
+    });
     $('#randomPwd').click(function () {
       const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/;
       let password = "";
@@ -215,6 +244,7 @@
         $('#adminForm').attr('method', 'PUT');
         $("#adminForm input[name='account']").val(data.account);
         $("#adminForm select[name='role_id']").val(data.role_id).trigger("change");
+        $("#adminForm select[name='groupId']").val(data.groupId).trigger("change");
         $("#adminForm select[name='status']").val(data.status);
         $("#adminForm input[name='name']").val(data.name);
         $("#adminForm input[name='tel']").val(data.tel);

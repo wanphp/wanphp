@@ -1,0 +1,144 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{title}}</h3>
+
+    <div class="card-tools">
+      <button type="button" class="btn btn-tool" data-bs-toggle="modal" data-bs-target="#modal-addGroup">
+        <i class="fas fa-people-group" data-bs-toggle="tooltip" data-bs-title="添加管理员分组">添加</i>
+      </button>
+    </div>
+  </div>
+  <div class="modal fade" id="modal-addGroup" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">添加管理员分组</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="groupForm" action="/admin/group" method="POST" class="needs-validation" novalidate>
+            <div class="form-group pb-2">
+              <label for="name" class="form-label">分组名称</label>
+              <input id="name" name="name" type="text" class="form-control" required placeholder="填写分组名称" autocomplete="off">
+              <div class="invalid-feedback">请填写分组名称</div>
+            </div>
+            <div class="form-group">
+              <label for="description" class="form-label">分组说明</label>
+              <textarea id="description" name="description" type="text" class="form-control" required placeholder="填写分组说明"
+                        autocomplete="off"></textarea>
+              <div class="invalid-feedback">请填写分组说明</div>
+            </div>
+            <div class="form-group pb-2">
+              <label for="displayOrder" class="form-label">显示排序</label>
+              <input id="displayOrder" name="displayOrder" type="number" class="form-control" placeholder="填写显示排序" autocomplete="off">
+              <div class="invalid-feedback">请填写显示排序</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+          <button type="submit" form="groupForm" class="btn btn-primary">提交</button>
+        </div>
+      </div>
+      <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+  </div>
+  <div class="card-body">
+    <table id="groupData" class="table table-sm table-bordered"></table>
+  </div>
+  <!-- /.card-body -->
+</div>
+<!-- /.card -->
+
+<script type="text/javascript">
+  $(document).ready(function () {
+    const buttonStr = '<button type="button" class="btn btn-tool edit" data-bs-toggle="tooltip" data-bs-title="修改"><i class="fas fa-edit"></i></button>' +
+      '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>';
+    const datatables = $('#groupData').DataTable({
+      ajax: {
+        url: "/admin/group",
+        type: 'GET',
+        data: function (d) {
+          return $.extend({}, d, {keyword: $("#keyword").val()});
+        }
+      },
+      rowId: 'id',
+      columns: [
+        {title: '分组', data: "name"},
+        {title: '描述', data: "description"},
+        {title: '操作', data: 'op', defaultContent: buttonStr}
+      ]
+    });
+    $('#groupData tbody').on('click', 'button', function () {
+      const group = datatables.row($(this).parents('tr')).data();
+      if ($(this).hasClass('edit')) {
+        $('#groupForm').attr('action', '/admin/group/' + group.id);
+        $('#groupForm').attr('method', 'PUT');
+        $("#groupForm input[name='name']").val(group.name);
+        $("#groupForm textarea[name='description']").val(group.description);
+        $("#groupForm input[name='displayOrder']").val(group.displayOrder);
+        $('#modal-addGroup').modal('show');
+      }
+      if ($(this).hasClass('del')) {
+        const delRow = $(this).parents('tr');
+        dialog('删除配置', '是否确认删除配置项', function () {
+          $.ajax({
+            url: '/admin/group/' + group.id,
+            type: 'POST',
+            headers: {"X-HTTP-Method-Override": "DELETE"},
+            dataType: 'json',
+            success: function (data) {
+              datatables.row(delRow).remove().draw(false);
+              Swal.fire({icon: 'success', title: '删除成功！', showConfirmButton: false, timer: 1500});
+            },
+            error: errorDialog
+          });
+        });
+      }
+    });
+    $('#groupForm').submit(function (e) {
+      if (e.target.checkValidity()) {
+        const fromData = new FormData(e.target);
+        $.ajax({
+          url: $(e.target).attr('action'),
+          data: fromData,
+          type: 'POST',
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-HTTP-Method-Override", $(e.target).attr('method'));
+          },
+          cache: false,
+          contentType: false,
+          processData: false,
+          dataType: 'json',
+          success: function (json) {
+            let groupId;
+            if ($(e.target).attr('method') === 'PUT') groupId = $(e.target).attr('action').split('/').pop();
+            else groupId = json.id;
+
+            const data = {
+              id: groupId,
+              name: fromData.get('name'),
+              description: fromData.get('description'),
+              displayOrder: fromData.get('displayOrder'),
+              op: buttonStr
+            };
+            if ($(e.target).attr('method') === 'PUT') {
+              datatables.row($("tr[id='" + groupId + "']")).data(data);
+            } else {
+              datatables.row.add(data).draw(false);
+            }
+            $('#modal-addGroup').modal('hide');
+          },
+          error: errorDialog
+        });
+      }
+    });
+
+    $('#modal-addGroup').on('hidden.bs.modal', function () {
+      $('#groupForm')[0].reset();
+      $('#groupForm').attr('action', '/admin/group');
+      $('#groupForm').attr('method', 'POST');
+    });
+  });
+</script>

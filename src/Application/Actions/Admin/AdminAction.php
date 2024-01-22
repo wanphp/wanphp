@@ -10,6 +10,7 @@ namespace App\Application\Actions\Admin;
 
 
 use App\Application\Actions\Action;
+use App\Domain\Admin\AdminGroupInterface;
 use App\Domain\Admin\AdminInterface;
 use App\Domain\Admin\RoleInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -26,18 +27,21 @@ class AdminAction extends Action
 {
   private RoleInterface $role;
   private AdminInterface $admin;
+  private AdminGroupInterface $group;
   private WpUserInterface $user;
 
   /**
    * @param LoggerInterface $logger
    * @param AdminInterface $admin
+   * @param AdminGroupInterface $group
    * @param RoleInterface $role
    * @param WpUserInterface $user
    */
-  public function __construct(LoggerInterface $logger, AdminInterface $admin, RoleInterface $role, WpUserInterface $user)
+  public function __construct(LoggerInterface $logger, AdminInterface $admin, AdminGroupInterface $group, RoleInterface $role, WpUserInterface $user)
   {
     parent::__construct($logger);
     $this->admin = $admin;
+    $this->group = $group;
     $this->role = $role;
     $this->user = $user;
   }
@@ -84,6 +88,7 @@ class AdminAction extends Action
           } else if ($_SESSION['role_id'] > 0) {
             $where['role_id'] = $_SESSION['role_id'];
           }
+          if (isset($params['groupId']) && $params['groupId'] > 0) $where['groupId'] = intval($params['groupId']);
           if ($_SESSION['role_id'] != -1) $where['parentId'] = $_SESSION['login_id'];//只显示自己添加的管理员
 
           $recordsTotal = $this->admin->count('id', $where);
@@ -127,9 +132,11 @@ class AdminAction extends Action
           // id越大，权限越少
           if ($role_id < 0) $role = $this->role->select('id,name');
           else $role = $this->role->select('id,name', ['id[>]' => $role_id]);
+          $group = $this->group->select('id,name', ['ORDER' => ['displayOrder' => 'ASC']]);
           $data = [
             'title' => '管理员管理',
             'roles' => array_column($role, 'name', 'id'),
+            'group' => array_column($group, 'name', 'id'),
             'role_id' => $role[0]['id'] ?? 0
           ];
 
