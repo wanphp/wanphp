@@ -78,7 +78,7 @@ class LoginAction extends Action
         $_SESSION['role_id'] = -1;
         return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index']);
       } else {
-        $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id,status', ['OR' => ['account' => $account, 'tel' => $account]]);
+        $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id,groupId,status', ['OR' => ['account' => $account, 'tel' => $account]]);
       }
 
       if (!isset($admin['id'])) {
@@ -93,6 +93,7 @@ class LoginAction extends Action
       if ($admin['status'] == 1) {
         $_SESSION['login_id'] = $admin['id'];
         $_SESSION['role_id'] = $admin['role_id'];
+        $_SESSION['groupId'] = $admin['groupId'];
         $_SESSION['user_id'] = $admin['uid'];
         $this->adminRepository->update(['lastLoginTime' => time(), 'lastLoginIp' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
         // 发送公众号通知
@@ -105,8 +106,8 @@ class LoginAction extends Action
             'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
             'url' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
             'data' => [
-              'keyword1' => ['value' => $admin['account'].'，通过密码登录了系统', 'color' => '#173177'],
-              'keyword2' => ['value' => date('Y-m-d').'，点击详情可修改密码', 'color' => '#173177']
+              'keyword1' => ['value' => $admin['account'] . '，通过密码登录了系统', 'color' => '#173177'],
+              'keyword2' => ['value' => date('Y-m-d') . '，点击详情可修改密码', 'color' => '#173177']
             ]
           ];
           $this->user->sendMessage([$admin['uid']], $msgData);
