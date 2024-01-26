@@ -24,6 +24,8 @@ return function (ContainerBuilder $containerBuilder) {
       $handler = new StreamHandler($loggerSettings['path'] . DIRECTORY_SEPARATOR . date('Ymd') . '.log', $loggerSettings['level']);
       $handler->setFormatter(new LineFormatter("[%datetime%][%channel%] %level_name%: %message% %context% %extra%\n", "Y-m-d H:i:s"));
       $logger->pushHandler($handler);
+      // 记录系统操作日志
+      $logger->pushHandler(new \App\Application\Handlers\LogHandler($c->get(\App\Domain\Common\LogsInterface::class),600));
 
       return $logger;
     },

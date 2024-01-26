@@ -28,8 +28,11 @@ class QrLoginAction extends \App\Application\Actions\Action
   protected function action(): Response
   {
     if ($this->isPost()) {
-      if (isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) return $this->respondWithData(['res' => 'OK']);
-      else return $this->respondWithError('尚未授权！');
+      if (isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
+        $device = $this->request->getHeaderLine('X-HTTP-Device');
+        $this->logger->log(0, '“' . $_SESSION['login_id'] . '”通过微信认证登录系统，登录IP：' . $this->getIP() . '，客户端：' . $device . '；授权用户UID' . $_SESSION['user_id']);
+        return $this->respondWithData(['res' => 'OK']);
+      } else return $this->respondWithError('尚未授权！');
     } else {
       $queryParams = $this->request->getQueryParams();
       $state = $queryParams['state'] ?? '';
@@ -45,14 +48,14 @@ class QrLoginAction extends \App\Application\Actions\Action
             ];
             return $this->respondView('admin/error/wxerror.html', $data);
           }
-          $params = $this->request->getServerParams();
           if ($admin['status'] == 1) {
             $_SESSION['login_id'] = $admin['id'];
             $_SESSION['role_id'] = $admin['role_id'];
             $_SESSION['groupId'] = $admin['groupId'];
             $_SESSION['user_id'] = $user['id'];
-            $this->admin->update(['lastLoginTime' => time(), 'lastLoginIp' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
+            $this->admin->update(['lastLoginTime' => time(), 'lastLoginIp' => $this->getIP()], ['id' => $admin['id']]);
             if ($state == 'weixin') {
+              $this->logger->log(0, '“' . $admin['account'] . '”微信内部授权登录系统，登录IP：' . $this->getIP() . '，授权用户UID' . $_SESSION['user_id']);
               $this->logger->info('”' . $admin['account'] . '”刚刚通过微信内部授权登录了系统；绑定用户UID' . $user['id']);
               $backUrl = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/';
               return $this->response->withHeader('Location', $backUrl)->withStatus(301);

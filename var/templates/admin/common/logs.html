@@ -1,0 +1,60 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{title}}</h3>
+
+    <div class="card-tools">
+      <button id="selectDate" type="button" data-toggle="datetimepicker" class="btn btn-tool">
+        <i class="fas fa-calendar" data-bs-toggle="tooltip" data-bs-title="选择日期"></i>
+      </button>
+    </div>
+  </div>
+  <div class="card-body">
+    <table id="logsData" class="table table-sm table-bordered"></table>
+  </div>
+  <!-- /.card-body -->
+</div>
+<!-- /.card -->
+<script src="/js/moment/moment.min.js"></script>
+<script src="/js/moment/locale/zh-cn.js"></script>
+<script src="/js/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    let date = '';
+    const admin = JSON.parse('{{admin | raw}}');
+    const datatables = $('#logsData').DataTable({
+      aoColumnDefs: [
+        {orderable: false, aTargets: [0, 1]}// 制定列不参与排序
+      ],
+      ordering: true,//使用排序
+      order: [[2, "desc"]],
+      ajax: {
+        "url": "/admin/logs",
+        "data": function (d) {
+          if (date) d.date = date;
+        }
+      },
+      columns: [
+        {
+          title: '用户', data: "admin_id", render: function (id) {
+            return admin[id];
+          }
+        },
+        {title: '操作', data: "log_content"},
+        {
+          title: '时间', data: "ctime", render: function (data) {
+            return formatTimestamp(parseInt(data) * 1000);
+          }
+        }
+      ]
+    });
+    $('#selectDate').on('hide.datetimepicker', function (e) {
+      date = e.date.format('YYYY-MM-DD');
+      datatables.ajax.reload();
+    }).datetimepicker({
+      locale: 'zh-cn',
+      format: 'YYYY-MM-DD',
+      maxDate: new Date()
+    });
+
+  });
+</script>

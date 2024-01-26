@@ -51,6 +51,8 @@ return function (App $app) {
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/admins[/{id:[0-9]+}]', \App\Application\Actions\Admin\AdminAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/roles[/{id:[0-9]+}]', \App\Application\Actions\Admin\RoleAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/group[/{id:[0-9]+}]', \App\Application\Actions\Admin\GroupAction::class);
+    // 系统操作日志
+    $group->get('/logs', \App\Application\Actions\Common\LogsAction::class);
 
     //文件上传
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/files[/{id:[0-9]+}]', \App\Application\Api\Common\FilesApi::class);

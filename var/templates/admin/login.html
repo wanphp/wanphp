@@ -90,12 +90,18 @@
     $('#modal-qrLogin').on('shown.bs.modal', function () {
       timer = setInterval(function () {
         checkNum++;
-        $.post('/qrLogin', function (data) {
-          if (data.res === 'OK') {
-            location.href = '/';
-            clearInterval(timer);
+        $.ajax({
+          url: '/qrLogin',
+          type: 'POST',
+          headers: {"X-HTTP-Device": device},
+          dataType: 'json',
+          success: function (data) {
+            if (data.res === 'OK') {
+              location.href = '/';
+              clearInterval(timer);
+            }
           }
-        }, 'json');
+        });
         if (checkNum > 100) {
           clearInterval(timer);
           $('#modal-qrLogin .modal-body').html('二维码已过期！');

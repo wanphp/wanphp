@@ -16,6 +16,8 @@ class LoginOutAction extends Action
 {
   protected function action(): Response
   {
+    $params = $this->request->getServerParams();
+    $this->logger->log(0, '“' . $_SESSION['login_id'] . '”退出系统，IP：' . $this->getIP() . '，客户端：' . $params['HTTP_USER_AGENT']);
     $this->logger->info("退出系统，用户ID为：`{$_SESSION['login_id']}`。");
     session_unset();
     session_destroy();

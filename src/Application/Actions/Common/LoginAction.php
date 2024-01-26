@@ -89,18 +89,18 @@ class LoginAction extends Action
         return $this->respondWithError('帐号密码不正确！');
       }
 
-      $params = $this->request->getServerParams();
       if ($admin['status'] == 1) {
         $_SESSION['login_id'] = $admin['id'];
         $_SESSION['role_id'] = $admin['role_id'];
         $_SESSION['groupId'] = $admin['groupId'];
         $_SESSION['user_id'] = $admin['uid'];
-        $this->adminRepository->update(['lastLoginTime' => time(), 'lastLoginIp' => $params['REMOTE_ADDR']], ['id' => $admin['id']]);
+        $this->adminRepository->update(['lastLoginTime' => time(), 'lastLoginIp' => $this->getIP()], ['id' => $admin['id']]);
         // 发送公众号通知
         if ($admin['uid'] > 0) {
           $first = '您的账号“' . $admin['account'] . '”刚刚登录了系统；';
           $device = $this->request->getHeaderLine('X-HTTP-Device');
-          if ($device) $first .= '登录IP：' . $params['REMOTE_ADDR'] . '，客户端：' . $device . '。';
+          if ($device) $first .= '登录IP：' . $this->getIP() . '，客户端：' . $device . '。';
+          $this->logger->log(0, '“' . $admin['id'] . '”通过账号密码登录系统，登录IP：' . $this->getIP() . '，客户端：' . $device . '。');
           $this->logger->info(str_replace('您的账号', '', $first));
           $msgData = [
             'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
