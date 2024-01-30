@@ -76,6 +76,26 @@ abstract class Action extends \Wanphp\Libray\Slim\Action
     return $ipAddress;
   }
 
+  protected function getLoginUserId(): int
+  {
+    return $_SESSION['user_id'] ?? 0;
+  }
+
+  protected function getLoginUserRoleId(): int
+  {
+    return $_SESSION['role_id'] ?? 0;
+  }
+
+  protected function getLoginUserGroupId(): int
+  {
+    return $_SESSION['groupId'] ?? 0;
+  }
+
+  protected function getLoginId(): int
+  {
+    return $_SESSION['login_id'] ?? 0;
+  }
+
   protected function thumb(string $image, string $size): string
   {
     $info = pathinfo($image);

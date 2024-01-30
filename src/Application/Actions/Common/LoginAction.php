@@ -100,7 +100,7 @@ class LoginAction extends Action
           $first = '您的账号“' . $admin['account'] . '”刚刚登录了系统；';
           $device = $this->request->getHeaderLine('X-HTTP-Device');
           if ($device) $first .= '登录IP：' . $this->getIP() . '，客户端：' . $device . '。';
-          $this->logger->log(0, '“' . $admin['id'] . '”通过账号密码登录系统，登录IP：' . $this->getIP() . '，客户端：' . $device . '。');
+          $this->logger->log(0, '通过账号密码登录系统，登录IP：' . $this->getIP() . '，客户端：' . $device . '。');
           $this->logger->info(str_replace('您的账号', '', $first));
           $msgData = [
             'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
