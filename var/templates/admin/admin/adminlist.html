@@ -92,7 +92,7 @@
   </div>
   <div class="card-header">
     {% for id, name in roles %}
-    <span data-id="{{ id }}" class="btn {{ (id == role_id) ? 'btn-success' : 'btn-secondary' }} btn-sm">{{ name }}</span>
+    <span data-id="{{ id }}" class="btn {{ (id == role_id) ? 'btn-success' : 'btn-secondary' }} btn-sm" data-bs-toggle="tooltip" data-bs-title="选择角色">{{ name }}</span>
     {% endfor %}
   </div>
   <div class="card-body">
@@ -137,7 +137,10 @@
         {title: '联系人', data: "name", defaultContent: ''},
         {title: '手机号', data: "tel", defaultContent: ''},
         {
-          title: thGroup, data: "groupId", defaultContent: ''
+          title: thGroup, data: "groupId", render: function (data) {
+            if (data) return $("#group_id option[value='" + data + "']").text();
+            else return '';
+          }
         },
         {
           title: '最后登录时间',
@@ -208,12 +211,14 @@
       },
       templateSelection: function (user) {
         //console.log(user);
-        $("#adminForm input[name='name']").val(user.name);
-        $("#adminForm input[name='tel']").val(user.tel);
+        if (user.name) {
+          $("#adminForm input[name='name']").val(user.name);
+          $("#adminForm input[name='tel']").val(user.tel);
+        }
         return user.nickname || user.text;
       }
     });
-    $('.card-header span[data-id]').on('click', function () {
+    $('.card-header span[data-id]').on('click', function (e) {
       if ($(this).hasClass('btn-secondary')) {
         $('.card-header span[data-id].btn-success').removeClass('btn-success').addClass('btn-secondary');
         $(this).removeClass('btn-secondary').addClass('btn-success');
