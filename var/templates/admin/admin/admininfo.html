@@ -56,7 +56,7 @@
           }).then((result) => {
             if (result.isConfirmed) {
               $.ajax({
-                url: '/admin/editPassword',
+                url: basePath + '/admin/editPassword',
                 data: new FormData(e.target),
                 type: 'POST',
                 dataType: 'json',
@@ -92,7 +92,7 @@
         $('#bindQr').show();
         timer = setInterval(function () {
           checkNum++;
-          $.post('/admin/userBind', function (data) {
+          $.post(basePath + '/admin/userBind', function (data) {
             if (data.res === 'OK') {
               clearInterval(timer);
               location.reload();

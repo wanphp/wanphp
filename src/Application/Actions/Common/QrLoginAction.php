@@ -7,18 +7,24 @@ use App\Domain\Admin\AdminInterface;
 use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\Setting;
 use Wanphp\Libray\Slim\WpUserInterface;
 
 class QrLoginAction extends \App\Application\Actions\Action
 {
   private WpUserInterface $user;
   private AdminInterface $admin;
+  private string $basePath = '';
 
-  public function __construct(LoggerInterface $logger, WpUserInterface $user, AdminInterface $admin)
+  /**
+   * @throws Exception
+   */
+  public function __construct(LoggerInterface $logger, WpUserInterface $user, AdminInterface $admin, Setting $setting)
   {
     parent::__construct($logger);
     $this->user = $user;
     $this->admin = $admin;
+    $this->basePath = $setting->get('basePath');
   }
 
   /**
@@ -57,7 +63,7 @@ class QrLoginAction extends \App\Application\Actions\Action
             if ($state == 'weixin') {
               $this->logger->log(0, '通过微信内部授权登录系统，登录IP：' . $this->getIP() . '，授权用户UID' . $_SESSION['user_id']);
               $this->logger->info('”' . $admin['account'] . '”刚刚通过微信内部授权登录了系统；绑定用户UID' . $user['id']);
-              $backUrl = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/';
+              $backUrl = $this->httpHost() . $this->basePath;
               return $this->response->withHeader('Location', $backUrl)->withStatus(301);
             } else {
               $data = ['title' => '登录成功',

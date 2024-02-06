@@ -18,7 +18,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="setForm" action="/admin/setting" method="POST" class="needs-validation" novalidate>
+          <form id="setForm" action="{{basePath}}/admin/setting" method="POST" class="needs-validation" novalidate>
             <div class="form-group position-relative col-auto">
               <label for="name" class="form-label">配置名称</label>
               <input id="name" name="name" type="text" class="form-control" required placeholder="配置名称" autocomplete="off">
@@ -73,7 +73,7 @@
       ordering: true,//使用排序
       order: [[3, "asc"]],
       ajax: {
-        url: "/admin/setting",
+        url: basePath + "/admin/setting",
         type: 'GET',
         data: function (d) {
           return $.extend({}, d, {keyword: $("#keyword").val()});
@@ -96,7 +96,7 @@
       const setting = datatables.row($(this).parents('tr')).data();
       //console.log(setting);
       if ($(this).hasClass('edit')) {
-        $('#setForm').attr('action', '/admin/setting/' + setting.id);
+        $('#setForm').attr('action', basePath + '/admin/setting/' + setting.id);
         $('#setForm').attr('method', 'PUT');
         $("#setForm input[name='name']").val(setting.name);
         $("#setForm input[name='key']").val(setting.key);
@@ -108,7 +108,7 @@
         const delRow = $(this).parents('tr');
         dialog('删除配置', '是否确认删除配置项', function () {
           $.ajax({
-            url: '/admin/setting/' + setting.id,
+            url: basePath + '/admin/setting/' + setting.id,
             type: 'POST',
             headers: {"X-HTTP-Method-Override": "DELETE"},
             dataType: 'json',
@@ -164,7 +164,7 @@
     });
 
     $('#upload_image').on('click', function (event) {
-      $.uploadImage('/admin/files', function (res) {
+      $.uploadImage(basePath + '/admin/files', function (res) {
         if (res.url) {
           $('#setForm #value').val(res.url);
         } else {
@@ -179,7 +179,7 @@
 
     $('#modal-addSetting').on('hidden.bs.modal', function () {
       $('#setForm')[0].reset();
-      $('#setForm').attr('action', '/admin/setting');
+      $('#setForm').attr('action', basePath + '/admin/setting');
       $('#setForm').attr('method', 'POST');
     });
   });

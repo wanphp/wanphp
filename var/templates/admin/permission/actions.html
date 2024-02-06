@@ -8,7 +8,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form id="menuForm" action="/admin/navigate" method="POST" class="needs-validation" novalidate>
+            <form id="menuForm" action="{{basePath}}/admin/navigate" method="POST" class="needs-validation" novalidate>
               <div class="input-group mb-3">
                 <label for="name" class="input-group-text">菜单名称</label>
                 <input id="name" name="name" type="text" class="form-control" placeholder="菜单名称" autocomplete="off">
@@ -128,7 +128,7 @@
       if ($(this).val() != $(this).attr('default-value')) {
         $(this).attr('default-value', $(this).val());
         $.ajax({
-          url: '/admin/router/' + $(this).attr('data-id'),
+          url: basePath + '/admin/router/' + $(this).attr('data-id'),
           type: 'POST',
           data: {'navId': $(this).val()},
           dataType: 'json',
@@ -170,7 +170,7 @@
     });
 
     $('.editMenu').click(function (e) {
-      $('#menuForm').attr('action', '/admin/navigate/' + e.currentTarget.dataset.id);
+      $('#menuForm').attr('action', basePath + '/admin/navigate/' + e.currentTarget.dataset.id);
       $('#menuForm').attr('method', 'PUT');
       $("#menuForm input[name='name']").val(e.currentTarget.dataset.name);
       $("#menuForm input[name='icon']").val(e.currentTarget.dataset.icon);
@@ -180,7 +180,7 @@
 
     $('#modal-add').on('hidden.bs.modal', function () {
       $('#menuForm')[0].reset();
-      $('#menuForm').attr('action', '/admin/navigate');
+      $('#menuForm').attr('action', basePath + '/admin/navigate');
       $('#menuForm').attr('method', 'POST');
     });
 
@@ -199,7 +199,7 @@
       if ($(this).is(".up")) {
         const prev = parent.prev();
         $.ajax({
-          url: '/admin/router/' + parent.attr('data-id'),
+          url: basePath + '/admin/router/' + parent.attr('data-id'),
           type: 'POST',
           data: {sortOrder: prev.index()},
           headers: {"X-HTTP-Method-Override": "PATCH"},
@@ -209,7 +209,7 @@
           },
         });
         $.ajax({
-          url: '/admin/router/' + prev.attr('data-id'),
+          url: basePath + '/admin/router/' + prev.attr('data-id'),
           type: 'POST',
           data: {sortOrder: parent.index()},
           headers: {"X-HTTP-Method-Override": "PATCH"},
@@ -223,7 +223,7 @@
       if ($(this).is(".down")) {
         const next = parent.next();
         $.ajax({
-          url: '/admin/router/' + parent.attr('data-id'),
+          url: basePath + '/admin/router/' + parent.attr('data-id'),
           type: 'POST',
           data: {sortOrder: next.index()},
           headers: {"X-HTTP-Method-Override": "PATCH"},
@@ -233,7 +233,7 @@
           },
         });
         $.ajax({
-          url: '/admin/router/' + next.attr('data-id'),
+          url: basePath + '/admin/router/' + next.attr('data-id'),
           type: 'POST',
           data: {sortOrder: parent.index()},
           headers: {"X-HTTP-Method-Override": "PATCH"},
@@ -248,7 +248,7 @@
 
     $('#action_sync').click(function () {
       $.ajax({
-        url: '/admin/syncActions',
+        url: basePath + '/admin/syncActions',
         type: 'get',
         dataType: 'json',
         success: function (data) {

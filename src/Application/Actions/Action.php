@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Application\Actions;
 
 use Psr\Log\LoggerInterface;
+use Slim\Exception\HttpBadRequestException;
 
 abstract class Action extends \Wanphp\Libray\Slim\Action
 {
@@ -18,6 +19,16 @@ abstract class Action extends \Wanphp\Libray\Slim\Action
   public function __construct(LoggerInterface $logger)
   {
     $this->logger = $logger;
+  }
+
+  protected function resolveArg(string $name, $default = null): mixed
+  {
+    return $this->args[$name] ?? $default;
+  }
+
+  protected function httpHost(): string
+  {
+    return $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
   }
 
   //添加使用

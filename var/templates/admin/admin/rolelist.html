@@ -16,7 +16,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="roleForm" action="/admin/roles" method="POST" class="needs-validation" novalidate>
+          <form id="roleForm" action="{{basePath}}/admin/roles" method="POST" class="needs-validation" novalidate>
             <div class="form-group pb-2">
               <label for="name" class="form-label">角色名称</label>
               <input id="name" name="name" type="text" class="form-control" required placeholder="角色名称" autocomplete="off">
@@ -66,7 +66,7 @@
       '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>';
     const datatables = $('#rolesData').DataTable({
       ajax: {
-        url: "/admin/roles",
+        url: basePath + "/admin/roles",
         type: 'GET',
         data: function (d) {
           return $.extend({}, d, {keyword: $("#keyword").val()});
@@ -93,7 +93,7 @@
       const role = datatables.row($(this).parents('tr')).data();
       // console.log(role);
       if ($(this).hasClass('edit')) {
-        $('#roleForm').attr('action', '/admin/roles/' + role.id);
+        $('#roleForm').attr('action', basePath + '/admin/roles/' + role.id);
         $('#roleForm').attr('method', 'PUT');
         $("#roleForm input[name='name']").val(role.name);
         if (role.restricted) for (const value of role.restricted) {
@@ -105,7 +105,7 @@
         const delRow = $(this).parents('tr');
         dialog('删除配置', '是否确认删除配置项', function () {
           $.ajax({
-            url: '/admin/roles/' + role.id,
+            url: basePath + '/admin/roles/' + role.id,
             type: 'POST',
             headers: {"X-HTTP-Method-Override": "DELETE"},
             dataType: 'json',
@@ -169,7 +169,7 @@
 
     $('#modal-addRole').on('hidden.bs.modal', function () {
       $('#roleForm')[0].reset();
-      $('#roleForm').attr('action', '/admin/roles');
+      $('#roleForm').attr('action', basePath + '/admin/roles');
       $('#roleForm').attr('method', 'POST');
       $('#roleForm').removeClass('was-validated');
       $("#route").append($('#restricted option'));

@@ -10,7 +10,7 @@
   </div>
   <div class="collapse" id="collapseAdmin">
     <div class="card-body">
-      <form id="adminForm" action="/admin/admins" method="POST" class="needs-validation" novalidate>
+      <form id="adminForm" action="{{basePath}}/admin/admins" method="POST" class="needs-validation" novalidate>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
           <div class="col mb-3 position-relative">
             <div class="input-group">
@@ -115,7 +115,7 @@
       '      </ul>';
     const datatables = $('#adminData').DataTable({
       ajax: {
-        "url": "/admin/admins",
+        "url": basePath + "/admin/admins",
         "data": function (d) {
           d.role_id = $('.card-header span[data-id].btn-success').attr('data-id');
           if ($('#adminData thead .dropdown-item.active').length) d.groupId = $('#adminData thead .dropdown-item.active')[0].dataset.value;
@@ -172,7 +172,7 @@
     $("#adminForm select[name='uid']").select2({
       theme: "bootstrap-5",
       ajax: {
-        url: "/admin/weixin/users/search",
+        url: basePath + "/admin/weixin/users/search",
         dataType: 'json',
         delay: 500,
         data: function (params) {
@@ -245,7 +245,7 @@
       const data = datatables.row($(this).parents('tr')).data();
       if ($(this).hasClass('edit')) {
         if (!$('#collapseAdmin').hasClass('show')) $('#collapseAdmin').collapse('show');
-        $('#adminForm').attr('action', '/admin/admins/' + data.id);
+        $('#adminForm').attr('action', basePath + '/admin/admins/' + data.id);
         $('#adminForm').attr('method', 'PUT');
         $("#adminForm input[name='account']").val(data.account);
         $("#adminForm select[name='role_id']").val(data.role_id).trigger("change");
@@ -261,7 +261,7 @@
         const delRow = $(this).parents('tr');
         dialog('删除管理员', '是否确认删除管理员', function () {
           $.ajax({
-            url: '/admin/admins/' + data.id,
+            url: basePath + '/admin/admins/' + data.id,
             type: 'POST',
             headers: {"X-HTTP-Method-Override": "DELETE"},
             dataType: 'json',
@@ -319,7 +319,7 @@
       $('#adminForm')[0].reset();
       $("#adminForm select[name='uid'] option").remove();
       $('#adminForm').removeClass('was-validated');
-      $('#adminForm').attr('action', '/admin/admins');
+      $('#adminForm').attr('action', basePath + '/admin/admins');
       $('#adminForm').attr('method', 'POST');
     });
   });

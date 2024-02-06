@@ -330,7 +330,7 @@
               tooltip: '从素材库选择',
               click: function (e) {
                 $.ajax({
-                  url: '/admin/material?layoutId=' + context.layoutInfo.note[0].id,
+                  url: basePath + '/admin/material?layoutId=' + context.layoutInfo.note[0].id,
                   type: 'GET',
                   success: function (body) {
                     modalDialog('素材库', body, 'modal-xl');

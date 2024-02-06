@@ -21,6 +21,7 @@ class AdminInfoAction extends \App\Application\Actions\Action
   private AdminInterface $admin;
   private WpUserInterface $user;
   private Key $key;
+  private string $basePath = '';
 
   /**
    * @param LoggerInterface $logger
@@ -31,16 +32,17 @@ class AdminInfoAction extends \App\Application\Actions\Action
    * @throws EnvironmentIsBrokenException
    */
   public function __construct(
-    LoggerInterface    $logger,
-    Setting            $setting,
-    WpUserInterface    $user,
-    AdminInterface     $admin
+    LoggerInterface $logger,
+    Setting         $setting,
+    WpUserInterface $user,
+    AdminInterface  $admin
   )
   {
     parent::__construct($logger);
     $this->admin = $admin;
     $this->user = $user;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
+    $this->basePath = $setting->get('basePath');
   }
 
   /**
@@ -62,7 +64,7 @@ class AdminInfoAction extends \App\Application\Actions\Action
           // 发公众号通知
           $msgData = [
             'template_id_short' => 'OPENTM407205168',//密码重置通知,所属行业编号21
-            'url' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/login',
+            'url' => $this->httpHost() . $this->basePath . '/login',
             'data' => [
               'first' => array('value' => '您的账号刚刚修改了密码', 'color' => '#173177'),
               'keyword1' => array('value' => $this->admin->get('account', ['id' => $_SESSION['login_id']]), 'color' => '#173177'),
@@ -81,7 +83,7 @@ class AdminInfoAction extends \App\Application\Actions\Action
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
-      $data = ['bindQr' => $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/userBind?tk=' . $code)];
+      $data = ['bindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userBind?tk=' . $code)];
       return $this->respondView('admin/admin/admininfo.html', $data);
     }
 

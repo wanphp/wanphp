@@ -29,6 +29,7 @@ class LoginAction extends Action
   private AdminInterface $adminRepository;
   private WpUserInterface $user;
   private Key $key;
+  private string $basePath = '';
 
   /**
    * @param LoggerInterface $logger
@@ -49,6 +50,7 @@ class LoginAction extends Action
     $this->adminRepository = $adminRepository;
     $this->user = $user;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
+    $this->basePath = $setting->get('basePath');
   }
 
   protected function action(): Response
@@ -76,7 +78,7 @@ class LoginAction extends Action
         ]);
         $_SESSION['login_id'] = $id;
         $_SESSION['role_id'] = -1;
-        return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index']);
+        return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->httpHost() . $this->basePath . '/admin/index']);
       } else {
         $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id,groupId,status', ['OR' => ['account' => $account, 'tel' => $account]]);
       }
@@ -104,7 +106,7 @@ class LoginAction extends Action
           $this->logger->info(str_replace('您的账号', '', $first));
           $msgData = [
             'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
-            'url' => $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
+            'url' => $this->httpHost() . $this->basePath . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
             'data' => [
               'keyword1' => ['value' => $admin['account'] . '，通过密码登录了系统', 'color' => '#173177'],
               'keyword2' => ['value' => date('Y-m-d') . '，点击详情可修改密码', 'color' => '#173177']
@@ -113,7 +115,7 @@ class LoginAction extends Action
           $this->user->sendMessage([$admin['uid']], $msgData);
         }
         $redirect_uri = $this->request->getHeaderLine('Referer');
-        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/admin/index';
+        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/admin/index';
         return $this->respondWithData(['msg' => '系统登录成功！', 'redirect_uri' => $redirect_uri]);
       } else {
         return $this->respondWithError('帐号已被锁定，无法登录！');
@@ -122,7 +124,7 @@ class LoginAction extends Action
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
-      $data['loginQr'] = $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/qrLogin?tk=' . $code);
+      $data['loginQr'] = $writer->writeString($this->httpHost() . $this->basePath . '/qrLogin?tk=' . $code);
 
       return $this->respondView('admin/login.html', $data);
     }

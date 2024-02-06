@@ -28,7 +28,7 @@
       ordering: true,//使用排序
       order: [[2, "desc"]],
       ajax: {
-        "url": "/admin/logs",
+        "url": basePath + "/admin/logs",
         "data": function (d) {
           if (date) d.date = date;
         }

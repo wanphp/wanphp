@@ -16,7 +16,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="groupForm" action="/admin/group" method="POST" class="needs-validation" novalidate>
+          <form id="groupForm" action="{{basePath}}/admin/group" method="POST" class="needs-validation" novalidate>
             <div class="form-group pb-2">
               <label for="name" class="form-label">分组名称</label>
               <input id="name" name="name" type="text" class="form-control" required placeholder="填写分组名称" autocomplete="off">
@@ -57,7 +57,7 @@
       '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>';
     const datatables = $('#groupData').DataTable({
       ajax: {
-        url: "/admin/group",
+        url: basePath + "/admin/group",
         type: 'GET',
         data: function (d) {
           return $.extend({}, d, {keyword: $("#keyword").val()});
@@ -73,7 +73,7 @@
     $('#groupData tbody').on('click', 'button', function () {
       const group = datatables.row($(this).parents('tr')).data();
       if ($(this).hasClass('edit')) {
-        $('#groupForm').attr('action', '/admin/group/' + group.id);
+        $('#groupForm').attr('action', basePath + '/admin/group/' + group.id);
         $('#groupForm').attr('method', 'PUT');
         $("#groupForm input[name='name']").val(group.name);
         $("#groupForm textarea[name='description']").val(group.description);
@@ -84,7 +84,7 @@
         const delRow = $(this).parents('tr');
         dialog('删除配置', '是否确认删除配置项', function () {
           $.ajax({
-            url: '/admin/group/' + group.id,
+            url: basePath + '/admin/group/' + group.id,
             type: 'POST',
             headers: {"X-HTTP-Method-Override": "DELETE"},
             dataType: 'json',
@@ -137,7 +137,7 @@
 
     $('#modal-addGroup').on('hidden.bs.modal', function () {
       $('#groupForm')[0].reset();
-      $('#groupForm').attr('action', '/admin/group');
+      $('#groupForm').attr('action', basePath + '/admin/group');
       $('#groupForm').attr('method', 'POST');
     });
   });

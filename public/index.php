@@ -35,6 +35,8 @@ $container = $containerBuilder->build();
 // Instantiate the app
 AppFactory::setContainer($container);
 $app = AppFactory::create();
+$basePath = $container->get(\Wanphp\Libray\Slim\Setting::class)->get('basePath');
+if ($basePath) $app->setBasePath($basePath);
 $callableResolver = $app->getCallableResolver();
 
 // Register middleware

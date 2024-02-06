@@ -77,6 +77,7 @@
 <script src="/js/ua-parser.min.js"></script>
 <script type="text/javascript">
   $(document).ready(function () {
+    const basePath = '{{basePath}}';
     $('.btn-success').click(function () {
       var ua = window.navigator.userAgent.toLowerCase();
       if (ua.match(/MicroMessenger/i) == "micromessenger") {
@@ -91,13 +92,13 @@
       timer = setInterval(function () {
         checkNum++;
         $.ajax({
-          url: '/qrLogin',
+          url: basePath + '/qrLogin',
           type: 'POST',
           headers: {"X-HTTP-Device": device},
           dataType: 'json',
           success: function (data) {
             if (data.res === 'OK') {
-              location.href = '/';
+              location.href = basePath;
               clearInterval(timer);
             }
           }
@@ -128,7 +129,7 @@
       e.target.classList.add('was-validated');
       if (e.target.checkValidity()) {
         $.ajax({
-          url: '/login',
+          url: basePath + '/login',
           data: new FormData(e.target),
           type: 'POST',
           headers: {"X-HTTP-Device": device},

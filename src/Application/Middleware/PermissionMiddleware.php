@@ -8,7 +8,6 @@
 
 namespace App\Application\Middleware;
 
-use App\Domain\Admin\AdminInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -33,13 +32,13 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Wanphp\Libray\Slim\Setting;
-use Wanphp\Libray\Slim\WpUserInterface;
 
 
 class PermissionMiddleware implements Middleware
 {
   private PersistenceRepository $persistence;
   private ContainerInterface $container;
+  private string $basePath = '';
 
   /**
    * @param ContainerInterface $container
@@ -50,6 +49,7 @@ class PermissionMiddleware implements Middleware
   {
     $this->container = $container;
     $this->persistence = $container->get(PersistenceRepository::class);
+    $this->basePath = $container->get(Setting::class)->get('basePath');
   }
 
   /**
@@ -85,7 +85,7 @@ class PermissionMiddleware implements Middleware
       $tplVars = [
         'loginId' => $_SESSION['login_id'],
         'Role' => $_SESSION['role_id'],
-        'thisUri' => $request->getUri()->getScheme() . '://' . $request->getUri()->getHost()
+        'thisUri' => $request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $this->basePath
       ];
       $request = $request->withAttribute('tplVars', $tplVars);
       // 加载模板
@@ -116,7 +116,8 @@ class PermissionMiddleware implements Middleware
           $code = Crypto::encrypt(session_id(), Key::loadFromAsciiSafeString($this->container->get(Setting::class)->get('oauth2Config')['encryptionKey']));
           $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
           $writer = new Writer($renderer);
-          $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . '/qrLogin?tk=' . $code);
+          $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $this->basePath . '/qrLogin?tk=' . $code);
+          $data['basePath'] = $this->basePath;
           return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/login.html', $data);
         }
       }
