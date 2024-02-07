@@ -39,6 +39,7 @@ class PermissionMiddleware implements Middleware
   private PersistenceRepository $persistence;
   private ContainerInterface $container;
   private string $basePath = '';
+  private string $systemName = '';
 
   /**
    * @param ContainerInterface $container
@@ -50,6 +51,7 @@ class PermissionMiddleware implements Middleware
     $this->container = $container;
     $this->persistence = $container->get(PersistenceRepository::class);
     $this->basePath = $container->get(Setting::class)->get('basePath');
+    $this->systemName = $container->get(Setting::class)->get('systemName');
   }
 
   /**
@@ -119,6 +121,7 @@ class PermissionMiddleware implements Middleware
           $writer = new Writer($renderer);
           $data['loginQr'] = $writer->writeString($request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $this->basePath . '/qrLogin?tk=' . $code);
           $data['basePath'] = $this->basePath;
+          $data['systemName'] = $this->systemName;
           return Twig::fromRequest($request)->render(new \Slim\Psr7\Response(), 'admin/login.html', $data);
         }
       }

@@ -30,6 +30,7 @@ class LoginAction extends Action
   private WpUserInterface $user;
   private Key $key;
   private string $basePath = '';
+  private string $systemName = '';
 
   /**
    * @param LoggerInterface $logger
@@ -51,6 +52,7 @@ class LoginAction extends Action
     $this->user = $user;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
     $this->basePath = $setting->get('basePath');
+    $this->systemName = $setting->get('systemName');
   }
 
   protected function action(): Response
@@ -108,7 +110,7 @@ class LoginAction extends Action
             'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
             'url' => $this->httpHost() . $this->basePath . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
             'data' => [
-              'keyword1' => ['value' => $admin['account'] . '，通过密码登录了系统', 'color' => '#173177'],
+              'keyword1' => ['value' => $admin['account'] . '，通过密码登录了' . $this->systemName, 'color' => '#173177'],
               'keyword2' => ['value' => date('Y-m-d') . '，点击详情可修改密码', 'color' => '#173177']
             ]
           ];
@@ -125,6 +127,8 @@ class LoginAction extends Action
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
       $data['loginQr'] = $writer->writeString($this->httpHost() . $this->basePath . '/qrLogin?tk=' . $code);
+      $data['basePath'] = $this->basePath;
+      $data['systemName'] = $this->systemName;
 
       return $this->respondView('admin/login.html', $data);
     }
