@@ -14,7 +14,6 @@ use App\Domain\Admin\AdminInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
-use Wanphp\Libray\Slim\Setting;
 use Wanphp\Libray\Slim\WpUserInterface;
 
 class HomeAction extends Action
@@ -22,14 +21,12 @@ class HomeAction extends Action
   private AdminInterface $admin;
   private WpUserInterface $user;
   private PersistenceRepository $persistenceRepository;
-  private string $basePath;
 
-  public function __construct(AdminInterface $admin, WpUserInterface $user, PersistenceRepository $persistenceRepository, LoggerInterface $logger, Setting $setting)
+  public function __construct(AdminInterface $admin, WpUserInterface $user,PersistenceRepository $persistenceRepository, LoggerInterface $logger)
   {
     $this->admin = $admin;
     $this->user = $user;
     $this->persistenceRepository = $persistenceRepository;
-    $this->basePath = $setting->get('basePath');
     parent::__construct($logger);
   }
 
@@ -45,8 +42,7 @@ class HomeAction extends Action
     $data = [
       'title' => '管理首页',
       'sidebar' => $this->persistenceRepository->getSidebar(),
-      'loginUser' => $admin,
-      'basePath' => $this->basePath
+      'loginUser' => $admin
     ];
 
     return $this->respondView('admin/index.html', $data);

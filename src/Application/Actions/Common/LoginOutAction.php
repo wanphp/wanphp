@@ -11,9 +11,19 @@ namespace App\Application\Actions\Common;
 
 use App\Application\Actions\Action;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Log\LoggerInterface;
+use Wanphp\Libray\Slim\Setting;
 
 class LoginOutAction extends Action
 {
+  private string $basePath = '';
+
+  public function __construct(LoggerInterface $logger, Setting $setting)
+  {
+    parent::__construct($logger);
+    $this->basePath = $setting->get('basePath');
+  }
+
   protected function action(): Response
   {
     $params = $this->request->getServerParams();
@@ -23,7 +33,7 @@ class LoginOutAction extends Action
     session_destroy();
     session_start();
     session_regenerate_id(true);
-    return $this->response->withHeader('Location', '/login')->withStatus(302);
+    return $this->response->withHeader('Location', $this->basePath . '/login')->withStatus(302);
   }
 
 }

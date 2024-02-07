@@ -85,6 +85,7 @@ class PermissionMiddleware implements Middleware
       $tplVars = [
         'loginId' => $_SESSION['login_id'],
         'Role' => $_SESSION['role_id'],
+        'basePath' => $this->basePath,
         'thisUri' => $request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $this->basePath
       ];
       $request = $request->withAttribute('tplVars', $tplVars);

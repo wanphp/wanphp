@@ -16,7 +16,7 @@ return function (App $app) {
     $paths[$namespace] = $path;
   }
   $app->add(TwigMiddleware::create($app, Twig::create($paths)));//, ['cache' => __DIR__ . '/../var/cache']
-  $app->add(new SessionMiddleware($app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config')['encryptionKey']));
+  $app->add(new SessionMiddleware($app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config')['encryptionKey'], $app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('sessionName')));
   $app->addRoutingMiddleware();
   $app->add(new MethodOverrideMiddleware());
   $app->addMiddleware(new \App\Application\Middleware\JsonBodyParserMiddleware());

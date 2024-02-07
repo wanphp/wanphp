@@ -16,15 +16,18 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 class SessionMiddleware implements Middleware
 {
   private Key $key;
+  private string $sessionName;
 
   /**
    * @param $key
+   * @param $sessionName
    * @throws BadFormatException
    * @throws EnvironmentIsBrokenException
    */
-  public function __construct($key)
+  public function __construct($key, $sessionName)
   {
     $this->key = Key::loadFromAsciiSafeString($key);
+    $this->sessionName = $sessionName;
   }
 
   /**
@@ -44,6 +47,7 @@ class SessionMiddleware implements Middleware
       if ($session_id) session_id($session_id);
       //session_set_cookie_params(600, '/');
     }
+    if ($this->sessionName) session_name($this->sessionName);
     session_start();
 
     $authorization = $params['HTTP_AUTHORIZATION'] ?? null;
