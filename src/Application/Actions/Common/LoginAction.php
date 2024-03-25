@@ -80,7 +80,7 @@ class LoginAction extends Action
         ]);
         $_SESSION['login_id'] = $id;
         $_SESSION['role_id'] = -1;
-        return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->httpHost() . $this->basePath . '/admin/index']);
+        return $this->respondWithData(['msg' => '系统初始化并登录成功！', 'redirect_uri' => $this->httpHost() . $this->basePath . '/admin/dashboard']);
       } else {
         $admin = $this->adminRepository->get('id,uid,account,salt,password,role_id,groupId,status', ['OR' => ['account' => $account, 'tel' => $account]]);
       }
@@ -117,7 +117,7 @@ class LoginAction extends Action
           $this->user->sendMessage([$admin['uid']], $msgData);
         }
         $redirect_uri = $this->request->getHeaderLine('Referer');
-        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/admin/index';
+        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/admin/dashboard';
         return $this->respondWithData(['msg' => '系统登录成功！', 'redirect_uri' => $redirect_uri]);
       } else {
         return $this->respondWithError('帐号已被锁定，无法登录！');

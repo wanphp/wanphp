@@ -102,13 +102,12 @@ class AdminAction extends Action
             ];
           }
 
-          $order = $this->getOrder();
-          if ($order) $where['ORDER'] = $order;
+          $where['ORDER'] = ['status' => 'DESC', 'lastLoginTime' => 'DESC'];
           $recordsFiltered = $this->admin->count('id', $where);
           $limit = $this->getLimit();
           if ($limit) $where['LIMIT'] = $limit;
 
-          $admins = $this->admin->select('id,uid,role_id,groupId,name,tel,account,status,lastLoginTime,lastLoginIp', $where);
+          $admins = $this->admin->select('id,uid,role_id,groupId,name,tel,account,status,lastLoginTime,lastLoginIp,lastEditPwd', $where);
           $user_id = array_unique(array_column($admins, 'uid'));
           // 绑定微信
           if (!empty($user_id)) {

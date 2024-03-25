@@ -99,7 +99,8 @@
           dataType: 'json',
           success: function (data) {
             if (data.res === 'OK') {
-              location.href = basePath + '/';
+              if (window.location.hash) location.reload();
+              else location.href = basePath + '/';
               clearInterval(timer);
             }
           }

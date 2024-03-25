@@ -172,7 +172,13 @@
 <script src="/select2/js/select2.full.min.js"></script>
 <script src="/select2/js/i18n/zh-CN.js"></script>
 <script type="text/javascript">
-  const currentUser = {uid: '{{loginUser.uid}}', head: '{{loginUser.headimgurl}}', nickname: '{{loginUser.nickname}}', name: '{{loginUser.name}}'};
+  const currentUser = {
+    id: '{{loginUser.id}}',
+    uid: '{{loginUser.uid}}',
+    head: '{{loginUser.headimgurl}}',
+    nickname: '{{loginUser.nickname}}',
+    name: '{{loginUser.name}}'
+  };
   const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
   const basePath = '{{basePath}}';
 
@@ -254,12 +260,14 @@
     } else if (typeof buttons === 'string') {
       buttonStr = '<div class="modal-footer">' + buttons + '</div>';
     }
-    $('#modalDialog').attr('data-bs-backdrop', backdrop).off().on('click', '.modal-footer .btn', function (event) {
+    if (backdrop === 'static') $('#modalDialog').modal('dispose');
+    $('#modalDialog').attr('data-bs-backdrop', backdrop).off().on('click', '.modal-footer .btn,.modal-header .btn-close', function (event) {
       if (callable) {
         callable(event.target.dataset.value);
         $('#modalDialog').modal('hide');
       }
     }).on('hidden.bs.modal', function () {
+      if (backdrop === 'static') $('#modalDialog').modal('dispose');
       $('#modalDialog .modal-body').remove();
       $('#modalDialog .modal-footer').remove();
     });

@@ -33,7 +33,7 @@ class HomeAction extends Action
   protected function action(): Response
   {
     // 绑定用户
-    $admin = $this->admin->get('uid,account', ['id' => $_SESSION['login_id']]);
+    $admin = $this->admin->get('id,uid,account', ['id' => $_SESSION['login_id']]);
     if (isset($admin['uid']) && $admin['uid'] > 0) {
       $user = $this->user->getUser($admin['uid']);
       if ($user) $admin = array_merge($admin, $user);

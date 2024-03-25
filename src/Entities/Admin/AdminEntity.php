@@ -99,6 +99,12 @@ class AdminEntity implements \JsonSerializable
    */
   private string $lastLoginIp;
   /**
+   * @DBType({"type":"char(10) NOT NULL DEFAULT ''"})
+   * @OA\Property(description="最后修改密码")
+   * @var string
+   */
+  private string $lastEditPwd;
+  /**
    * @DBType({"type":"char(1) NOT NULL DEFAULT '0'"})
    * @OA\Property(description="帐号状态")
    * @var integer
