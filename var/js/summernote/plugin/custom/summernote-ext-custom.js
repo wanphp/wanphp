@@ -20,10 +20,14 @@
           url: context.options.uploadUrl + '/thumb',
           compress: {maxWidth: 800, maxHeight: 450, quality: .7},// 编辑器内使用缩略图
           uid: context.options.uid,
+          accept: 'image/jpg,image/jpeg,image/png,image/gif',
           ext: '.jpg,.jpeg,.gif,.png',
           success: function (res) {
             if (res.url) context.invoke('editor.insertImage', res.url, '');
             else Toast.fire({icon: 'error', title: res.errMsg});
+          },
+          error: function (res) {
+            Toast.fire({icon: 'error', title: res.errMsg});
           }
         });
       }
@@ -38,7 +42,7 @@
           uid: context.options.uid,
           success: function (res) {
             if (res.id > 0) {
-              const $video = $('<p><video src="' + res.url + '" controls preload="auto" style="margin: 0 auto; max-height: 400px; max-width: 100%"></video></p>');
+              const $video = $('<p><video src="' + res.url + '" controls preload="auto" style="margin: 0 auto; max-height: 400px; max-width: 100%"></video><br></p>');
               context.invoke('editor.insertNode', $video[0]);
             } else {
               Toast.fire({icon: 'error', title: res.errMsg});
@@ -117,7 +121,7 @@
                         _cropper.getCroppedCanvas().toBlob((blob) => {
                           const formData = new FormData();
                           formData.append('file', blob, 'cropImage.jpg');
-                          formData.append('uid', '{{loginUser.uid}}');
+                          formData.append('uid', context.options.uid);
                           $.ajax({
                               url: 'https://images.ztnews.net/upload/thumb',
                               type: 'post',
@@ -309,6 +313,22 @@
           }
         }).render();
       });
+      context.memo('button.material', function () {
+        return ui.button({
+          contents: '<i class="fa-solid fa-photo-film"></i>',
+          tooltip: '从素材库选择',
+          click: function () {
+            $.ajax({
+              url: basePath + '/admin/material?summernoteId=' + context.layoutInfo.note[0].id,
+              type: 'GET',
+              success: function (body) {
+                modalDialog('素材库', body, 'modal-xl');
+              },
+              error: errorDialog
+            });
+          }
+        }).render();
+      });
       context.memo('button.insertImage', function () {
         return ui.buttonGroup([ui.button({
           className: 'dropdown-toggle',
@@ -330,7 +350,7 @@
               tooltip: '从素材库选择',
               click: function (e) {
                 $.ajax({
-                  url: basePath + '/admin/material?layoutId=' + context.layoutInfo.note[0].id,
+                  url: basePath + '/admin/material?summernoteId=' + context.layoutInfo.note[0].id,
                   type: 'GET',
                   success: function (body) {
                     modalDialog('素材库', body, 'modal-xl');

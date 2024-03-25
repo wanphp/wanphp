@@ -18,8 +18,10 @@
   text-indent: 2em;
 }
 
-.note-editable p > img, .note-editable p > video {
+.note-editable p > img, .note-editable p > a > img, .note-editable p > video {
   display: block;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .note-editor .note-toolbar .note-insert .note-dropdown-menu, .note-popover .popover-body .note-insert .note-dropdown-menu {
