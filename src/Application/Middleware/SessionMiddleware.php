@@ -39,9 +39,8 @@ class SessionMiddleware implements Middleware
    */
   public function process(Request $request, RequestHandler $handler): Response
   {
-    $params = $request->getServerParams();
     $queryParams = $request->getQueryParams();
-    $ssiToken = $params['HTTP_SSITOKEN'] ?? ($queryParams['tk'] ?? '');
+    $ssiToken = $request->getHeaderLine('Wps') ?: ($queryParams['tk'] ?? '');
     if ($ssiToken != '') {
       $session_id = Crypto::decrypt($ssiToken, $this->key);
       if ($session_id) session_id($session_id);
@@ -50,7 +49,7 @@ class SessionMiddleware implements Middleware
     if ($this->sessionName) session_name($this->sessionName);
     session_start();
 
-    $authorization = $params['HTTP_AUTHORIZATION'] ?? null;
+    $authorization = $request->getHeaderLine('Authorization') ?? null;
     if ($authorization) {
       $request = $request->withAttribute('session', $_SESSION);
     }
