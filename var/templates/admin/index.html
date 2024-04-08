@@ -19,29 +19,8 @@
   <link rel="stylesheet" href="/select2/bootstrap5/select2-bootstrap-5-theme.min.css">
   <!-- Theme style -->
   <link href="/adminlte/css/adminlte.min.css" rel="stylesheet">
-  <style>
-    .btn-default {
-      background-color: #f8f9fa;
-      border-color: #ddd;
-      color: #444;
-    }
-
-    .btn-default.hover, .btn-default:active, .btn-default:hover {
-      background-color: #e9ecef;
-      color: #2b2b2b
-    }
-
-    .btn-default.disabled, .btn-default:disabled {
-      color: #444;
-      background-color: #f8f9fa
-    }
-
-    .dataTables_wrapper .dataTables_info {
-      clear: both;
-      float: left;
-      padding-top: 0.755em;
-    }
-  </style>
+  <link rel="stylesheet" href="/js/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+  <link href="/css/custom.css" rel="stylesheet">
 </head>
 
 <body class="sidebar-expand-lg sidebar-mini bg-body-tertiary layout-fixed sidebar-open">
@@ -52,7 +31,6 @@
       <!-- Left navbar links -->
       <ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link" data-lte-toggle="sidebar" href="#" role="button"><i class="fa-solid fa-bars"></i></a></li>
-        {% block headnavbar %}
         <li class="nav-item d-none d-md-block">
           <a href="javascript:" data-link="/admin/dashboard" class="nav-link">首页</a>
         </li>
@@ -61,7 +39,6 @@
           <a href="javascript:" data-link="/admin/actions" class="nav-link">权限</a>
         </li>
         {% endif %}
-        {% endblock %}
       </ul>
 
       <!-- Right navbar links -->
@@ -154,6 +131,10 @@
 </div>
 <!-- jQuery -->
 <script src="/jquery/jquery.min.js"></script>
+<script src="/js/moment/moment.min.js"></script>
+<script src="/js/moment/locale/zh-cn.js"></script>
+<script src="/js/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+
 <!-- Bootstrap 4 -->
 <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- SweetAlert2 -->
@@ -181,6 +162,7 @@
   };
   const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
   const basePath = '{{basePath}}';
+  var timer;
 
   // 传入一个时间戳（毫秒）
   function formatTimestamp(timestamp) {
@@ -205,7 +187,7 @@
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      confirmButtonText: '确定删除!',
+      confirmButtonText: '确定',
       cancelButtonText: '取消'
     }).then((result) => {
       if (result.isConfirmed) {
@@ -239,42 +221,47 @@
         dialogClass += ' modal-fullscreen';
         break;
     }
+    swal.showLoading();
     $.ajax({
       url: basePath + config.url,
       type: 'GET',
       success: function (body) {
         modalDialog(config.title, body, dialogClass);
+        swal.close();
       },
       error: errorDialog
     });
   }
 
   function modalDialog(title, body, dialogClass = 'modal-lg', buttons = [] | '', callable = null, backdrop = true) {
-    let buttonStr = '';
-    if (buttons instanceof Array && buttons.length) {
-      buttonStr += '<div class="modal-footer">';
-      for (const button of buttons) {
-        buttonStr += '<button  class="btn btn-' + button.type + '" data-value="' + button.value + '">' + button.text + '</button>';
+    $('#modalDialog .modal-title').html(title);
+    if (!body.includes('<div class="modal-body">')) {
+      body = '<div class="modal-body">' + body + '</div>';
+      if (buttons instanceof Array && buttons.length) {
+        body += '<div class="modal-footer">';
+        for (const button of buttons) {
+          body += '<button  class="btn btn-' + button.type + '" data-value="' + button.value + '">' + button.text + '</button>';
+        }
+        body += '</div>';
+      } else if (typeof buttons === 'string') {
+        body = '<div class="modal-footer">' + buttons + '</div>';
       }
-      buttonStr += '</div>';
-    } else if (typeof buttons === 'string') {
-      buttonStr = '<div class="modal-footer">' + buttons + '</div>';
     }
+    $('#modalDialog .modal-dialog .modal-content').append(body);
+
+    $('#modalDialog .modal-dialog').attr('class', 'modal-dialog ' + dialogClass);
     if (backdrop === 'static') $('#modalDialog').modal('dispose');
-    $('#modalDialog').attr('data-bs-backdrop', backdrop).off().on('click', '.modal-footer .btn,.modal-header .btn-close', function (event) {
+    $('#modalDialog').attr('data-bs-backdrop', backdrop).off('click', '.modal-footer .btn,.modal-header .btn-close').on('click', '.modal-footer .btn,.modal-header .btn-close', function (event) {
       if (callable) {
         callable(event.target.dataset.value);
         $('#modalDialog').modal('hide');
       }
-    }).on('hidden.bs.modal', function () {
+    }).off('hidden.bs.modal').on('hidden.bs.modal', function () {
       if (backdrop === 'static') $('#modalDialog').modal('dispose');
       $('#modalDialog .modal-body').remove();
       $('#modalDialog .modal-footer').remove();
-    });
-    $('#modalDialog .modal-title').html(title);
-    $('#modalDialog .modal-dialog').attr('class', 'modal-dialog ' + dialogClass);
-    $('#modalDialog .modal-dialog .modal-content').append('<div class="modal-body">' + body + '</div>' + buttonStr);
-    $('#modalDialog').modal('show');
+      $('#modalDialog script').remove();
+    }).modal('show');
   }
 
   function closeModalDialog() {
@@ -285,11 +272,14 @@
     // 展开侧边栏
     (new adminlte.PushMenu($("[data-lte-toggle='sidebar']")[0])).expand();
     swal.showLoading();
-    $('.app-content .container-fluid').load(basePath + url + '?loadTpl=1', function (response, status) {
-      swal.close();
-      if (status === 'error') errorDialog(JSON.parse(response));
-      console.log(status);
-    });
+    var checkSidebarInterval = setInterval(function () {
+      clearInterval(checkSidebarInterval);
+      $('.app-content .container-fluid').load(basePath + url + '?loadTpl=1', function (response, status) {
+        swal.close();
+        if (status === 'error') errorDialog(JSON.parse(response));
+        console.log(status);
+      });
+    }, 100);
   }
 
   if (window.location.hash) loadAppContent(window.location.hash.substring(1));
@@ -311,6 +301,33 @@
       result += chars[Math.floor(Math.random() * chars.length)];
     }
     return result;
+  }
+
+  function loadScript(url, callback) {
+    // 检查是否已经加载过该文件
+    for (const element of document.querySelectorAll("script[src]")) {
+      if (element.src.endsWith(url)) {
+        if (callback && typeof (callback) === "function") callback();
+        return;
+      }
+    }
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = url;
+    if (callback && typeof (callback) === "function") script.onload = callback;
+    document.head.appendChild(script);
+  }
+
+  function loadCSS(url) {
+    // 检查是否已经加载过该文件
+    for (const element of document.querySelectorAll("link[href]")) {
+      if (element.href.endsWith(url)) return;
+    }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = url;
+    document.head.appendChild(link);
   }
 
   $(document).ready(function () {
@@ -349,7 +366,5 @@
       });
   });
 </script>
-<!-- OPTIONAL SCRIPTS -->
-{% block scripts %}{% endblock %}
 </body>
 </html>

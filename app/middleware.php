@@ -15,6 +15,8 @@ return function (App $app) {
     $namespace = $arr[count($arr) - 2];
     $paths[$namespace] = $path;
   }
+
+  if ($app->getBasePath()) $paths[str_replace('/', '', $app->getBasePath())] = ROOT_PATH . '/var' . $app->getBasePath();
   $app->add(TwigMiddleware::create($app, Twig::create($paths)));//, ['cache' => __DIR__ . '/../var/cache']
   $app->add(new SessionMiddleware($app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('oauth2Config')['encryptionKey'], $app->getContainer()->get(\Wanphp\Libray\Slim\Setting::class)->get('sessionName')));
   $app->addRoutingMiddleware();

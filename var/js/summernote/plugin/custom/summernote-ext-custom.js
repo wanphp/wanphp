@@ -329,6 +329,18 @@
           }
         }).render();
       });
+      context.memo('button.viewNews', function () {
+        return ui.button({
+          contents: '<i class="fa-solid fa-qrcode"></i>',
+          tooltip: '预览新闻',
+          click: function () {
+            Swal.fire({
+              imageUrl: basePath + "/admin/viewNews/" + basic_id,
+              confirmButtonText: '好的'
+            });
+          }
+        }).render();
+      });
       context.memo('button.insertImage', function () {
         return ui.buttonGroup([ui.button({
           className: 'dropdown-toggle',
@@ -362,6 +374,37 @@
           ]
         })])]).render();
       });
+      // 添加模板按钮
+      if (context.options.templates && context.options.templates.length) {
+        context.memo('button.useTemplate', function () {
+          let buttonChildren = [];
+          for (const data of context.options.templates) {
+            buttonChildren.push(ui.button({
+              contents: data.title,
+              className: 'dropdown-item',
+              tooltip: '使用模板',
+              click: function () {
+                if (context.invoke('editor.isEmpty')) context.invoke('code', data.content);
+                else dialog('确定使用模板', '是否使用模板替换当前编辑器内容？', function () {
+                  context.invoke('code', data.content);
+                });
+              }
+            }));
+          }
+
+          return ui.buttonGroup([ui.button({
+            className: 'dropdown-toggle',
+            contents: ui.dropdownButtonContents('<i class="fa-solid fa-book"></i>', $.summernote.options),
+            tooltip: '选择新闻模板',
+            data: {
+              'bs-toggle': 'dropdown'
+            }
+          }), ui.dropdown([ui.buttonGroup({
+            className: 'btn-group-vertical w-100',
+            children: buttonChildren
+          })])]).render();
+        });
+      }
     }
   });
 }));

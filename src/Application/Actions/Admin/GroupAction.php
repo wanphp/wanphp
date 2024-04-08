@@ -49,26 +49,8 @@ class GroupAction extends Action
         return $this->respondWithData(['delNum' => $delNum]);
       case 'GET';
         if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
-          $params = $this->request->getQueryParams();
-          $where = [];
-
-          $recordsTotal = $this->group->count('id', $where);
-          if (!empty($params['search']['value'])) {
-            $keyword = trim($params['search']['value']);
-            $where['name[~]'] = addcslashes($keyword, '*%_');
-          }
-
-          $order = $this->getOrder();
-          if ($order) $where['ORDER'] = $order;
-          $recordsFiltered = $this->group->count('id', $where);
-          $limit = $this->getLimit();
-          if ($limit) $where['LIMIT'] = $limit;
-
           return $this->respondWithData([
-            "draw" => $params['draw'],
-            "recordsTotal" => $recordsTotal,
-            "recordsFiltered" => $recordsFiltered,
-            'data' => $this->group->select('id,name,description,displayOrder', $where)
+            'data' => $this->group->select('id,name,description,displayOrder')
           ]);
         } else {
           $data = [

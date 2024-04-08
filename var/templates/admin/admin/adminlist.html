@@ -1,4 +1,4 @@
-<div class="card">
+<div id="admin-adminList" class="card">
   <div class="card-header">
     <h3 class="card-title">系统管理员</h3>
 
@@ -92,7 +92,8 @@
   </div>
   <div class="card-header">
     {% for id, name in roles %}
-    <span data-id="{{ id }}" class="btn {{ (id == role_id) ? 'btn-success' : 'btn-secondary' }} btn-sm" data-bs-toggle="tooltip" data-bs-title="选择角色">{{ name }}</span>
+    <span data-id="{{ id }}" class="btn {{ (id == role_id) ? 'btn-success' : 'btn-secondary' }} btn-sm" data-bs-toggle="tooltip"
+          data-bs-title="选择角色">{{ name }}</span>
     {% endfor %}
   </div>
   <div class="card-body">
@@ -102,23 +103,14 @@
 </div>
 <!-- /.card -->
 <script type="text/javascript">
+  loadScript("/js/page/admin/adminlist.js");
   $(document).ready(function () {
-    var thGroup = '<ul class="navbar-nav">\n' +
-      '        <li class="nav-item dropdown">\n' +
-      '          <span class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">分组</span>\n' +
-      '          <ul class="dropdown-menu">\n';
-    $('#group_id option').each(function (index, item) {
-      thGroup += '            <li><a class="dropdown-item" href="javascript:" data-value="' + item.value + '">' + item.text + '</a></li>\n'
-    });
-    thGroup += '          </ul>\n' +
-      '        </li>\n' +
-      '      </ul>';
-    const datatables = $('#adminData').DataTable({
+    adminDataTables = $('#admin-adminList #adminData').DataTable({
       ajax: {
         "url": basePath + "/admin/admins",
         "data": function (d) {
-          d.role_id = $('.card-header span[data-id].btn-success').attr('data-id');
-          if ($('#adminData thead .dropdown-item.active').length) d.groupId = $('#adminData thead .dropdown-item.active')[0].dataset.value;
+          d.role_id = $('#admin-adminList .card-header span[data-id].btn-success').attr('data-id');
+          if ($('#admin-adminList #adminData thead .dropdown-item.active').length) d.groupId = $('#admin-adminList #adminData thead .dropdown-item.active')[0].dataset.value;
         }
       },
       rowId: 'id',
@@ -137,7 +129,7 @@
         {title: '联系人', data: "name", defaultContent: ''},
         {title: '手机号', data: "tel", defaultContent: ''},
         {
-          title: thGroup, data: "groupId", render: function (data) {
+          title: getGroup(), data: "groupId", render: function (data) {
             if (data) return $("#group_id option[value='" + data + "']").text();
             else return '';
           }
@@ -168,8 +160,9 @@
         }
       ]
     });
-    $('.select2').select2();
-    $("#adminForm select[name='uid']").select2({
+
+    $('#admin-adminList #adminForm .select2').select2();
+    $("#admin-adminList #adminForm select[name='uid']").select2({
       theme: "bootstrap-5",
       ajax: {
         url: basePath + "/admin/weixin/users/search",
@@ -212,115 +205,25 @@
       templateSelection: function (user) {
         //console.log(user);
         if (user.name) {
-          $("#adminForm input[name='name']").val(user.name);
-          $("#adminForm input[name='tel']").val(user.tel);
+          $("#admin-adminList #adminForm input[name='name']").val(user.name);
+          $("#admin-adminList #adminForm input[name='tel']").val(user.tel);
         }
         return user.nickname || user.text;
       }
     });
-    $('.card-header span[data-id]').on('click', function (e) {
-      if ($(this).hasClass('btn-secondary')) {
-        $('.card-header span[data-id].btn-success').removeClass('btn-success').addClass('btn-secondary');
-        $(this).removeClass('btn-secondary').addClass('btn-success');
-        $("#adminForm select[name='role_id']").val($(this).attr('data-id')).trigger("change");
-        datatables.ajax.reload();
-      }
-    });
-    $('#adminData thead').on('click', '.dropdown-item', function (e) {
-      $(e.currentTarget).parents('ul.dropdown-menu').find('a.active').removeClass('active');
-      $(e.currentTarget).addClass('active');
-      datatables.ajax.reload();
-    });
-    $('#randomPwd').click(function () {
-      const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/;
-      let password = "";
-      do {
-        password = generateRandomString(Math.floor(Math.random() * 9) + 8);
-      } while (!regex.test(password)); // 检查密码是否满足要求
-      // 返回生成的密码
-      $("#adminForm input[name='password']").attr('type', 'text').val(password);
-    });
 
-    $('#adminData tbody').on('click', 'button', function () {
-      const data = datatables.row($(this).parents('tr')).data();
-      if ($(this).hasClass('edit')) {
-        if (!$('#collapseAdmin').hasClass('show')) $('#collapseAdmin').collapse('show');
-        $('#adminForm').attr('action', basePath + '/admin/admins/' + data.id);
-        $('#adminForm').attr('method', 'PUT');
-        $("#adminForm input[name='account']").val(data.account);
-        $("#adminForm select[name='role_id']").val(data.role_id).trigger("change");
-        $("#adminForm select[name='groupId']").val(data.groupId).trigger("change");
-        $("#adminForm select[name='status']").val(data.status);
-        $("#adminForm input[name='name']").val(data.name);
-        $("#adminForm input[name='tel']").val(data.tel);
-        if (data.uid > 0) {
-          $("#adminForm select[name='uid']").append(new Option(data.weuser.nickname, data.uid, true, true)).trigger('change');
-        }
-      }
-      if ($(this).hasClass('del')) {
-        const delRow = $(this).parents('tr');
-        dialog('删除管理员', '是否确认删除管理员', function () {
-          $.ajax({
-            url: basePath + '/admin/admins/' + data.id,
-            type: 'POST',
-            headers: {"X-HTTP-Method-Override": "DELETE"},
-            dataType: 'json',
-            success: function (data) {
-              datatables.row(delRow).remove().draw(false);
-              Swal.fire({icon: 'success', title: '删除成功！', showConfirmButton: false, timer: 1500});
-            },
-            error: errorDialog
-          });
-        });
-      }
-    });
-
-    $('#adminForm .btn-secondary').click(function () {
-      $('#collapseAdmin').collapse('hide');
-    });
-
-    $('#adminForm').submit(function (e) {
-      if (e.target.checkValidity()) {
-        const fromData = new FormData(e.target);
-        $.ajax({
-          url: $(e.target).attr('action'),
-          data: fromData,
-          type: 'POST',
-          beforeSend: function (xhr) {
-            xhr.setRequestHeader("X-HTTP-Method-Override", $(e.target).attr('method'));
-          },
-          cache: false,
-          contentType: false,
-          processData: false,
-          dataType: 'json',
-          success: function (json) {
-            let data;
-            if ($(e.target).attr('method') === 'PUT') {
-              const id = $(e.target).attr('action').split('/').pop();
-              data = datatables.row($("tr[id='" + id + "']")).data();
-              data['account'] = fromData.get('account');
-              data['status'] = fromData.get('status');
-              datatables.row($("tr[id='" + id + "']")).data(data).draw(false);
-            } else {
-              data = {
-                id: json.id,
-                account: fromData.get('account')
-              };
-              datatables.row.add(data).draw(false);
-            }
-            $('#collapseAdmin').collapse('hide');
-          },
-          error: errorDialog
-        });
-      }
-    });
-
-    $('#collapseAdmin').on('hidden.bs.collapse', function () {
-      $('#adminForm')[0].reset();
-      $("#adminForm select[name='uid'] option").remove();
-      $('#adminForm').removeClass('was-validated');
-      $('#adminForm').attr('action', basePath + '/admin/admins');
-      $('#adminForm').attr('method', 'POST');
-    });
+    function getGroup() {
+      let thGroup = '<ul class="navbar-nav">\n' +
+        '        <li class="nav-item dropdown">\n' +
+        '          <span class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">分组</span>\n' +
+        '          <ul class="dropdown-menu">\n';
+      $('#group_id option').each(function (index, item) {
+        thGroup += '            <li><a class="dropdown-item" href="javascript:" data-value="' + item.value + '">' + item.text + '</a></li>\n'
+      });
+      thGroup += '          </ul>\n' +
+        '        </li>\n' +
+        '      </ul>';
+      return thGroup;
+    }
   });
 </script>

@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Application\Actions;
 
+use Exception;
+use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
-use Slim\Exception\HttpBadRequestException;
+use Slim\Views\Twig;
 
 abstract class Action extends \Wanphp\Libray\Slim\Action
 {
@@ -26,9 +28,28 @@ abstract class Action extends \Wanphp\Libray\Slim\Action
     return $this->args[$name] ?? $default;
   }
 
+  /**
+   * @param string $template 模板路径
+   * @param array $data
+   * @return Response
+   * @throws Exception
+   */
+  protected function respondView(string $template, array $data = []): Response
+  {
+    $tplVars = $this->request->getAttribute('tplVars') ?? [];
+    if (is_array($tplVars)) $data = array_merge($data, $tplVars);
+    if (isset($tplVars['basePath']) && is_file(ROOT_PATH . '/var' . $tplVars['basePath'] . '/' . $template)) $template = str_replace('/', '@', $tplVars['basePath']) . '/' . $template;
+    return Twig::fromRequest($this->request)->render($this->response, $template, $data);
+  }
+
   protected function httpHost(): string
   {
     return $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+  }
+
+  protected function isAjax(): bool
+  {
+    return $this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest";
   }
 
   //添加使用

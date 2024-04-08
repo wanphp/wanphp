@@ -1,4 +1,4 @@
-<div class="card">
+<div id="admin-groupList" class="card">
   <div class="card-header">
     <h3 class="card-title">{{title}}</h3>
 
@@ -52,93 +52,23 @@
 <!-- /.card -->
 
 <script type="text/javascript">
+  loadScript("/js/page/admin/grouplist.js");
   $(document).ready(function () {
-    const buttonStr = '<button type="button" class="btn btn-tool edit" data-bs-toggle="tooltip" data-bs-title="修改"><i class="fas fa-edit"></i></button>' +
-      '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>';
-    const datatables = $('#groupData').DataTable({
-      ajax: {
-        url: basePath + "/admin/group",
-        type: 'GET',
-        data: function (d) {
-          return $.extend({}, d, {keyword: $("#keyword").val()});
-        }
-      },
+    groupDataTables = $('#admin-groupList #groupData').DataTable({
+      serverSide: false,
+      search: {return: false},
+      ajax: basePath + "/admin/group",
       rowId: 'id',
       columns: [
         {title: '分组', data: "name"},
         {title: '描述', data: "description"},
-        {title: '操作', data: 'op', defaultContent: buttonStr}
+        {
+          title: '操作',
+          data: 'op',
+          defaultContent: '<button type="button" class="btn btn-tool edit" data-bs-toggle="tooltip" data-bs-title="修改"><i class="fas fa-edit"></i></button>' +
+            '<button type="button" class="btn btn-tool del" data-bs-toggle="tooltip" data-bs-title="删除"><i class="fas fa-trash-alt"></i></button>'
+        }
       ]
-    });
-    $('#groupData tbody').on('click', 'button', function () {
-      const group = datatables.row($(this).parents('tr')).data();
-      if ($(this).hasClass('edit')) {
-        $('#groupForm').attr('action', basePath + '/admin/group/' + group.id);
-        $('#groupForm').attr('method', 'PUT');
-        $("#groupForm input[name='name']").val(group.name);
-        $("#groupForm textarea[name='description']").val(group.description);
-        $("#groupForm input[name='displayOrder']").val(group.displayOrder);
-        $('#modal-addGroup').modal('show');
-      }
-      if ($(this).hasClass('del')) {
-        const delRow = $(this).parents('tr');
-        dialog('删除配置', '是否确认删除配置项', function () {
-          $.ajax({
-            url: basePath + '/admin/group/' + group.id,
-            type: 'POST',
-            headers: {"X-HTTP-Method-Override": "DELETE"},
-            dataType: 'json',
-            success: function (data) {
-              datatables.row(delRow).remove().draw(false);
-              Swal.fire({icon: 'success', title: '删除成功！', showConfirmButton: false, timer: 1500});
-            },
-            error: errorDialog
-          });
-        });
-      }
-    });
-    $('#groupForm').submit(function (e) {
-      if (e.target.checkValidity()) {
-        const fromData = new FormData(e.target);
-        $.ajax({
-          url: $(e.target).attr('action'),
-          data: fromData,
-          type: 'POST',
-          beforeSend: function (xhr) {
-            xhr.setRequestHeader("X-HTTP-Method-Override", $(e.target).attr('method'));
-          },
-          cache: false,
-          contentType: false,
-          processData: false,
-          dataType: 'json',
-          success: function (json) {
-            let groupId;
-            if ($(e.target).attr('method') === 'PUT') groupId = $(e.target).attr('action').split('/').pop();
-            else groupId = json.id;
-
-            const data = {
-              id: groupId,
-              name: fromData.get('name'),
-              description: fromData.get('description'),
-              displayOrder: fromData.get('displayOrder'),
-              op: buttonStr
-            };
-            if ($(e.target).attr('method') === 'PUT') {
-              datatables.row($("tr[id='" + groupId + "']")).data(data);
-            } else {
-              datatables.row.add(data).draw(false);
-            }
-            $('#modal-addGroup').modal('hide');
-          },
-          error: errorDialog
-        });
-      }
-    });
-
-    $('#modal-addGroup').on('hidden.bs.modal', function () {
-      $('#groupForm')[0].reset();
-      $('#groupForm').attr('action', basePath + '/admin/group');
-      $('#groupForm').attr('method', 'POST');
     });
   });
 </script>

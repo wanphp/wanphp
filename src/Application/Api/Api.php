@@ -74,6 +74,10 @@ use Wanphp\Libray\Slim\Action;
 
 abstract class Api extends Action
 {
+  protected function resolveArg(string $name, $default = null): mixed
+  {
+    return $this->args[$name] ?? $default;
+  }
 
   protected function thumb(string $image, string $size): string
   {

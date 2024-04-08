@@ -1,5 +1,4 @@
 $(document).ready(function () {
-  let timer;
   $.extend({
     uploadFile: function (options) {
       if (!options.maxSize) options.maxSize = 100;

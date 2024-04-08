@@ -184,7 +184,7 @@
       $('#menuForm').attr('method', 'POST');
     });
 
-    $(".sublist").on('click', 'button', function (event) {
+    $(".sublist").off('click', 'button').on('click', 'button', function (event) {
       var parent = $(this).parents('.nav-item');
       var parents = $(this).parents(".sublist");
       var len = parents.children().length;

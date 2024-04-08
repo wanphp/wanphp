@@ -60,27 +60,8 @@ class RoleAction extends Action
         return $this->respondWithData(['delNum' => $delNum]);
       case 'GET';
         if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
-          $params = $this->request->getQueryParams();
-          $where = [];
-
-          $recordsTotal = $this->role->count('id', $where);
-          if (!empty($params['search']['value'])) {
-            $keyword = trim($params['search']['value']);
-            $keyword = addcslashes($keyword, '*%_');
-            $where['name[~]'] = $keyword;
-          }
-
-          $order = $this->getOrder();
-          if ($order) $where['ORDER'] = $order;
-          $recordsFiltered = $this->role->count('id', $where);
-          $limit = $this->getLimit();
-          if ($limit) $where['LIMIT'] = $limit;
-
           return $this->respondWithData([
-            "draw" => $params['draw'],
-            "recordsTotal" => $recordsTotal,
-            "recordsFiltered" => $recordsFiltered,
-            'data' => $this->role->select('id,name,restricted[JSON]', $where)
+            'data' => $this->role->select('id,name,restricted[JSON]')
           ]);
         } else {
           $actions = $this->router->select('id,name,route', ['route[~]' => '/admin/%']);
