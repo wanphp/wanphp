@@ -44,10 +44,6 @@
   line-height: 1em;
 }
 
-#article-edit .app-header, .app-footer {
-  display: none !important;
-}
-
 #article-edit .uploader_input_box {
   position: relative;
   margin-right: 8px;
