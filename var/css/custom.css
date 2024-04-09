@@ -1,0 +1,103 @@
+.btn-default {
+  background-color: #f8f9fa;
+  border-color: #ddd;
+  color: #444;
+}
+
+.btn-default.hover, .btn-default:active, .btn-default:hover {
+  background-color: #e9ecef;
+  color: #2b2b2b
+}
+
+.btn-default.disabled, .btn-default:disabled {
+  color: #444;
+  background-color: #f8f9fa
+}
+
+.navbar-nav .nav-link.active {
+  font-weight: 600;
+}
+
+.dataTables_wrapper .dataTables_info {
+  clear: both;
+  float: left;
+  padding-top: 0.755em;
+}
+
+#bindQr svg {
+  max-width: 100%;
+  height: auto;
+}
+
+#article-edit .select2-selection {
+  padding: 0.275rem 0.5rem !important;
+  padding-bottom: .025rem !important;
+}
+
+#article-edit .select2-search {
+  width: auto !important;
+}
+
+#article-edit .select2-selection__choice {
+  padding: 0.25em !important;
+  margin-bottom: 0.25em !important;
+  line-height: 1em;
+}
+
+#article-edit .app-header, .app-footer {
+  display: none !important;
+}
+
+#article-edit .uploader_input_box {
+  position: relative;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  width: 90px;
+  height: 90px;
+  border: 1px dashed #ced4da;
+  color: #7E8081;
+  text-align: center;
+  transition: all 0.1s;
+  overflow: hidden;
+}
+
+#article-edit .cropImageBox {
+  font-size: 0;
+}
+
+#article-edit .custom-popover {
+  --bs-popover-body-padding-x: 0;
+  --bs-popover-body-padding-y: 0;
+}
+
+#article-edit .newTitle {
+  font-weight: bold;
+  overflow: hidden;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+#article-list .select2-selection {
+  padding: 0.275rem 0.5rem !important;
+}
+
+#article-list .select2-search {
+  width: auto !important;
+}
+
+#article-list .select2-selection__choice {
+  padding: 0.25em !important;
+  margin-bottom: 0 !important;
+  line-height: 1em;
+}
+
+
+#article-templates .row{
+  margin-top: 0 !important;
+}
+
+#article-templates #templateData thead {
+  display: none;
+}
