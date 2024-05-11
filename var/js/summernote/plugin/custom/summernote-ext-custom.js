@@ -18,7 +18,7 @@
       this.show = function () {
         $.uploadFile({
           url: context.options.uploadUrl + '/thumb',
-          compress: {maxWidth: 800, maxHeight: 450, quality: .7},// 编辑器内使用缩略图
+          compress: {maxWidth: 1200, maxHeight: 1000, quality: .7},// 编辑器内使用缩略图
           uid: context.options.uid,
           accept: 'image/jpg,image/jpeg,image/png,image/gif',
           ext: '.jpg,.jpeg,.gif,.png',
@@ -55,14 +55,7 @@
           },
           uploadStart: function (data) {
             console.log(data);
-            Swal.fire({
-              title: data,
-              allowOutsideClick: false, // 不允许点击外部关闭
-              showConfirmButton: false, // 不显示确认按钮
-              didOpen: () => {
-                Swal.showLoading();
-              }
-            });
+            showLoading(data);
           },
           processResults: function (progress) {
             Swal.update({title: progress});
@@ -263,6 +256,49 @@
             inputRange.addEventListener('input', (e) => {
               $('.note-editable').css({width: e.target.value, margin: "0 auto"});
               $('.note-placeholder').css({width: e.target.value + 'px', left: (maxWidth - e.target.value) / 2});
+            });
+          }
+        }).render();
+      });
+      context.memo('button.getWeiXinArticle', function () {
+        return ui.button({
+          contents: '<i class="fab fa-weixin"></i>',
+          tooltip: '采集公众号文章',
+          click: function (e) {
+            Swal.fire({
+              title: "微信公众号文章URL",
+              input: "url",
+              inputAttributes: {
+                autocapitalize: "off"
+              },
+              showCancelButton: true,
+              cancelButtonText: '取消',
+              confirmButtonText: "采集",
+              showLoaderOnConfirm: true,
+              preConfirm: async (url) => {
+                try {
+                  let postData = {url: url};
+                  const response = await fetch(basePath+'/admin/getWeiXinArticle', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                  });
+                  if (!response.ok) {
+                    return Swal.showValidationMessage(`${JSON.stringify(await response.json())}`);
+                  }
+                  return response.json();
+                } catch (error) {
+                  Swal.showValidationMessage(`Request failed: ${error}`);
+                }
+              },
+              allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+              if (result.isConfirmed) {
+                if (context.options.loadWeiXinArticle) context.options.loadWeiXinArticle(result.value);
+                else context.invoke('code', result.value.content);
+              }
             });
           }
         }).render();

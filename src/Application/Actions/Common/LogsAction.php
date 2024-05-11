@@ -33,6 +33,7 @@ class LogsAction extends \App\Application\Actions\Action
     if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
       $params = $this->request->getQueryParams();
       $where = [];
+      if ($this->getLoginUserRoleId() > 0) $where['admin_id'] = $this->getLoginId();
 
       $recordsTotal = $this->logs->count('log_id', $where);
       if (!empty($params['search']['value'])) {

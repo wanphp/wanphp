@@ -63,7 +63,7 @@ class QrLoginAction extends \App\Application\Actions\Action
             if ($state == 'weixin') {
               $this->logger->log(0, '通过微信内部授权登录系统，登录IP：' . $this->getIP() . '，授权用户UID' . $_SESSION['user_id']);
               $this->logger->info('”' . $admin['account'] . '”刚刚通过微信内部授权登录了系统；绑定用户UID' . $user['id']);
-              $backUrl = $this->httpHost() . $this->basePath;
+              $backUrl = $this->httpHost() . $this->basePath . '/';
               return $this->response->withHeader('Location', $backUrl)->withStatus(301);
             } else {
               $data = ['title' => '登录成功',

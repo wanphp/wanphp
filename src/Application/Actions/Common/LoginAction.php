@@ -117,12 +117,13 @@ class LoginAction extends Action
           $this->user->sendMessage([$admin['uid']], $msgData);
         }
         $redirect_uri = $this->request->getHeaderLine('Referer');
-        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/admin/dashboard';
+        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/#/admin/dashboard';
         return $this->respondWithData(['msg' => '系统登录成功！', 'redirect_uri' => $redirect_uri]);
       } else {
         return $this->respondWithError('帐号已被锁定，无法登录！');
       }
     } else {
+      if ($this->getLoginId()) return $this->response->withHeader('Location', $this->httpHost() . $this->basePath . '/#/admin/dashboard')->withStatus(301);
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);

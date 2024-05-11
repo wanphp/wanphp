@@ -17,7 +17,9 @@
 .note-editable p {
   text-indent: 2em;
 }
-
+.note-editable img {
+  max-width: 100%;
+}
 .note-editable p > img, .note-editable p > a > img, .note-editable p > video {
   display: block;
   max-width: 100%;

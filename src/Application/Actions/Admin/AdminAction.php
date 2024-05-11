@@ -89,7 +89,7 @@ class AdminAction extends Action
             $where['role_id'] = $_SESSION['role_id'];
           }
           if (isset($params['groupId']) && $params['groupId'] > 0) $where['groupId'] = intval($params['groupId']);
-          if ($_SESSION['role_id'] != -1) $where['parentId'] = $_SESSION['login_id'];//只显示自己添加的管理员
+          //if ($_SESSION['role_id'] != -1) $where['parentId'] = $_SESSION['login_id'];//只显示自己添加的管理员
 
           $recordsTotal = $this->admin->count('id', $where);
           if (!empty($params['search']['value'])) {

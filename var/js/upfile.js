@@ -17,22 +17,20 @@ $(document).ready(function () {
       if (!options.file) {
         $('#form-file-upload').remove();
         $('body').prepend('<form enctype="multipart/form-data" id="form-file-upload" style="display: none;"><input type="file" name="file" value="" accept="' + options.accept + '"></form>');
-        $('#form-file-upload input[name=\'file\']').trigger('click');
-
-        if (typeof timer != 'undefined') {
-          clearInterval(timer);
-        }
+        $('#form-file-upload input[name=\'file\']').trigger('click').on('change', function (event) {
+          options.file = event.currentTarget.files[0];
+          handleFileUpload(options)
+        });
+      } else {
+        handleFileUpload(options)
       }
-      timer = setInterval(function () {
+
+      function handleFileUpload(options) {
         let file;
-        if (options.file || $("#form-file-upload input[name='file']").val() !== '') {
+        if (options.file) {
           options.uploadStart('上传开始');
-          if (!options.file) {
-            file = $('#form-file-upload input[name="file"]')[0].files[0];
-          } else {
-            file = options.file;
-          }
-          clearInterval(timer);
+          file = options.file;
+
           const ext = file['name'].replace(/^.+\./, '').toLowerCase();
           if (options.ext.indexOf(ext) === -1) {
             options.error({code: 'error', errMsg: '格式不支持，请选择' + options.ext + '格式的文件'});
@@ -192,7 +190,7 @@ $(document).ready(function () {
           loadNext();
           return false;
         }
-      }, 500);
+      }
     }
 
   });
