@@ -124,6 +124,7 @@ class LoginAction extends Action
       }
     } else {
       if ($this->getLoginId()) return $this->response->withHeader('Location', $this->httpHost() . $this->basePath . '/#/admin/dashboard')->withStatus(301);
+      session_regenerate_id(true);// 使用新生成的会话 ID 更新现有会话 ID
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);

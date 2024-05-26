@@ -33,10 +33,21 @@ class UserBindAction extends \App\Application\Actions\Action
     if ($this->isPost()) {
       if (isset($_SESSION['login_id']) && is_numeric($_SESSION['login_id'])) {
         $admin = $this->admin->get('uid,account', ['id' => $_SESSION['login_id']]);
-        if (isset($admin['uid']) && $admin['uid'] > 0 && $admin['uid'] != $_SESSION['user_id']) {
+        if (isset($admin['uid']) && isset($_SESSION['user_id']) && $admin['uid'] > 0 && $admin['uid'] != $_SESSION['user_id']) {
           // 记录绑定用户ID
           $_SESSION['user_id'] = $admin['uid'];
           return $this->respondWithData(['res' => 'OK']);
+        } else if (isset($admin['uid']) && isset($_SESSION['login_user_id']) && is_numeric($_SESSION['login_user_id'])) {
+          // 没有网页授权获取用户基本信息，通过公众号被动回复连接授权登录
+          $user_id = $_SESSION['login_user_id'];
+          unset($_SESSION['login_user_id']);
+          $account = $this->admin->get('account', ['uid' => $user_id]);
+          if ($account) return $this->respondWithData(['errMsg' => '您的微信已与”' . $account . '“帐号绑定，需先解除才能绑定！']);
+          if ($admin['uid'] == $user_id) return $this->respondWithData(['errMsg'=>'重复绑定，您应该使用新的微信扫码！']);
+          if ($this->admin->update(['uid' => $user_id], ['id' => $_SESSION['login_id']])) {
+            $_SESSION['user_id'] = $user_id;
+            return $this->respondWithData(['res' => 'OK']);
+          } else return $this->respondWithData(['errMsg'=>'绑定失败，请重试！']);
         } else {
           return $this->respondWithError('尚未绑定！');
         }

@@ -8,6 +8,7 @@
 
 namespace App\Application\Middleware;
 
+use App\Domain\Admin\AdminInterface;
 use App\Repositories\Mysql\Router\PersistenceRepository;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -26,13 +27,14 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface as Middleware;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Psr\Log\LoggerInterface;
 use Slim\Routing\RouteContext;
 use Slim\Views\Twig;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Wanphp\Libray\Slim\Setting;
-
+use Wanphp\Libray\Slim\WpUserInterface;
 
 class PermissionMiddleware implements Middleware
 {
@@ -110,6 +112,48 @@ class PermissionMiddleware implements Middleware
         }
         return $handler->handle($request);
       } else {
+        // 尝试通过OauthAccessToken恢复会话
+        try {
+          $accessToken = $this->container->get(WpUserInterface::class)->checkOauthUser();
+          if ($accessToken) {
+            $user = $this->container->get(WpUserInterface::class)->getOauthUserinfo($accessToken);
+            if ($user && $user['id'] > 0) {
+              $admin = $this->container->get(AdminInterface::class)->get('id,role_id,groupId,account', ['uid' => $user['id'], 'status' => 1]);
+              if (isset($admin['id'])) {
+                $_SESSION['login_id'] = $admin['id'];
+                $_SESSION['role_id'] = $admin['role_id'];
+                $_SESSION['groupId'] = $admin['groupId'];
+                $_SESSION['user_id'] = $user['id'];
+                // 获取当前请求的 URL
+                $url = $request->getUri()->getPath();
+                $this->container->get(LoggerInterface::class)->info($url, $admin);
+                return $handler->handle($request)->withHeader('Location', $url)->withStatus(302);
+              }
+            }
+          }
+        } catch (Exception) {
+          // 服务端不使用此方法
+        }
+        if (isset($_SESSION['login_user_id']) && is_numeric($_SESSION['login_user_id'])) {
+          $user_id = $_SESSION['login_user_id'];
+          unset($_SESSION['login_user_id']);
+          // 通过公众号被动回复连接授权，恢复会话
+          $admin = $this->container->get(AdminInterface::class)->get('id,role_id,groupId,status', ['uid' => $user_id]);
+          if (isset($admin['status']) && $admin['status'] == 1) {
+            $_SESSION['login_id'] = $admin['id'];
+            $_SESSION['role_id'] = $admin['role_id'];
+            $_SESSION['groupId'] = $admin['groupId'];
+            $_SESSION['user_id'] = $user_id;
+            $serverParams = $request->getServerParams();
+            $ip = $serverParams['HTTP_X_FORWARDED_FOR'] ?? $serverParams['REMOTE_ADDR'];
+            $this->container->get(LoggerInterface::class)->log(0, '通过公众号被动回复连接授权登录到系统，登录IP:' . $ip . '。', $admin);
+            $this->container->get(AdminInterface::class)->update(['lastLoginTime' => time(), 'lastLoginIp' => $ip], ['id' => $_SESSION['login_id']]);
+            // 获取当前请求的 URL
+            $url = $request->getUri()->getPath();
+            $this->container->get(LoggerInterface::class)->info($url, $admin);
+            return $handler->handle($request)->withHeader('Location', $url)->withStatus(302);
+          }
+        }
         if ($request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
           $response = new \Slim\Psr7\Response();
           $json = json_encode(['type' => 'reload', 'errMsg' => '用户未登录或登录超时！']);

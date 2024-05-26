@@ -45,7 +45,11 @@ $(document).ready(function () {
     timer = setInterval(function () {
       checkNum++;
       $.post(basePath + '/admin/userBind', function (data) {
-        if (data.res === 'OK') {
+        if (data.errMsg) {
+          clearInterval(timer);
+          closeModalDialog();
+          Toast.fire({icon: 'error', title: data.errMsg});
+        } else if (data.res === 'OK') {
           clearInterval(timer);
           location.reload();
         }

@@ -38,6 +38,24 @@ class QrLoginAction extends \App\Application\Actions\Action
         $device = $this->request->getHeaderLine('X-HTTP-Device');
         $this->logger->log(0, '通过微信认证登录系统，登录IP：' . $this->getIP() . '，客户端：' . $device . '；授权用户UID' . $_SESSION['user_id']);
         return $this->respondWithData(['res' => 'OK']);
+      } else if (isset($_SESSION['login_user_id']) && is_numeric($_SESSION['login_user_id'])) {
+        // 没有网页授权获取用户基本信息，通过公众号被动回复连接授权登录
+        $user_id = $_SESSION['login_user_id'];
+        unset($_SESSION['login_user_id']);
+        $admin = $this->admin->get('id,role_id,groupId,account,status', ['uid' => $user_id]);
+        if (!$admin) {
+          return $this->respondWithData(['res' => 'OK', 'errMsg' => '微信尚未绑定帐号，请使用密码登录！']);
+        }
+        if ($admin['status'] == 1) {
+          $_SESSION['login_id'] = $admin['id'];
+          $_SESSION['role_id'] = $admin['role_id'];
+          $_SESSION['groupId'] = $admin['groupId'];
+          $_SESSION['user_id'] = $user_id;
+          $this->admin->update(['lastLoginTime' => time(), 'lastLoginIp' => $this->getIP()], ['id' => $admin['id']]);
+          return $this->respondWithData(['res' => 'OK']);
+        } else {
+          return $this->respondWithData(['res' => 'OK', 'errMsg' => '帐号已被锁定，无法登录！！']);
+        }
       } else return $this->respondWithError('尚未授权！');
     } else {
       $queryParams = $this->request->getQueryParams();
