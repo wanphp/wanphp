@@ -154,7 +154,6 @@
 <script src="/select2/js/i18n/zh-CN.js"></script>
 <script type="text/javascript">
   const currentUser = {
-    id: '{{loginUser.id}}',
     uid: '{{loginUser.uid}}',
     head: '{{loginUser.headimgurl}}',
     nickname: '{{loginUser.nickname}}',
@@ -204,7 +203,7 @@
   }
 
   function loadDialog(config) {
-    let dialogClass = 'modal-dialog';
+    let dialogClass = '';
     if (config.middle) dialogClass += ' modal-dialog-centered';
     if (config.scrollable) dialogClass += ' modal-dialog-scrollable';
     switch (config.size) {
@@ -221,7 +220,7 @@
         dialogClass += ' modal-fullscreen';
         break;
     }
-    swal.showLoading();
+    showLoading();
     $.ajax({
       url: basePath + config.url,
       type: 'GET',
@@ -240,7 +239,7 @@
       if (buttons instanceof Array && buttons.length) {
         body += '<div class="modal-footer">';
         for (const button of buttons) {
-          body += '<button  class="btn btn-' + button.type + '" data-value="' + button.value + '">' + button.text + '</button>';
+          body += '<button  class="btn btn-' + button.type + '" data-value="' + button.value + '" data-hide="' + (button.hide ? button.hide : 'true') + '">' + button.text + '</button>';
         }
         body += '</div>';
       } else if (typeof buttons === 'string') {
@@ -254,7 +253,7 @@
     $('#modalDialog').attr('data-bs-backdrop', backdrop).off('click', '.modal-footer .btn,.modal-header .btn-close').on('click', '.modal-footer .btn,.modal-header .btn-close', function (event) {
       if (callable) {
         callable(event.target.dataset.value);
-        $('#modalDialog').modal('hide');
+        if (event.target.dataset.hide === 'true') $('#modalDialog').modal('hide');
       }
     }).off('hidden.bs.modal').on('hidden.bs.modal', function () {
       if (backdrop === 'static') $('#modalDialog').modal('dispose');
@@ -268,13 +267,24 @@
     $('#modalDialog').modal('hide');
   }
 
+  function showLoading(title = '内容加载中') {
+    Swal.fire({
+      title: title,
+      allowOutsideClick: false, // 不允许点击外部关闭
+      showConfirmButton: false, // 不显示确认按钮
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
+
   function loadAppContent(url) {
     // 展开侧边栏
     (new adminlte.PushMenu($("[data-lte-toggle='sidebar']")[0])).expand();
-    swal.showLoading();
+    showLoading();
     var checkSidebarInterval = setInterval(function () {
       clearInterval(checkSidebarInterval);
-      $('.app-content .container-fluid').load(basePath + url + '?loadTpl=1', function (response, status) {
+      $('.app-content .container-fluid').load(basePath + url + (url.indexOf('?') === -1 ? '?' : '&') + 'loadTpl=1', function (response, status) {
         swal.close();
         if (status === 'error') errorDialog(JSON.parse(response));
         console.log(status);
@@ -351,7 +361,7 @@
     $('body').on('click', 'a[data-link]', function (e) {
       window.location.hash = e.currentTarget.dataset.link;
       if ($(this).hasClass('nav-link')) {
-        $('.nav-item li a.active').removeClass('active');
+        $('.nav-item a.active').removeClass('active');
         $(e.currentTarget).parents('ul.nav-treeview').prev().addClass('active');
         $(e.currentTarget).addClass('active');
       }

@@ -25,9 +25,19 @@
           success: function (res) {
             if (res.url) context.invoke('editor.insertImage', res.url, '');
             else Toast.fire({icon: 'error', title: res.errMsg});
+            Swal.close();
           },
           error: function (res) {
             Toast.fire({icon: 'error', title: res.errMsg});
+            Swal.close();
+          },
+          uploadStart: function (data) {
+            console.log(data);
+            showLoading(data);
+          },
+          processResults: function (progress) {
+            Swal.update({title: progress});
+            Swal.showLoading();
           }
         });
       }
@@ -278,7 +288,7 @@
               preConfirm: async (url) => {
                 try {
                   let postData = {url: url};
-                  const response = await fetch(basePath+'/admin/getWeiXinArticle', {
+                  const response = await fetch(basePath + '/admin/getWeiXinArticle', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'
@@ -365,6 +375,35 @@
           }
         }).render();
       });
+      context.memo('button.135editor', function () {
+        var editor135;
+
+        function onContentFrom135(event) {
+          if (typeof event.data !== 'string') {
+            if (event.data.ready) {
+              editor135.postMessage(context.invoke('code'), '*');
+            }
+            return;
+          }
+
+          if (event.data.indexOf('<') !== 0) return;
+
+          context.invoke('code', event.data)
+          window.removeEventListener('message', onContentFrom135);
+        }
+
+        return ui.button({
+          contents: '135',
+          tooltip: '135编辑器',
+          click: function () {
+            editor135 = window.open('https://www.135editor.com/beautify_editor.html?callback=true&appkey=', '135editor', 'height=' + (window.screen.availHeight - 100) + ',width=' + (window.screen.availWidth - 100) + ',top=50,left=50,help=no,resizable=no,status=no,scroll=no')
+
+            window.removeEventListener('message', onContentFrom135);
+            window.addEventListener('message', onContentFrom135, false);
+
+          }
+        }).render();
+      });
       context.memo('button.viewNews', function () {
         return ui.button({
           contents: '<i class="fa-solid fa-qrcode"></i>',
@@ -430,7 +469,7 @@
 
           return ui.buttonGroup([ui.button({
             className: 'dropdown-toggle',
-            contents: ui.dropdownButtonContents('<i class="fa-solid fa-book"></i>', $.summernote.options),
+            contents: ui.dropdownButtonContents('<i class="fa-solid fa-book"></i>', context.options),
             tooltip: '选择新闻模板',
             data: {
               'bs-toggle': 'dropdown'
@@ -441,6 +480,48 @@
           })])]).render();
         });
       }
+
+      context.memo('button.customStyle', function () {
+        return ui.buttonGroup([ui.button({
+          className: 'dropdown-toggle',
+          contents: ui.dropdownButtonContents('<i class="fa-solid fa-xmarks-lines"></i>', context.options),
+          tooltip: '选择边框模板',
+          data: {
+            'bs-toggle': 'dropdown'
+          }
+        }), ui.dropdown({
+          className: 'dropdown-style',
+          items: [
+            {
+              template: '<section style="margin: 0; padding: 3px; outline: 0; font-weight: bold; color:#366092; border: 1px solid rgb(149, 179, 215)" >' +
+                '<p style="padding:.5em; margin: 0; background-color: rgb(198, 217, 240)">请按Ctrl+Shift+V粘贴内容<br></p>' +
+                '</section>'
+            }, {
+              template: '<section style="margin: 0; padding: 20px 15px;; outline: 0; border: 1px solid rgb(54, 96, 146); box-shadow: rgb(84, 141, 212) 3px 3px 0;" >' +
+                '<p>请按Ctrl+Shift+V粘贴内容<br></p>' +
+                '</section>'
+            },
+            {
+              template: '<section style="margin: 0; padding: 20px 15px;; outline: 0; border: 1px solid rgb(88, 165, 231); border-radius: 8px;" >' +
+                '<p>请按Ctrl+Shift+V粘贴内容<br></p>' +
+                '</section>'
+            }, {
+              template: '<section style="margin: 0; padding: 20px 15px; outline: 0; border: 2px dashed rgb(54, 96, 146); border-radius: 8px;" >' +
+                '<p>请按Ctrl+Shift+V粘贴内容<br></p>' +
+                '</section>'
+            }
+          ],
+          title: '边框模板',
+          template: function template(item) {
+            return item.template;
+          },
+          click: function (event) {
+            const element = $($(event.target).closest('a').html());
+            context.invoke('editor.insertNode', element[0]);
+            return false;
+          }
+        })]).render();
+      });
     }
   });
 }));
