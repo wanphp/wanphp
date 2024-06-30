@@ -22,7 +22,7 @@ class HomeAction extends Action
   private WpUserInterface $user;
   private PersistenceRepository $persistenceRepository;
 
-  public function __construct(AdminInterface $admin, WpUserInterface $user,PersistenceRepository $persistenceRepository, LoggerInterface $logger)
+  public function __construct(AdminInterface $admin, WpUserInterface $user, PersistenceRepository $persistenceRepository, LoggerInterface $logger)
   {
     $this->admin = $admin;
     $this->user = $user;
@@ -33,12 +33,11 @@ class HomeAction extends Action
   protected function action(): Response
   {
     // 绑定用户
-    $admin = $this->admin->get('id,uid,account', ['id' => $_SESSION['login_id']]);
+    $admin = $this->admin->get('id,uid,account,name,tel', ['id' => $_SESSION['login_id']]);
     if (isset($admin['uid']) && $admin['uid'] > 0) {
       $user = $this->user->getUser($admin['uid']);
-      if ($user) $admin = array_merge($admin, $user);
+      if ($user) $admin = array_merge($user, $admin);
     }
-
     $data = [
       'title' => '管理首页',
       'sidebar' => $this->persistenceRepository->getSidebar(),
