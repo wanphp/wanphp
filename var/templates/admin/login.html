@@ -12,10 +12,10 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="/adminlte/css/adminlte.min.css">
   <style>
-    #modal-qrLogin svg {
-      max-width: 100%;
-      height: auto;
-    }
+      #modal-qrLogin svg {
+          max-width: 100%;
+          height: auto;
+      }
   </style>
 </head>
 <body class="login-page bg-body-secondary">
@@ -37,7 +37,9 @@
           <div class="input-group-text"><span class="fas fa-lock"></span></div>
           <input name="password" type="password" class="form-control" placeholder="请输入帐号密码" required
                  pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$">
-          <div class="invalid-feedback">密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位</div>
+          <div class="invalid-feedback">
+            密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位
+          </div>
         </div>
       </form>
       <div class="social-auth-links text-center mb-3 d-grid gap-2">
@@ -77,18 +79,18 @@
 <script src="/adminlte/js/adminlte.min.js"></script>
 <script src="/js/ua-parser.min.js"></script>
 <script type="text/javascript">
-  $(document).ready(function () {
+  $(function () {
     const basePath = '{{basePath}}';
     $('.btn-success').click(function () {
-      var ua = window.navigator.userAgent.toLowerCase();
-      if (ua.match(/MicroMessenger/i) == "micromessenger") {
+      const ua = window.navigator.userAgent.toLowerCase();
+      if (ua.match(/MicroMessenger/i) === "micromessenger") {
         location.href = basePath + '/qrLogin?state=weixin';
       } else {
         $('#modal-qrLogin').modal('show');
       }
     });
-    var timer;
-    var checkNum = 0;
+    let timer;
+    let checkNum = 0;
     $('#modal-qrLogin').on('shown.bs.modal', function () {
       timer = setInterval(function () {
         checkNum++;
@@ -99,8 +101,16 @@
           dataType: 'json',
           success: function (data) {
             if (data.res === 'OK') {
-              if (window.location.hash) location.reload();
-              else location.href = basePath + '/';
+              if (data.errMsg) {
+                Toast.fire({
+                  icon: 'error',
+                  title: data.errMsg
+                });
+                $('#modal-qrLogin').modal('hide');
+              } else {
+                if (window.location.hash) location.reload();
+                else location.href = basePath + '/';
+              }
               clearInterval(timer);
             }
           }
