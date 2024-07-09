@@ -102,7 +102,7 @@
           <tr>
             <td class="p-1">
               <select data-id="{{ action.id }}" class="form-select" style="width: 100%;">
-                <option value=" ">请选择</option>
+                <option value="0">请选择</option>
                 {% for index, menu in menus %}
                 <option {{ (index==action.navId) ?
                 'selected' }} value="{{ index }}">{{ menu.name }}</option>

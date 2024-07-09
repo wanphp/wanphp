@@ -7,10 +7,13 @@
       <div class="input-group has-validation">
         <input name="password" type="password" placeholder="修改账号密码" class="form-control" required
                pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$" autocomplete="off">
-        <div class="input-group-text" onclick="$(this).prev().attr('type',$(this).prev().attr('type')=='text'?'password':'text')">
+        <div class="input-group-text"
+             onclick="$(this).prev().attr('type',$(this).prev().attr('type')=='text'?'password':'text')">
           <span class="fas fa-eye" role="button"></span>
         </div>
-        <div class="invalid-feedback">密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位</div>
+        <div class="invalid-feedback">
+          密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位
+        </div>
       </div>
     </form>
   </div>
@@ -22,10 +25,10 @@
   </div>
 </div>
 <script type="text/javascript">
-  if (currentUser.head) {
+  if (currentUser.uid) {
     $('#admin-adminInfo .modal-body').prepend('<div class="info-box">\n' +
       '        <span class="info-box-icon">\n' +
-      '          <img src="' + currentUser.head + '" class="rounded-circle shadow-sm" alt="' + currentUser.nickname + '">\n' +
+      '          <img src="' + (currentUser.head ? currentUser.head : '/images/no-image.png') + '" class="rounded-circle shadow-sm" alt="' + currentUser.nickname + '">\n' +
       '        </span>\n' +
       '    <div class="info-box-content">\n' +
       '      <span class="info-box-text">' + currentUser.nickname + '(' + currentUser.name + ')</span>\n' +
