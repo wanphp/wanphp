@@ -48,7 +48,7 @@ class MysqlCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
     ];
     if (!is_string($value)) $data['value'] = json_encode($value);
     if ($this->database->get($this->tableName, 'key', ['key' => $key])) {
-      $this->database->update($this->tableName, ['value' => $data['value'], 'expires_at' =>  $data['expires_at']], ['key' => $key]);
+      $this->database->update($this->tableName, ['value' => $data['value'], 'expires_at' => $data['expires_at']], ['key' => $key]);
     } else $this->database->insert($this->tableName, $data);
     return $this->returnResult($this->database->id() > 0);
   }
@@ -68,7 +68,7 @@ class MysqlCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
    */
   public function clear(): bool
   {
-    $count = $this->database->delete($this->tableName, ['key[!]' => '']);
+    $count = $this->database->delete($this->tableName, ['key[!~]' => 'forever_%']);
     return $count > 0;
   }
 

@@ -61,6 +61,9 @@ class RedisCacheRepository implements \Wanphp\Libray\Slim\CacheInterface
     $count = 0;
     if ($keys) {
       if ($prefix != '') $keys = str_replace($prefix, '', $keys);
+      $keys = array_filter($keys, function ($value, $key) {
+        return !str_starts_with($key, 'forever_');
+      });
       $count = $this->client->del($keys);
     }
     return $count > 0;
