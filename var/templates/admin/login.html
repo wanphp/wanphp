@@ -81,9 +81,9 @@
 <script type="text/javascript">
   $(function () {
     const basePath = '{{basePath}}';
-    $('.btn-success').click(function () {
+    $('.btn-success').on('click', function () {
       const ua = window.navigator.userAgent.toLowerCase();
-      if (ua.match(/MicroMessenger/i) === "micromessenger") {
+      if (ua.match(/MicroMessenger/i) == "micromessenger") {
         location.href = basePath + '/qrLogin?state=weixin';
       } else {
         $('#modal-qrLogin').modal('show');
@@ -120,8 +120,7 @@
           $('#modal-qrLogin .modal-body').html('二维码已过期！');
         }
       }, 2000);
-    });
-    $('#modal-qrLogin').on('hidden.bs.modal', function () {
+    }).on('hidden.bs.modal', function () {
       checkNum = 0;
       console.log(timer);
       clearInterval(timer);
@@ -135,7 +134,7 @@
     if (parser.getDevice().vendor) device = parser.getDevice().vendor + '(' + parser.getDevice().model + ')';
     else device = parser.getOS().name + '(' + parser.getOS().version + ')';
     device += ';' + parser.getBrowser().name + '(' + parser.getBrowser().major + ')';
-    $('#loginForm').submit(function (e) {
+    $('#loginForm').on('submit', function (e) {
       e.preventDefault();
       e.stopPropagation();
       e.target.classList.add('was-validated');

@@ -79,6 +79,11 @@ abstract class Api extends Action
     return $this->args[$name] ?? $default;
   }
 
+  protected function httpHost(): string
+  {
+    return $this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost();
+  }
+
   protected function thumb(string $image, string $size): string
   {
     $info = pathinfo($image);

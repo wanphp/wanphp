@@ -112,7 +112,7 @@ class AdminAction extends Action
           // 绑定微信
           if (!empty($user_id)) {
             $users = [];
-            foreach ($this->user->getUsers($user_id) as $item) $users[$item['id']] = ['nickname' => $item['nickname'], 'headimgurl' => $item['headimgurl']];
+            foreach ($this->user->getUsers($user_id) as $item) $users[$item['id']] = ['nickname' => $item['nickname'] ?: $item['openid'], 'headimgurl' => $item['headimgurl']];
             if ($users) foreach ($admins as &$admin) {
               $admin['weuser'] = ['nickname' => $users[$admin['uid']]['nickname'] ?? '', 'headimgurl' => $users[$admin['uid']]['headimgurl'] ?? ''];
             }

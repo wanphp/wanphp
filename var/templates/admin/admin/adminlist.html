@@ -15,20 +15,22 @@
           <div class="col mb-3 position-relative">
             <div class="input-group">
               <label for="account" class="input-group-text">登录帐号</label>
-              <input id="account" name="account" type="text" class="form-control" required placeholder="登录帐号" autocomplete="off"
-                     pattern="^[A-Za-z\u4e00-\u9fa5][A-Za-z\d\u4e00-\u9fa5_.]{1,8}$">
+              <input id="account" name="account" type="text" class="form-control" required placeholder="登录帐号"
+                     autocomplete="off" pattern="^[A-Za-z\u4e00-\u9fa5][A-Za-z\d\u4e00-\u9fa5_.]{1,8}$">
               <div class="invalid-tooltip">账号必须以字母或中文开头，长度2-10位</div>
             </div>
           </div>
           <div class="col mb-3 position-relative">
             <div class="input-group">
               <label for="pwd" class="input-group-text">帐号密码</label>
-              <input id="pwd" name="password" type="password" class="form-control" data-bs-toggle="tooltip" data-bs-title="添加账号时密码不能为空"
-                     placeholder="帐号登录密码" autocomplete="off"
+              <input id="pwd" name="password" type="password" class="form-control" data-bs-toggle="tooltip"
+                     data-bs-title="添加账号时密码不能为空" placeholder="帐号登录密码" autocomplete="off"
                      pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$">
               <label id="randomPwd" class="input-group-text" data-bs-toggle="tooltip" data-bs-title="随机生成密码"><i
                   class="fa-solid fa-shuffle"></i></label>
-              <div class="invalid-tooltip">密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位</div>
+              <div class="invalid-tooltip">
+                密码必须包含至少一个大写字母，一个小写字母，一个数字和一个特殊字符!@#$%^&*，长度8-16位
+              </div>
             </div>
           </div>
           <div class="col mb-3">
@@ -92,8 +94,8 @@
   </div>
   <div class="card-header">
     {% for id, name in roles %}
-    <span data-id="{{ id }}" class="btn {{ (id == role_id) ? 'btn-success' : 'btn-secondary' }} btn-sm" data-bs-toggle="tooltip"
-          data-bs-title="选择角色">{{ name }}</span>
+    <span data-id="{{ id }}" class="btn {{ (id == role_id) ? 'btn-success' : 'btn-secondary' }} btn-sm"
+          data-bs-toggle="tooltip" data-bs-title="选择角色">{{ name }}</span>
     {% endfor %}
   </div>
   <div class="card-body">
@@ -104,7 +106,7 @@
 <!-- /.card -->
 <script type="text/javascript">
   loadScript("/js/page/admin/adminlist.js");
-  $(document).ready(function () {
+  $(function () {
     adminDataTables = $('#admin-adminList #adminData').DataTable({
       ajax: {
         "url": basePath + "/admin/admins",
@@ -118,9 +120,9 @@
         {title: '登录帐号', data: "account"},
         {
           title: '绑定微信',
-          data: "user", render: function (data, type, row, meta) {
-            if (row.weuser) {
-              return '<img src="' + row.weuser.headimgurl + '" class="img-thumbnail" style="padding:0;" width="30">' + row.weuser.nickname;
+          data: "weuser", render: function (data, type, row, meta) {
+            if (data) {
+              return (data.headimgurl ? '<img src="' + data.headimgurl + '" class="img-thumbnail" style="padding:0;" width="30">' : '') + data.nickname;
             } else {
               return '';
             }
@@ -137,7 +139,7 @@
         {
           title: '最后登录时间',
           data: "lastLoginTime", render: function (data, type, row, meta) {
-            if (data) return new Date(parseInt(data) * 1000).toLocaleString().replace(/:\d{1,2}$/, ' ');
+            if (data) return formatTimestamp(new Date(parseInt(data) * 1000));
             else return '尚未登录';
           }
         },
