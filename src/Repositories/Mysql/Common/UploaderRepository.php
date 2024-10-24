@@ -138,14 +138,14 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
   /**
    * @inheritDoc
    */
-  public function delFile(int|string $file): int
+  public function delFile(int|string $file, bool $deleteFile = true): int
   {
     if (is_numeric($file)) {
       $id = intval($file);
-      $filepath = $this->database->get(FilesInterface::TABLE_NAME, 'url', ['id' => $id]);
+      if ($deleteFile) $filepath = $this->database->get(FilesInterface::TABLE_NAME, 'url', ['id' => $id]);
       $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
       if ($res) {
-        if (is_file($this->filepath . $filepath)) unlink($this->filepath . $filepath); //删除文件
+        if (!empty($filepath) && is_file($this->filepath . $filepath)) unlink($this->filepath . $filepath); //删除文件
         return $res->rowCount();
       } else {
         return 0;
@@ -155,7 +155,7 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
       if ($id) {
         $res = $this->database->delete(FilesInterface::TABLE_NAME, ['id' => $id]);
         if ($res) {
-          if (is_file($this->filepath . $file)) unlink($this->filepath . $file); //删除文件
+          if ($deleteFile && is_file($this->filepath . $file)) unlink($this->filepath . $file); //删除文件
           return $res->rowCount();
         } else {
           return 0;

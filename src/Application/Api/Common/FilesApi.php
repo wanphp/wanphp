@@ -167,6 +167,8 @@ class FilesApi extends Api
         if ($id > 0) {
           return $this->respondWithData(['delNum' => $this->uploader->delFile($id)]);
         } else {
+          $data = $this->getFormData();
+          if (!empty($data['url'])) return $this->respondWithData(['delNum' => $this->uploader->delFile($data['url'])]);
           return $this->respondWithError('缺少ID');
         }
       default:
