@@ -4,6 +4,7 @@ namespace App\Repositories\Mysql\Common;
 
 use App\Domain\Common\FilesInterface;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Slim\Psr7\UploadedFile;
 use Wanphp\Libray\Mysql\Database;
 use Wanphp\Libray\Slim\Setting;
@@ -123,6 +124,71 @@ class UploaderRepository implements \Wanphp\Libray\Slim\UploaderInterface
     $this->database->insert(FilesInterface::TABLE_NAME, $data);
 
     return ['id' => $this->database->id(), 'type' => $data['type'], 'host' => $formData['host'], 'url' => $data['url']];
+  }
+
+  /**
+   * @throws Exception
+   * @throws GuzzleException
+   */
+  public function downloadFile(string $url): array
+  {
+    if (str_starts_with($url, '//')) $url = 'https' . $url;
+    $test = parse_url($url);
+    $client = new \GuzzleHttp\Client([
+      'headers' => ['Referer' => $test['host'] ?? '']
+    ]);
+    $basename = bin2hex(random_bytes(8));
+    $filename = sprintf('%s.%0.8s', $basename, 'dat');
+    if (!is_dir($this->filepath . '/temp/')) mkdir($this->filepath . '/temp/', 0755, true);
+    $downloadFile = $this->filepath . '/temp/' . $filename;
+    $resp = $client->request('GET', $url, ['sink' => $downloadFile]);
+
+    // 检查上传文件
+    $fileType = $resp->getHeaderLine('Content-Type');
+    $extension = match ($fileType) {
+      'video/mp4' => 'mp4',
+      'video/quicktime' => 'mov',
+      'audio/mpeg' => 'mp3',
+      'image/jpeg', 'image/jpg' => 'jpg',
+      'image/png' => 'png',
+      'image/gif' => 'gif',
+      default => ''
+    };
+
+    $fileMD5 = md5_file($downloadFile);
+    //文件已上传过
+    $file = $this->database->get(FilesInterface::TABLE_NAME,['id','url'], ['md5' => $fileMD5]);
+    if (isset($file['id'])) {
+      unlink($downloadFile);
+      return ['id' => $file['id'], 'type' => $fileType, 'url' => $file['url']];
+    }
+    $content = file_get_contents($downloadFile);
+    if (!in_array($extension, $this->extension) || !in_array($fileType, $this->fileType) || preg_match('/<\?php/i', $content)) {
+      throw new Exception('文件类型错误！');
+    }
+
+    $type = explode('/', $fileType);
+    if ($type[0] == 'application') $filepath = '/' . $extension . date('/Ym');
+    else $filepath = '/' . $type[0] . date('/Ym');
+    if (!is_dir($this->filepath . $filepath)) mkdir($this->filepath . $filepath, 0755, true);
+
+    $basename = bin2hex(random_bytes(8));
+    $filename = sprintf('%s.%0.8s', $basename, $extension);
+    if (rename($downloadFile, $this->filepath . $filepath . DIRECTORY_SEPARATOR . $filename)) {
+      $data = [
+        'name' => '来源' . $test['host'],
+        'type' => $fileType,
+        'md5' => $fileMD5,
+        'size' => filesize($this->filepath . $filepath . DIRECTORY_SEPARATOR . $filename),
+        'url' => $filepath . DIRECTORY_SEPARATOR . $filename,
+        'extension' => $extension,
+        'uid' =>  0,
+        'uptime' => time()
+      ];
+      $this->database->insert(FilesInterface::TABLE_NAME, $data);
+      return ['id' => $this->database->id(), 'type' => $data['type'], 'url' => $data['url']];
+    }
+    return ['errMsg' => '下载失败'];
   }
 
   /**
