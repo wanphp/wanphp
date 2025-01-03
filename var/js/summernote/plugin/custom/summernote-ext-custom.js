@@ -16,28 +16,42 @@
     imageDialog: function (context) {
       // console.log(context.options)
       this.show = function () {
-        $.uploadFile({
-          url: context.options.uploadUrl + '/thumb',
-          compress: {maxWidth: 1200, maxHeight: 1000, quality: .7},// 编辑器内使用缩略图
-          uid: context.options.uid,
-          accept: 'image/jpg,image/jpeg,image/png,image/gif',
-          ext: '.jpg,.jpeg,.gif,.png',
-          success: function (res) {
-            if (res.url) context.invoke('editor.insertImage', res.url, '');
-            else Toast.fire({icon: 'error', title: res.errMsg});
-            Swal.close();
-          },
-          error: function (res) {
-            Toast.fire({icon: 'error', title: res.errMsg});
-            Swal.close();
-          },
-          uploadStart: function (data) {
-            console.log(data);
-            showLoading(data);
-          },
-          processResults: function (progress) {
-            Swal.update({title: progress});
-            Swal.showLoading();
+        $('#chooseNewsImage').remove();
+        $('body').prepend('<form enctype="multipart/form-data" id="chooseNewsImage" style="display: none;"><input type="file" name="file" value="" multiple="multiple" accept="image/jpeg,image/jpg,image/png"></form>');
+        $('#chooseNewsImage input[name=\'file\']').trigger('click').on('change', function (event) {
+          for (const file of event.currentTarget.files) {
+            showLoading('图片上传中');
+            $.uploadFile({
+              file: file,
+              url: context.options.uploadUrl + '/thumb',
+              compress: {maxWidth: 1200, maxHeight: 1000, summernote: true, quality: .9},// 编辑器内使用缩略图
+              uid: context.options.uid,
+              accept: 'image/jpg,image/jpeg,image/png,image/gif',
+              ext: '.jpg,.jpeg,.gif,.png',
+              success: function (res) {
+                if (res.url) context.invoke('editor.insertImage', res.url, '');
+                else if (res.length) {
+                  let html = '';
+                  for (const image of res) {
+                    html += '<img src="' + image.url + '">';
+                  }
+                  context.invoke('editor.pasteHTML', html);
+                } else Toast.fire({icon: 'error', title: res.errMsg});
+                Swal.close();
+              },
+              error: function (res) {
+                Toast.fire({icon: 'error', title: res.errMsg});
+                Swal.close();
+              },
+              uploadStart: function (data) {
+                console.log(data);
+                showLoading(data);
+              },
+              processResults: function (progress) {
+                Swal.update({title: progress});
+                Swal.showLoading();
+              }
+            });
           }
         });
       }
@@ -52,7 +66,7 @@
           uid: context.options.uid,
           success: function (res) {
             if (res.id > 0) {
-              const $video = $('<p><video src="' + res.url + '" controls preload="auto" style="margin: 0 auto; max-height: 400px; max-width: 100%"></video><br></p>');
+              const $video = $('<video src="' + res.url + '" controls preload="auto" style="margin: 0 auto; max-height: 400px; max-width: 100%"></video><br>');
               context.invoke('editor.insertNode', $video[0]);
             } else {
               Toast.fire({icon: 'error', title: res.errMsg});
@@ -169,44 +183,56 @@
           click: function (e) {
             // 获取选中的图片
             const image = context.invoke('editor.restoreTarget');
-            if (image) {
-              if (!image.dataset.src) image.dataset.src = $(image).attr('src');
-              const $popover = ui.popover({
-                className: 'custom-popover',
-                placement: 'bottom',
-                callback: function ($node) {
-                  // 当popover被打开时的回调函数
-                  var $content = $node.find('.popover-body,.note-popover-content');
-                  $content.prepend('<div class="note-btn-group btn-group-vertical" style="margin-right: 0">' +
-                    '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="tl" style="border-top-right-radius: 0;"><i class="fas fa-arrow-left fa-rotate-45"></i></button>' +
-                    '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="bl" style="border-bottom-right-radius: 0;"><i class="fas fa-arrow-down fa-rotate-45"></i></button>' +
-                    '</div><div class="note-btn-group btn-group-vertical">' +
-                    '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="tr" style="border-top-left-radius: 0;border-left: 0;"><i class="fas fa-arrow-up fa-rotate-45"></i></button>' +
-                    '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="br" style="border-bottom-left-radius: 0;border-left: 0;"><i class="fas fa-arrow-right fa-rotate-45"></i></button>' +
-                    '</div><div class="note-btn-group btn-group-vertical">' +
-                    '<button type="button" class="note-btn btn btn-light btn-sm confirm">确定</button>' +
-                    '<button type="button" class="note-btn btn btn-light btn-sm cancel">取消</button>' +
-                    '</div>');
+            if (context.options.watermark > 0) {
+              if (image) {
+                if (!image.dataset.src) image.dataset.src = $(image).attr('src');
+                const $popover = ui.popover({
+                  className: 'custom-popover',
+                  placement: 'bottom',
+                  callback: function ($node) {
+                    // 当popover被打开时的回调函数
+                    var $content = $node.find('.popover-body,.note-popover-content');
+                    $content.prepend('<div class="note-btn-group btn-group-vertical" style="margin-right: 0">' +
+                      '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="tl" style="border-top-right-radius: 0;"><i class="fas fa-arrow-left fa-rotate-45"></i></button>' +
+                      '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="bl" style="border-bottom-right-radius: 0;"><i class="fas fa-arrow-down fa-rotate-45"></i></button>' +
+                      '</div><div class="note-btn-group btn-group-vertical">' +
+                      '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="tr" style="border-top-left-radius: 0;border-left: 0;"><i class="fas fa-arrow-up fa-rotate-45"></i></button>' +
+                      '<button type="button" class="note-btn btn btn-light btn-sm" data-pos="br" style="border-bottom-left-radius: 0;border-left: 0;"><i class="fas fa-arrow-right fa-rotate-45"></i></button>' +
+                      '</div><div class="note-btn-group btn-group-vertical">' +
+                      '<button type="button" class="note-btn btn btn-light btn-sm confirm">确定</button>' +
+                      '<button type="button" class="note-btn btn btn-light btn-sm cancel">取消</button>' +
+                      '</div>');
 
-                  $content.on('click', '.note-btn', function (e) {
-                    if ($(this).hasClass('confirm')) {
-                      $popover.remove();
-                      context.invoke('enable');
-                    } else if ($(this).hasClass('cancel')) {
-                      $popover.remove();
-                      $(image).attr('src', $(image).attr('data-src'));
-                      context.invoke('enable');
-                    } else {
-                      image.src = image.dataset.src.replace('.', '/_ztnews-' + $(this).attr('data-pos') + '.');
-                    }
-                  });
-                }
-              }).render().appendTo('.note-editor').css({
-                display: 'block',
-                left: e.clientX - context.layoutInfo.editable.offset().left - 50,
-                top: e.clientY - context.layoutInfo.editable.offset().top
-              }).show();
-              context.invoke('disable');
+                    $content.on('click', '.note-btn', function (e) {
+                      if ($(this).hasClass('confirm')) {
+                        $popover.remove();
+                        context.invoke('enable');
+                      } else if ($(this).hasClass('cancel')) {
+                        $popover.remove();
+                        $(image).attr('src', $(image).attr('data-src'));
+                        context.invoke('enable');
+                      } else {
+                        let watermarkImage = new Image();
+                        watermarkImage.onload = () => {
+                          image.src = watermarkImage.src;
+                          // 释放内存占用
+                          watermarkImage = null;
+                        };
+                        watermarkImage.src = image.dataset.src.replace('/image/', '/image/thumb/')
+                          .replace('/newsImage/', '/newsImage/thumb/')
+                          .replace('.', '/_' + context.options.watermark + '-' + $(this).attr('data-pos') + '.');
+                      }
+                    });
+                  }
+                }).render().appendTo('.note-editor').css({
+                  display: 'block',
+                  left: e.clientX - context.layoutInfo.editable.offset().left - 50,
+                  top: e.clientY - context.layoutInfo.editable.offset().top
+                }).show();
+                context.invoke('disable');
+              }
+            } else {
+              errorDialog({errMsg: '尚未配置水印图片'});
             }
           }
         }).render();
@@ -411,7 +437,11 @@
           click: function () {
             Swal.fire({
               imageUrl: basePath + "/admin/viewNews/" + basic_id,
-              confirmButtonText: '好的'
+              confirmButtonText: '点击查看'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.open(viewUrl, "mozillaTab");
+              }
             });
           }
         }).render();

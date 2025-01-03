@@ -57,10 +57,7 @@ class SettingAction extends Action
       default:
         if ($this->request->getHeaderLine("X-Requested-With") == "XMLHttpRequest") {
           $id = $this->args['id'] ?? 0;
-          if ($id > 0) {
-            $postage = $this->setting->get('*', ['id' => $id]);
-            return $this->respondWithData($postage);
-          }
+          if ($id > 0) return $this->respondWithData($this->setting->get('*', ['id' => $id]));
           return $this->respondWithData(['data' => $this->setting->select()]);
         } else {
           $data = [

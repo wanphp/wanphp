@@ -28,7 +28,7 @@ class RefererMiddleware implements MiddlewareInterface
     }
     if ($referer && !in_array($referer, $this->referer)) {
       $response = new \Slim\Psr7\Response();
-      $response->getBody()->write('Invalid request source');
+      $response->getBody()->write('Invalid request source ' . $referer);
       return $response->withHeader('Content-Type', 'text/plain')->withStatus(403);
     }
     $authorization = $request->getHeaderLine('Authorization') ?? '';

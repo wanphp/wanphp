@@ -12,10 +12,10 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="/adminlte/css/adminlte.min.css">
   <style>
-      #modal-qrLogin svg {
-          max-width: 100%;
-          height: auto;
-      }
+    #modal-qrLogin svg {
+      max-width: 100%;
+      height: auto;
+    }
   </style>
 </head>
 <body class="login-page bg-body-secondary">
@@ -84,7 +84,9 @@
     $('.btn-success').on('click', function () {
       const ua = window.navigator.userAgent.toLowerCase();
       if (ua.match(/MicroMessenger/i) == "micromessenger") {
-        location.href = basePath + '/qrLogin?state=weixin';
+        // 获取 # 后的内容
+        const fragment = window.location.hash.substring(1);
+        location.href = basePath + '/qrLogin?state=weixin&fragment=' + fragment;
       } else {
         $('#modal-qrLogin').modal('show');
       }
@@ -150,7 +152,8 @@
           dataType: 'json',
           success: function (data) {
             console.log(data);
-            location.href = data.redirect_uri;
+            if (window.location.hash) location.reload();
+            else location.href = basePath + '/';
           },
           error: function (data) {
             Toast.fire({

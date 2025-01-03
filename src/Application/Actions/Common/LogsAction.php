@@ -57,7 +57,7 @@ class LogsAction extends \App\Application\Actions\Action
         'data' => $this->logs->select('admin_id,log_content,ctime', $where)
       ]);
     } else {
-      $admin = $this->admin->select('id,name', ['status' => 1]);
+      $admin = $this->admin->select('id,name');
       $adminArr = array_column($admin, 'name', 'id');
       $data = [
         'title' => '系统操作日志(默认显示7天内)',

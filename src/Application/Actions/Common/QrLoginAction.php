@@ -63,7 +63,7 @@ class QrLoginAction extends \App\Application\Actions\Action
       if (isset($queryParams['code'])) {//微信公众号认证回调
         $user = UserHandler::getUser($this->request, $this->user);
         // 检查绑定管理员
-        if ($user && $user['id'] > 0) {
+        if (isset($user['id']) && $user['id'] > 0) {
           $admin = $this->admin->get('id,role_id,groupId,account,status', ['uid' => $user['id']]);
           if (!$admin) {
             $data = ['title' => '系统提醒',
@@ -81,7 +81,7 @@ class QrLoginAction extends \App\Application\Actions\Action
             if ($state == 'weixin') {
               $this->logger->log(0, '通过微信内部授权登录系统，登录IP：' . $this->getIP() . '，授权用户UID' . $_SESSION['user_id']);
               $this->logger->info('”' . $admin['account'] . '”刚刚通过微信内部授权登录了系统；绑定用户UID' . $user['id']);
-              $backUrl = $this->httpHost() . $this->basePath . '/';
+              $backUrl = $_SESSION['redirect_uri'] ?? $this->httpHost() . $this->basePath . '/';
               return $this->response->withHeader('Location', $backUrl)->withStatus(301);
             } else {
               $data = ['title' => '登录成功',
@@ -102,6 +102,11 @@ class QrLoginAction extends \App\Application\Actions\Action
           return $this->respondWithError('未知用户！');
         }
       } else {
+        // 记录当前URI
+        $redirect_uri = $this->request->getHeaderLine('Referer');
+        if (isset($queryParams['fragment'])) $redirect_uri .= '#' . $queryParams['fragment'];
+        if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/#/admin/dashboard';
+        $_SESSION['redirect_uri'] = $redirect_uri;
         return UserHandler::oauthRedirect($this->request, $this->response, $this->user);
       }
     }
