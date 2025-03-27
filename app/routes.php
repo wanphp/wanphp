@@ -48,6 +48,7 @@ return function (App $app) {
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/setting[/{id:[0-9]+}]', \App\Application\Actions\Common\SettingAction::class);
     $group->map(['GET', 'POST'], '/editPassword', \App\Application\Actions\Admin\AdminInfoAction::class);
     $group->map(['GET', 'POST'], '/userBind', \App\Application\Actions\Admin\UserBindAction::class);
+    $group->get('/userUnBind', \App\Application\Actions\Admin\UserBindAction::class . ':unBind');
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/admins[/{id:[0-9]+}]', \App\Application\Actions\Admin\AdminAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/roles[/{id:[0-9]+}]', \App\Application\Actions\Admin\RoleAction::class);
     $group->map(['GET', 'PUT', 'POST', 'DELETE'], '/group[/{id:[0-9]+}]', \App\Application\Actions\Admin\GroupAction::class);

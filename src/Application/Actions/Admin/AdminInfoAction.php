@@ -83,7 +83,10 @@ class AdminInfoAction extends \App\Application\Actions\Action
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
-      $data = ['bindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userBind?tk=' . $code)];
+      $data = [
+        'bindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userBind?tk=' . $code),
+        'unBindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userUnBind?tk=' . $code)
+      ];
       return $this->respondView('admin/admin/admininfo.html', $data);
     }
 

@@ -38,10 +38,14 @@ $(document).ready(function () {
     } while (!regex.test(password)); // 检查密码是否满足要求
     // 返回生成的密码
     $("#admin-adminInfo input[name='password']").attr('type', 'text').val(password);
-  }).on('click', '#admin-adminInfo .d-block', function () {
+  }).on('click', '#admin-adminInfo .modal-body button', function (e) {
     $('#admin-adminInfo .modal-body .info-box').remove();
-    $('#bindQr').show();
+    if (e.target.dataset.type === 'bind') {
+      if (currentUser.uid > 0) $('#bindQr').before('<div class="alert alert-info mb-0">使用新的微信扫码</div>');
+      $('#bindQr').show();
+    } else $('#unBindQr').show();
 
+    $(this).hide();
     timer = setInterval(function () {
       checkNum++;
       $.post(basePath + '/admin/userBind', function (data) {
