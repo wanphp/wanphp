@@ -2,6 +2,7 @@
 
 namespace App\Application\Actions\Admin;
 
+use App\Application\Common\Message\MessageInterface;
 use App\Application\Handlers\UserHandler;
 use App\Domain\Admin\AdminInterface;
 use Exception;
@@ -14,16 +15,19 @@ class UserBindAction extends \App\Application\Actions\Action
 {
 
   private WpUserInterface $user;
+  private MessageInterface $message;
   private AdminInterface $admin;
 
   public function __construct(
-    LoggerInterface $logger,
-    WpUserInterface $user,
-    AdminInterface  $admin
+    LoggerInterface  $logger,
+    WpUserInterface  $user,
+    MessageInterface $message,
+    AdminInterface   $admin
   )
   {
     parent::__construct($logger);
     $this->user = $user;
+    $this->message = $message;
     $this->admin = $admin;
   }
 
@@ -55,8 +59,8 @@ class UserBindAction extends \App\Application\Actions\Action
             $_SESSION['user_id'] = $user_id;
             return $this->respondWithData(['res' => 'OK', 'message' => '微信绑定成功']);
           }
-          return $this->respondWithError('尚未授权！');
         }
+        return $this->respondWithError('尚未授权！');
       } else {
         return $this->respondWithError('未知用户！');
       }
@@ -89,30 +93,14 @@ class UserBindAction extends \App\Application\Actions\Action
             // 记录扫码微信uid，登录登录帐号uid为$_SESSION['user_id']，注意区分
             $_SESSION['login_user_id'] = $user['id'];
             $account = $this->admin->get('account', ['id' => $_SESSION['login_id']]);
-            $msgData = [
-              'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
-              'data' => [
-                'keyword1' => ['value' => $user['name'] ?: '未完善', 'color' => '#173177'],
-                'keyword2' => ['value' => '绑定帐号“' . $account . '”成功', 'color' => '#173177'],
-                'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177']
-              ]
-            ];
-            $this->user->sendMessage([$user['id']], $msgData);
+            $this->message->userBind(['account' => $account])->send([$user['id']]);
             // 通知解绑用户
             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0) {
-              $unBindUser = $this->user->getUser($_SESSION['user_id']);
-              $msgData = [
-                'template_id_short' => 'OPENTM405636750',//绑定状态通知,所属行业编号21
-                'data' => [
-                  'keyword1' => ['value' => $unBindUser['name'] ?: '未完善', 'color' => '#173177'],
-                  'keyword2' => ['value' => '解除绑定帐号“' . $account . '”成功', 'color' => '#173177'],
-                  'keyword3' => ['value' => date('Y-m-d H:i:s'), 'color' => '#173177']
-                ]];
-              $this->user->sendMessage([$_SESSION['user_id']], $msgData);
+              $this->message->userUnBind(['account' => $account])->send([$_SESSION['user_id']]);
             }
 
             $data = ['title' => '绑定成功',
-              'msg' => '您的帐号已成功与您的微信绑定！',
+              'msg' => '您的帐号“' . $account . '”已成功与您的微信绑定！',
               'icon' => 'weui-icon-success'
             ];
             return $this->respondView('admin/error/wxerror.html', $data);
@@ -156,8 +144,8 @@ class UserBindAction extends \App\Application\Actions\Action
         if ($admin) {
           $data = ['uid' => 0, 'name' => '', 'tel' => ''];
           $this->admin->update($data, ['id' => $_SESSION['login_id']]);
-          // 清除当前用户session
-          unset($_SESSION['login_user_id']);
+          // 通知解绑用户
+          $this->message->userUnBind(['account' => $admin])->send([$bindUid]);
           $data = ['title' => '解除绑定成功',
             'msg' => '您的微信已与”' . $admin . '“帐号成功解除绑定，可以绑定到其它账号！！',
             'icon' => 'weui-icon-success'

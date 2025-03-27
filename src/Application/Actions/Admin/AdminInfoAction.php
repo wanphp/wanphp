@@ -2,6 +2,7 @@
 
 namespace App\Application\Actions\Admin;
 
+use App\Application\Common\Message\MessageInterface;
 use App\Domain\Admin\AdminInterface;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -14,33 +15,32 @@ use Defuse\Crypto\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Slim\Setting;
-use Wanphp\Libray\Slim\WpUserInterface;
 
 class AdminInfoAction extends \App\Application\Actions\Action
 {
   private AdminInterface $admin;
-  private WpUserInterface $user;
+  private MessageInterface $message;
   private Key $key;
   private string $basePath = '';
 
   /**
    * @param LoggerInterface $logger
    * @param Setting $setting
-   * @param WpUserInterface $user
+   * @param MessageInterface $message
    * @param AdminInterface $admin
    * @throws BadFormatException
    * @throws EnvironmentIsBrokenException
    */
   public function __construct(
-    LoggerInterface $logger,
-    Setting         $setting,
-    WpUserInterface $user,
-    AdminInterface  $admin
+    LoggerInterface  $logger,
+    Setting          $setting,
+    MessageInterface $message,
+    AdminInterface   $admin
   )
   {
     parent::__construct($logger);
     $this->admin = $admin;
-    $this->user = $user;
+    $this->message = $message;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
     $this->basePath = $setting->get('basePath');
   }
@@ -61,19 +61,11 @@ class AdminInfoAction extends \App\Application\Actions\Action
         $num = $this->admin->update($password, ['id' => $_SESSION['login_id']]);
         $admin = $this->admin->get('account,uid', ['id' => $_SESSION['login_id']]);
         if ($admin['uid'] > 0) {
-          // 发公众号通知
-          $msgData = [
-            'template_id_short' => 'OPENTM407205168',//密码重置通知,所属行业编号21
-            'url' => $this->httpHost() . $this->basePath . '/login',
-            'data' => [
-              'first' => array('value' => '您的账号刚刚修改了密码', 'color' => '#173177'),
-              'keyword1' => array('value' => $this->admin->get('account', ['id' => $_SESSION['login_id']]), 'color' => '#173177'),
-              'keyword2' => array('value' => $data['password'], 'color' => '#173177'),
-              'remark' => array('value' => '如果不是您本人操作，则您的帐号存在安全风险，请及时联系管理员处理。', 'color' => '#173177')
-            ]
-          ];
-
-          $this->user->sendMessage([$admin['uid']], $msgData);
+          $this->message->editPassword([
+            'account' => $this->admin->get('account', ['id' => $_SESSION['login_id']]),
+            'password' => $data['password'],
+            'url' => $this->httpHost() . $this->basePath . '/#/admin/dashboard?tk=' . Crypto::encrypt(session_id(), $this->key)
+          ])->send([$admin['uid']]);
         }
         return $this->respondWithData(['upNum' => $num], 201);
       } else {

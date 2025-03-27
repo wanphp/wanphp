@@ -10,6 +10,7 @@ namespace App\Application\Actions\Common;
 
 
 use App\Application\Actions\Action;
+use App\Application\Common\Message\MessageInterface;
 use App\Domain\Admin\AdminInterface;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -22,12 +23,11 @@ use Defuse\Crypto\Key;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 use Wanphp\Libray\Slim\Setting;
-use Wanphp\Libray\Slim\WpUserInterface;
 
 class LoginAction extends Action
 {
   private AdminInterface $adminRepository;
-  private WpUserInterface $user;
+  private MessageInterface $message;
   private Key $key;
   private string $basePath = '';
   private string $systemName = '';
@@ -36,20 +36,20 @@ class LoginAction extends Action
    * @param LoggerInterface $logger
    * @param Setting $setting
    * @param AdminInterface $adminRepository
-   * @param WpUserInterface $user
+   * @param MessageInterface $message
    * @throws BadFormatException
    * @throws EnvironmentIsBrokenException
    */
   public function __construct(
-    LoggerInterface $logger,
-    Setting         $setting,
-    AdminInterface  $adminRepository,
-    WpUserInterface $user
+    LoggerInterface  $logger,
+    Setting          $setting,
+    AdminInterface   $adminRepository,
+    MessageInterface $message
   )
   {
     parent::__construct($logger);
     $this->adminRepository = $adminRepository;
-    $this->user = $user;
+    $this->message = $message;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
     $this->basePath = $setting->get('basePath');
     $this->systemName = $setting->get('systemName');
@@ -101,20 +101,16 @@ class LoginAction extends Action
         $this->adminRepository->update(['lastLoginTime' => time(), 'lastLoginIp' => $this->getIP()], ['id' => $admin['id']]);
         // 发送公众号通知
         if ($admin['uid'] > 0) {
-          $first = '您的账号“' . $admin['account'] . '”刚刚登录了系统；';
+          $first = '“' . $admin['account'] . '”刚刚登录了系统；';
           $device = $this->request->getHeaderLine('X-HTTP-Device');
           if ($device) $first .= '登录IP：' . $this->getIP() . '，客户端：' . $device . '。';
           $this->logger->log(0, '通过账号密码登录系统，登录IP：' . $this->getIP() . '，客户端：' . $device . '。');
-          $this->logger->info(str_replace('您的账号', '', $first));
-          $msgData = [
-            'template_id_short' => 'OPENTM411999701',//登录操作通知,所属行业编号21
-            'url' => $this->httpHost() . $this->basePath . '/admin/index?tk=' . Crypto::encrypt(session_id(), $this->key),
-            'data' => [
-              'keyword1' => ['value' => $admin['account'] . '，通过密码登录了' . $this->systemName, 'color' => '#173177'],
-              'keyword2' => ['value' => date('Y-m-d') . '，点击详情可修改密码', 'color' => '#173177']
-            ]
-          ];
-          $this->user->sendMessage([$admin['uid']], $msgData);
+          $this->logger->info($first);
+          $this->message->login([
+            'account' => $admin['account'],
+            'device' => $device,
+            'url' => $this->httpHost() . $this->basePath . '/#/admin/dashboard?tk=' . Crypto::encrypt(session_id(), $this->key)
+          ])->send([$admin['uid']]);
         }
         $redirect_uri = $this->request->getHeaderLine('Referer');
         if (str_contains($redirect_uri, '/login')) $redirect_uri = $this->httpHost() . $this->basePath . '/#/admin/dashboard';
