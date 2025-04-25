@@ -21,7 +21,8 @@ class AdminInfoAction extends \App\Application\Actions\Action
   private AdminInterface $admin;
   private MessageInterface $message;
   private Key $key;
-  private string $basePath = '';
+  private string $basePath;
+  private string $scope;
 
   /**
    * @param LoggerInterface $logger
@@ -43,6 +44,7 @@ class AdminInfoAction extends \App\Application\Actions\Action
     $this->message = $message;
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
     $this->basePath = $setting->get('basePath');
+    $this->scope = $setting->get('oauth2Config')['scope'] ?? '';
   }
 
   /**
@@ -76,8 +78,8 @@ class AdminInfoAction extends \App\Application\Actions\Action
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
       $data = [
-        'bindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userBind?tk=' . $code),
-        'unBindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userUnBind?tk=' . $code)
+        'bindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userBind?scope=' . $this->scope . '&tk=' . $code),
+        'unBindQr' => $writer->writeString($this->httpHost() . $this->basePath . '/admin/userUnBind?scope=' . $this->scope . '&tk=' . $code)
       ];
       return $this->respondView('admin/admin/admininfo.html', $data);
     }

@@ -29,8 +29,9 @@ class LoginAction extends Action
   private AdminInterface $adminRepository;
   private MessageInterface $message;
   private Key $key;
-  private string $basePath = '';
-  private string $systemName = '';
+  private string $basePath;
+  private string $systemName;
+  private string $scope;
 
   /**
    * @param LoggerInterface $logger
@@ -53,6 +54,7 @@ class LoginAction extends Action
     $this->key = Key::loadFromAsciiSafeString($setting->get('oauth2Config')['encryptionKey']);
     $this->basePath = $setting->get('basePath');
     $this->systemName = $setting->get('systemName');
+    $this->scope = $setting->get('oauth2Config')['scope'] ?? '';
   }
 
   protected function action(): Response
@@ -125,7 +127,7 @@ class LoginAction extends Action
       $code = Crypto::encrypt(session_id(), $this->key);
       $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
       $writer = new Writer($renderer);
-      $data['loginQr'] = $writer->writeString($this->httpHost() . $this->basePath . '/qrLogin?tk=' . $code);
+      $data['loginQr'] = $writer->writeString($this->httpHost() . $this->basePath . '/qrLogin?scope=' . $this->scope . '&tk=' . $code);
       $data['basePath'] = $this->basePath;
       $data['systemName'] = $this->systemName;
 

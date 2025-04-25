@@ -25,7 +25,8 @@ return function (ContainerBuilder $containerBuilder) {
           // 资源服务器使用
           'publicKey' => ROOT_PATH . '/var/conf/key/public.key',
           // echo Key::createNewRandomKey()->saveToAsciiSafeString();
-          'encryptionKey' => 'def000008bd8e66117fe24fd2dacc6c3b777598bbe740dae5581f74fe9363d09c36ae8beaa12b5ef16d091a46fb5ef6c914cf94c2fbac04a2615556a34e7c9f98ed2c397'
+          'encryptionKey' => 'def000008bd8e66117fe24fd2dacc6c3b777598bbe740dae5581f74fe9363d09c36ae8beaa12b5ef16d091a46fb5ef6c914cf94c2fbac04a2615556a34e7c9f98ed2c397',
+          'scope' => 'snsapi_base' // 获取微信用户，snsapi_base只取openid,snsapi_userinfo取完整信息
         ],
         // todo 自定义存储服务器
         'AuthCodeStorage' => new \App\Repositories\RedisCacheRepository(
