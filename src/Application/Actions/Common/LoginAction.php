@@ -109,6 +109,7 @@ class LoginAction extends Action
           $this->message->login([
             'account' => $admin['account'],
             'device' => $device,
+            'ip' => $this->getIP(),
             'url' => $this->httpHost() . $this->basePath . '/#/admin/dashboard?tk=' . Crypto::encrypt(session_id(), $this->key)
           ])->send([$admin['uid']]);
         }

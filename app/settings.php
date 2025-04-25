@@ -62,27 +62,21 @@ return function (ContainerBuilder $containerBuilder) {
           'appid' => '',
           'appsecret' => '',
           'token' => '',
-          'encodingAesKey' => ''
-        ],
-        'wechat.miniprogram' => [
-          'appid' => '',
-          'appsecret' => '',
-          'token' => '',
-          'encodingAesKey' => ''
-        ],
-        'wechat.pay-v2' => [
-          'appid' => '',// 绑定支付的APPID
-          'mchid' => '',// 商户号
-          'appSecret' => '',// 商户支付密钥
-          'notifyUrl' => '',// 支付回调url
-          'sslKeyPath' => '',// 证书密钥路径
-          'sslCertPath' => ''// 微信支付平台证书路径
+          'encodingAesKey' => '',
+          'uin_base64' => '', // 公众号的唯一ID
+          'webAuthorization' => true // 公众号是否有网页授权获取用户基本信息权限
         ],
         'wechat.pay-v3' => [
+          'appid' => '', // 确保该appid与merchantId有绑定关系
           'merchantId' => '',// 商户号
-          'merchantSerialNumber' => '',// 商户API证书序列号
-          'pathToPrivateKey' => '',// 商户私钥
-          'pathToCertificate' => ''// 微信支付平台证书
+          'merchantCertificateSerial' => '',// 商户API证书序列号
+          'merchantPrivateKeyFilePath' => '',// 商户API私钥
+          'platformCertificateFilePath' => '',// 微信支付平台证书，用来验证微信支付应答的签名
+          'platformCertificateSerial' => '',// 微信支付平台证书序列号,可以从「微信支付平台证书」文件解析，也可以在 商户平台 -> 账户中心 -> API安全 查询到
+          'platformPublicKeyFilePath' => '',// 微信支付公钥，用来验证微信支付应答的签名
+          'platformPublicKeyId' => '',// 微信支付公钥ID,需要在 商户平台 -> 账户中心 -> API安全 查询
+          'apiV3Key' => '',
+          'notify_url' => ''
         ]
       ]);
     },
