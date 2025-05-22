@@ -173,6 +173,7 @@
   // 传入一个时间戳（毫秒）
   function formatTimestamp(timestamp) {
     if (timestamp.toString().length === 13) timestamp = Math.floor(timestamp / 1000);
+    if (timestamp.toString().length > 13) return moment(timestamp).format('YYYY-MM-DD HH:mm:ss');
     return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');
   }
 
