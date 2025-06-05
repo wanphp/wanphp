@@ -22,7 +22,7 @@ function cropper(title, width, height, preview, callback) {
             formData.append('file', blob, 'cropCover.jpg');
             formData.append('uid', currentUser.uid);
             $.ajax({
-                url: 'https://images.ztnews.net/upload/thumb',
+                url: basePath + '/admin/upload/files',
                 type: 'post',
                 dataType: 'json',
                 data: formData,
@@ -46,7 +46,7 @@ function cropper(title, width, height, preview, callback) {
         formData.append('file', new Blob([u8arr], {type: mime}), 'cropCover.jpg');
         formData.append('uid', currentUser.uid);
         $.ajax({
-          url: 'https://images.ztnews.net/upload/thumb',
+          url: basePath + '/admin/upload/files',
           type: 'post',
           dataType: 'json',
           data: formData,

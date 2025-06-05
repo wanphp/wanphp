@@ -104,8 +104,8 @@
               <select data-id="{{ action.id }}" class="form-select" style="width: 100%;">
                 <option value="0">请选择</option>
                 {% for index, menu in menus %}
-                <option {{ (index==action.navId) ?
-                'selected' }} value="{{ index }}">{{ menu.name }}</option>
+                <option {{ (index==action.navId)?
+                'selected':'' }} value="{{ index }}">{{ menu.name }}</option>
                 {% endfor %}
               </select>
             </td>
@@ -123,9 +123,9 @@
   <!-- /.col -->
 </div>
 <script type="text/javascript">
-  $(document).ready(function () {
+  $(function () {
     $('.form-select').select2({theme: "bootstrap-5"}).change(function (e) {
-      if ($(this).val() != $(this).attr('default-value')) {
+      if ($(this).val() !== $(this).attr('default-value')) {
         $(this).attr('default-value', $(this).val());
         $.ajax({
           url: basePath + '/admin/router/' + $(this).attr('data-id'),
@@ -145,7 +145,7 @@
       console.log($(this).val(), $(this).attr('default-value'));
     });
 
-    $('#menuForm').submit(function (e) {
+    $('#menuForm').on('submit', function (e) {
       console.log(e.target.checkValidity());
       if (e.target.checkValidity()) {
         const fromData = new FormData(e.target);
@@ -169,9 +169,8 @@
       }
     });
 
-    $('.editMenu').click(function (e) {
-      $('#menuForm').attr('action', basePath + '/admin/navigate/' + e.currentTarget.dataset.id);
-      $('#menuForm').attr('method', 'PUT');
+    $('.editMenu').on('click', function (e) {
+      $('#menuForm').attr('method', 'PUT').attr('action', basePath + '/admin/navigate/' + e.currentTarget.dataset.id);
       $("#menuForm input[name='name']").val(e.currentTarget.dataset.name);
       $("#menuForm input[name='icon']").val(e.currentTarget.dataset.icon);
       $("#menuForm input[name='sortOrder']").val(e.currentTarget.dataset.sort);
@@ -179,9 +178,7 @@
     });
 
     $('#modal-add').on('hidden.bs.modal', function () {
-      $('#menuForm')[0].reset();
-      $('#menuForm').attr('action', basePath + '/admin/navigate');
-      $('#menuForm').attr('method', 'POST');
+      $('#menuForm').attr('method', 'POST').attr('action', basePath + '/admin/navigate')[0].reset();
     });
 
     $(".sublist").off('click', 'button').on('click', 'button', function (event) {
@@ -246,7 +243,7 @@
       }
     });
 
-    $('#action_sync').click(function () {
+    $('#action_sync').on('click', function () {
       $.ajax({
         url: basePath + '/admin/syncActions',
         type: 'get',

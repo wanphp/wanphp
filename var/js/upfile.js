@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(function () {
   $.extend({
     uploadFile: function (options) {
       if (!options.maxSize) options.maxSize = 100;
@@ -50,10 +50,14 @@ $(document).ready(function () {
                 if (!options.compress.maxWidth) options.compress.maxWidth = w;
                 if (!options.compress.maxHeight) options.compress.maxHeight = h;
 
-                const segmentHeight = options.compress.maxHeight; // 每段的最大高度
-                // 插入summernote的才分片，其它正常压缩
-                let totalSegments = Math.ceil(h / segmentHeight);
-                if (options.compress.summernote === undefined) totalSegments = 1;
+
+                let segmentHeight = h; // 每段分片的最大高度，默认就是源源图的高度
+                let totalSegments = 1; // 分片数，默认不分片
+                // 插入summernote的并且高度是宽度的两倍以上的竖图才分片，其它正常压缩
+                if(options.compress.summernote && (h / w > 2)){
+                  totalSegments = Math.ceil(h / segmentHeight);
+                  segmentHeight = options.compress.maxHeight;
+                }
                 const ratio = Math.min(1, options.compress.maxWidth / w, (totalSegments > 1 ? 1 : segmentHeight / h));
 
                 const canvas = document.createElement('canvas');

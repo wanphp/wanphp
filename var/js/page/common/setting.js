@@ -1,5 +1,5 @@
 var settingDataTables;
-$(document).ready(function () {
+$(function () {
   $('body').on('click', '#common-setting #settingData tbody button', function () {
     const setting = settingDataTables.row($(this).parents('tr')).data();
     //console.log(setting);
@@ -27,7 +27,7 @@ $(document).ready(function () {
         });
       });
     }
-  }).on('submit','#common-setting #setForm',function (e) {
+  }).on('submit', '#common-setting #setForm', function (e) {
     console.log(e.target.checkValidity());
     if (e.target.checkValidity()) {
       const fromData = new FormData(e.target);
@@ -68,9 +68,9 @@ $(document).ready(function () {
         error: errorDialog
       });
     }
-  }).on('click','#common-setting #upload_image', function () {
+  }).on('click', '#common-setting #upload_image', function () {
     $.uploadFile({
-      url: 'https://images.ztnews.net/upload/thumb',
+      url: basePath + '/admin/upload/files',
       uid: currentUser.uid,
       accept: 'image/jpg,image/jpeg,image/png,image/gif',
       ext: '.jpg,.jpeg,.gif,.png',
@@ -81,7 +81,7 @@ $(document).ready(function () {
         Toast.fire({icon: 'error', title: res.errMsg});
       }
     });
-  }).on('hidden.bs.modal', '#common-setting #modal-addSetting',function () {
+  }).on('hidden.bs.modal', '#common-setting #modal-addSetting', function () {
     $('#common-setting #setForm').attr('action', basePath + '/admin/setting').attr('method', 'POST')[0].reset();
   });
 });

@@ -23,7 +23,7 @@
             showLoading('图片上传中');
             $.uploadFile({
               file: file,
-              url: context.options.uploadUrl + '/thumb',
+              url: context.options.uploadUrl,
               compress: {maxWidth: 1200, maxHeight: 1000, summernote: true, quality: .9},// 编辑器内使用缩略图
               uid: context.options.uid,
               accept: 'image/jpg,image/jpeg,image/png,image/gif',
@@ -59,7 +59,7 @@
     videoDialog: function (context) {
       this.show = function () {
         $.uploadFile({
-          url: context.options.uploadUrl + '/files',
+          url: context.options.uploadUrl,
           accept: 'video/mp4',
           ext: 'mp4',
           maxSize: 200,
@@ -140,7 +140,7 @@
                           formData.append('file', blob, 'cropImage.jpg');
                           formData.append('uid', context.options.uid);
                           $.ajax({
-                              url: 'https://images.ztnews.net/upload/thumb',
+                              url: basePath + '/admin/upload/files',
                               type: 'post',
                               dataType: 'json',
                               data: formData,
@@ -349,13 +349,14 @@
             // 2. 移除Word生成的HTML注释和&nbsp;
             code = code.replace(new RegExp('<!--(.*?)-->|&nbsp;', 'g'), '');
             // 3. 保留段落（<p>）、标题（<h1> - <h6>）、图片（<img>）、表格和换行，移除其他所有标签
-            const allowedTags = /<(\/?(p|h[1-6]|img|table|tr|th|td|br))[^>]*>/g;
+            const allowedTags = /<(\/?(p|h[1-6]|img|video|table|tr|th|td|br))[^>]*>/g;
             code = code.replace(/<[^>]*>/g, function (match) {
               if (match.startsWith('<img')) {
                 const srcMatch = match.match(/src="([^"]*)"/);
                 return srcMatch ? '<img src="' + srcMatch[1] + '" style="max-width: 100%">' : '';
               } else if (match.startsWith('<table')) return '<table class="table table-bordered">'
               else if (match.startsWith('<br')) return '<br>'
+              else if (match.startsWith('<video')) return match
               else return match.match(allowedTags) ? match.replace(/ [^=\s]+="[^"]*"/g, '') : '';
             });
             context.invoke('code', code);

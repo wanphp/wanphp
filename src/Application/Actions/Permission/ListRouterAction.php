@@ -31,7 +31,7 @@ class ListRouterAction extends Router
     foreach ($navigate as $item) {
       $menus[$item['id']] = $item;
     }
-    $actions = $this->routerRepository->select('id,navId,name,route', ['route[~]' => '/admin/%', 'ORDER' => ['sortOrder' => 'ASC']]);
+    $actions = $this->routerRepository->select('id,navId,name,route', ['route[~]' => '/admin/%', 'ORDER' => ['navId' => 'ASC']]);
     foreach ($actions as $action) {
       if ($action['navId'] > 0) $menus[$action['navId']]['sublist'][] = ['id' => $action['id'], 'name' => $action['name']];
     }
