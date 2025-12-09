@@ -9,7 +9,7 @@
     {
       "name": "火子",
       "email": "wanphp@outlook.com",
-      "homepage": "http://www.wanphp.com/"
+      "homepage": "https://www.wanphp.com/"
     }
   ],
   "require": {
@@ -18,15 +18,15 @@
     "wanphp/libray-slim": "^1.0.0",
     "wanphp/libray-mysql": "^1.1.0",
     "wanphp/plugins-weixin": "^1.2.0",
-    "wanphp/adminlte4": "v4.0.0-alpha3",
+    "wanphp/adminlte4": "v4.0.0-rc4",
     "twbs/bootstrap": "^5.0",
-    "datatables.net/datatables.net": "dev-master",
-    "datatables.net/datatables.net-bs5": "dev-master",
-    "datatables.net/datatables.net-buttons": "dev-master",
-    "datatables.net/datatables.net-buttons-bs5": "dev-master",
-    "datatables.net/datatables.net-responsive": "dev-master",
-    "datatables.net/datatables.net-responsive-bs5": "dev-master",
-    "select2/select2": "^4.0",
+    "datatables.net/datatables.net": "^2.3.5",
+    "datatables.net/datatables.net-bs5": "^2.3.5",
+    "datatables.net/datatables.net-buttons": "^3.0.0",
+    "datatables.net/datatables.net-buttons-bs5": "^3.0.0",
+    "datatables.net/datatables.net-responsive": "^3.0.0",
+    "datatables.net/datatables.net-responsive-bs5": "^3.0.0",
+    "select2/select2": "4.1.0.0-beta.1",
     "apalfrey/select2-bootstrap-5-theme": "^1.0",
     "fortawesome/font-awesome": "^6.0",
     "bacon/bacon-qr-code": "^2.0.0",
